@@ -4,7 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.util.Tools;
-import ij.plugin.frame.Recorder;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -17,7 +17,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
     private static boolean constrain = true;
     private static boolean averageWhenDownsizing = true;
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
-	private String[] methods = ImageProcessor.getInterpolationMethods();
+	private final String[] methods = ImageProcessor.getInterpolationMethods();
     private Vector fields, checkboxes;
 	private double origWidth, origHeight;
 	private boolean sizeToHeight;
@@ -33,7 +33,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 		if (!imp.okToDeleteRoi())
 			return;
 		if ((roi==null||!roi.isArea()) && crop) {
-			IJ.error(crop?"Crop":"Resize", "Area selection required");
+			IJ.error("Crop", "Area selection required");
 			return;
 		}
 		if (!imp.lock()) {
@@ -41,10 +41,10 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 			return;
 		}
 		Rectangle r = ip.getRoi();
-		origWidth = r.width;;
+		origWidth = r.width;
 		origHeight = r.height;
 		sizeToHeight=false;
-	    boolean restoreRoi = crop && roi!=null && roi.getType()!=Roi.RECTANGLE;
+	    boolean restoreRoi = crop && roi.getType() != Roi.RECTANGLE;
 		if (roi!=null) {
 			Rectangle b = roi.getBounds();
 			int w = ip.getWidth();
@@ -153,12 +153,12 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 						cal.pixelWidth *= origWidth/newWidth;
 						cal.pixelHeight *= origHeight/newHeight;
 					}
-					if (crop&&roi!=null&&(cal.xOrigin!=0.0||cal.yOrigin!=0.0)) {
+					if (crop && (cal.xOrigin != 0.0 || cal.yOrigin != 0.0)) {
 						cal.xOrigin -= roi.getBounds().x;
 						cal.yOrigin -= roi.getBounds().y;
 					}
 					imp.setStack(null, s2);
-					if (crop && roi!=null) {
+					if (crop) {
 						Overlay overlay = imp.getOverlay();
 						if (overlay!=null && !imp.getHideOverlay()) {
 							Overlay overlay2 = overlay.crop(roi.getBounds());
@@ -171,7 +171,7 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 						else
 							imp.setOverlay(null);
 					}
-					if (restoreRoi && roi!=null) {
+					if (restoreRoi) {
 						roi.setLocation(0, 0);
 						imp.setRoi(roi);
 						imp.draw();
@@ -392,13 +392,13 @@ public class Resizer implements PlugIn, TextListener, ItemListener  {
 	public void itemStateChanged(ItemEvent e) {
 		Checkbox cb = (Checkbox)checkboxes.elementAt(0);
         boolean newConstrain = cb.getState();
-        if (newConstrain && newConstrain!=constrain)
+        if (newConstrain && !constrain)
         	updateFields();
         constrain = newConstrain;
 	}
 	
 	public void setAverageWhenDownsizing(boolean averageWhenDownsizing) {
-		this. averageWhenDownsizing = averageWhenDownsizing;
+		Resizer. averageWhenDownsizing = averageWhenDownsizing;
 	}
 
 }

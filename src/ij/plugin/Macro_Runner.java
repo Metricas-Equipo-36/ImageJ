@@ -2,8 +2,6 @@ package ij.plugin;
 import ij.*;
 import ij.io.*;
 import ij.macro.*;
-import ij.text.*;
-import ij.util.*;
 import ij.plugin.frame.*;
 import ij.gui.GenericDialog;
 import java.io.*;
@@ -31,7 +29,7 @@ public class Macro_Runner implements PlugIn {
 		}
 		String path = null;
 		if (name.equals("")) {
-			OpenDialog od = new OpenDialog("Run Macro or Script...", path);
+			OpenDialog od = new OpenDialog("Run Macro or Script...", null);
 			String directory = od.getDirectory();
 			name = od.getFileName();
 			if (name!=null) {
@@ -122,7 +120,7 @@ public class Macro_Runner implements PlugIn {
 			}
 		}
 		if (IJ.debugMode) IJ.log("runMacro: "+path+" ("+name+")");
-		if (!exists || f==null) {
+		if (!exists) {
             IJ.error("RunMacro", "Macro or script not found:\n \n"+path);
 			return null;
 		}
@@ -174,21 +172,23 @@ public class Macro_Runner implements PlugIn {
 		return  "[aborted]";
 	}
 	
-	/** Runs the specified macro from a JAR file in the plugins folder,
-		passing it the specified argument. Returns the String value returned
-		by the macro, null if the macro does not return a value, or "[aborted]"
-		if the macro was aborted due to an error. The macro can reside anywhere
-		in the plugins folder, in or out of a JAR file, so name conflicts are possible.
-		To avoid name conflicts, it is a good idea to incorporate the plugin
-		or JAR file name in the macro name (e.g., "Image_5D_Macro1.ijm"). */
-	public static String runMacroFromJar(String name, String arg) {
+	/**
+	 * Runs the specified macro from a JAR file in the plugins folder,
+	 * passing it the specified argument. Returns the String value returned
+	 * by the macro, null if the macro does not return a value, or "[aborted]"
+	 * if the macro was aborted due to an error. The macro can reside anywhere
+	 * in the plugins folder, in or out of a JAR file, so name conflicts are possible.
+	 * To avoid name conflicts, it is a good idea to incorporate the plugin
+	 * or JAR file name in the macro name (e.g., "Image_5D_Macro1.ijm").
+	 */
+	public static void runMacroFromJar(String name, String arg) {
 		String macro = null;
 		try {
 			ClassLoader pcl = IJ.getClassLoader();
 			InputStream is = pcl.getResourceAsStream(name);
 			if (is==null) {
 				IJ.error("Macro Runner", "Unable to load \""+name+"\" from jar file");
-				return null;
+				return;
 			}
 			InputStreamReader isr = new InputStreamReader(is);
 			StringBuffer sb = new StringBuffer();
@@ -201,16 +201,15 @@ public class Macro_Runner implements PlugIn {
 		} catch (IOException e) {
 			IJ.error("Macro Runner", ""+e);
 		}
-		if (macro!=null)
-			return (new Macro_Runner()).runMacro(macro, arg);
-		else
-			return null;
+		if (macro!=null) {
+			(new Macro_Runner()).runMacro(macro, arg);
+		}
 	}
 
 	public String runMacroFromIJJar(String name, String arg) {
 		ImageJ ij = IJ.getInstance();
 		//if (ij==null) return null;
-		Class c = ij!=null?ij.getClass():(new ImageStack()).getClass();
+		Class c = ij!=null?ij.getClass(): ImageStack.class;
 		name = name.substring(7);
 		String macro = null;
         try {
@@ -272,7 +271,7 @@ public class Macro_Runner implements PlugIn {
 		} else { // call run(script,arg) method using reflection
 			try {
 				Class c = plugin.getClass();
-				Method m = c.getMethod("run", new Class[] {script.getClass(), arg.getClass()});
+				Method m = c.getMethod("run", script.getClass(), arg.getClass());
 				String s = (String)m.invoke(plugin, new Object[] {script, arg});			
 			} catch(Exception e) {
 				if ("Jython".equals(plugin.getClass().getName()))

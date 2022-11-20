@@ -7,9 +7,9 @@ import ij.measure.*;
 /** Saves an image described by an ImageProcessor object as a tab-delimited text file. */
 public class TextEncoder {
 
-	private ImageProcessor ip;
-	private Calibration cal;
-	private int precision;
+	private final ImageProcessor ip;
+	private final Calibration cal;
+	private final int precision;
 
 	/** Constructs a TextEncoder from an ImageProcessor and optional Calibration. */
 	public TextEncoder (ImageProcessor ip, Calibration cal, int precision) {

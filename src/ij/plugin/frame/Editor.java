@@ -10,7 +10,6 @@ import ij.util.Tools;
 import ij.text.*;
 import ij.macro.*;
 import ij.plugin.MacroInstaller;
-import ij.plugin.Commands;
 import ij.plugin.Macro_Runner;
 import ij.plugin.JavaScriptEvaluator;
 import ij.io.SaveDialog;
@@ -21,7 +20,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	
 	/** ImportPackage statements added in front of scripts. Contains no 
 	newlines so that lines numbers in error messages are not changed. */
-	public static String JavaScriptIncludes =
+	public static final String JavaScriptIncludes =
 		"importPackage(Packages.ij);"+
 		"importPackage(Packages.ij.gui);"+
 		"importPackage(Packages.ij.process);"+
@@ -41,7 +40,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		"importPackage(java.io);"+
 		"function print(s) {IJ.log(s);};";
 		
-	private static String JS_EXAMPLES =
+	private static final String JS_EXAMPLES =
 		"img = IJ.openImage(\"http://imagej.net/images/blobs.gif\")\n"
  		+"img = IJ.createImage(\"Untitled\", \"16-bit ramp\", 500, 500, 1)\n" 		
  		+"img.show()\n"
@@ -70,7 +69,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private final static String[] languages = {"Macro", "JavaScript", "BeanShell", "Python"};
 	private final static String[] extensions = {".ijm", ".js", ".bsh", ".py"};	
 	public static Editor currentMacroEditor;
-	private TextArea ta;
+	private final TextArea ta;
 	private String path;
 	protected boolean changes;
 	private static String searchString = "";
@@ -79,7 +78,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private static int xoffset, yoffset;
 	private static int nWindows;
 	private Menu fileMenu, editMenu;
-	private Properties p = new Properties();
+	private final Properties p = new Properties();
 	private int[] macroStarts;
 	private String[] macroNames;
 	private MenuBar mb;
@@ -90,9 +89,9 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	private String shortcutsInUse;
 	private int inUseCount;
 	private MacroInstaller installer;
-	private static String defaultDir = Prefs.get(DEFAULT_DIR, null);;
+	private static String defaultDir = Prefs.get(DEFAULT_DIR, null);
 	private boolean dontShowWindow;
-	private int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
+	private final int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
 	private int fontSizeIndex = (int)Prefs.get(FONT_SIZE, 6); // defaults to 16-point
 	private CheckboxMenuItem monospaced;
 	private static boolean wholeWords;
@@ -391,7 +390,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 				if (s==null)
 					break;
 				else
-					sb.append(s+"\n");
+					sb.append(s).append("\n");
 			}
 			r.close();
 			if (ta!=null && ta.getText().length()>0) {
@@ -403,7 +402,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 		catch (Exception e) {
 			IJ.handleException(e);
-			return;
 		}
 	}
 
@@ -656,7 +654,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 						// New Page
 						pageNum++;
 						linesForThisPage = 0;
-						pg.dispose();
+						Objects.requireNonNull(pg).dispose();
 						pg = pjob.getGraphics();
 						if (pg != null)
 							pg.setFont (helv);
@@ -954,7 +952,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	protected void showMacroFunctions() {
 		String url= "/developer/macro/functions.html";
 		String selText = ta.getSelectedText().replace("\n", " ");
-		String[] selectedWords = Tools.split(selText, "/,(,[\"\'&+");
+		String[] selectedWords = Tools.split(selText, "/,(,[\"'&+");
 		if (selectedWords.length==1 && selectedWords[0].length()>0) 
 			url += "#" +selectedWords[0];//append selection as hash tag
 		IJ.runPlugIn("ij.plugin.BrowserLauncher", IJ.URL+url);
@@ -1082,10 +1080,10 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		int pos = ta.getCaretPosition();
 		showLinePos();
 		if (insertSpaces && pos>0 && e.getKeyCode()==KeyEvent.VK_TAB) {
-			String spaces = " ";
+			StringBuilder spaces = new StringBuilder(" ");
 			for (int i=1; i<tabInc; i++)
-				spaces += " ";
-			ta.replaceRange(spaces, pos-1, pos);
+				spaces.append(" ");
+			ta.replaceRange(spaces.toString(), pos-1, pos);
 		}
 		if (interactiveMode && e.getKeyChar()=='\n')
 			runMacro(e);
@@ -1115,8 +1113,8 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			}
 		}
 		String code = text.substring(pos1,pos2+1);
-		if (code.length()==0 || code.equals("\n"))
-			return;		
+		if (code.length()==0 || code.equals("\n")) {
+		}
 		else if (code.length()<=6 && code.contains("help")) {
 			ta.appendText("  Type a statement (e.g., \"run('Invert')\") to run it.\n");			
 			ta.appendText("  Enter an expression (e.g., \"x/2\" or \"log(2)\") to evaluate it.\n");			
@@ -1194,7 +1192,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		String language = title.endsWith(".js")?"JavaScript ":"Macro ";
 		messageCount++;
 		String help = messageCount<=2?" Type \"help\" for info.":"";
-		ta.appendText("["+language+"interactive mode."+help+"]\n");
+		Objects.requireNonNull(ta).appendText("["+language+"interactive mode."+help+"]\n");
 		interactiveMode = true;
 	}
 	
@@ -1325,7 +1323,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		int index = text1.indexOf("public class "+oldName);
 		if (index<0)
 			return;
-		String text2 = text1.substring(0,index+13)+newName+text1.substring(index+13+oldName.length(),text1.length());
+		String text2 = text1.substring(0,index+13)+newName+text1.substring(index+13+oldName.length());
 		ta.setText(text2);
 	}
 	
@@ -1376,8 +1374,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		char c = index==0?' ':text.charAt(index-1);
 		if (Character.isLetterOrDigit(c) || c=='_') return false;
 		c = index+word.length()>=text.length()?' ':text.charAt(index+word.length());
-		if (Character.isLetterOrDigit(c) || c=='_') return false;
-		return true;
+		return !Character.isLetterOrDigit(c) && c != '_';
 	}
 	
 	void gotoLine() {
@@ -1415,29 +1412,29 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		}
 		int start = -1;
 		int stop = -1;
-		String leftBows = "";
+		StringBuilder leftBows = new StringBuilder();
 		for (int i = position -1 ; i >= 0; i--) {
 			char ch = chars[i];
 			if ("({[]})".indexOf(ch) >= 0) {
-				leftBows = ch + leftBows;
-				leftBows = leftBows.replace("[]", "");//skip nested pairs
-				leftBows = leftBows.replace("()", "");
-				leftBows = leftBows.replace("{}", "");
-				if (leftBows.equals ("[") || leftBows.equals ("{") || leftBows.equals ("(")) {
+				leftBows.insert(0, ch);
+				leftBows = new StringBuilder(leftBows.toString().replace("[]", ""));//skip nested pairs
+				leftBows = new StringBuilder(leftBows.toString().replace("()", ""));
+				leftBows = new StringBuilder(leftBows.toString().replace("{}", ""));
+				if (leftBows.toString().equals ("[") || leftBows.toString().equals ("{") || leftBows.toString().equals ("(")) {
 					start = i;
 					break;
 				}
 			}
 		}
-		String rightBows = "";
+		StringBuilder rightBows = new StringBuilder();
 		for (int i = position ; i < chars.length; i++) {
 			char ch = chars[i];
 			if ("({[]})".indexOf(ch) >= 0) {
-				rightBows += ch;
-				rightBows = rightBows.replace("[]", "");//skip nested pairs
-				rightBows = rightBows.replace("()", "");
-				rightBows = rightBows.replace("{}", "");
-				String pair = leftBows + rightBows;
+				rightBows.append(ch);
+				rightBows = new StringBuilder(rightBows.toString().replace("[]", ""));//skip nested pairs
+				rightBows = new StringBuilder(rightBows.toString().replace("()", ""));
+				rightBows = new StringBuilder(rightBows.toString().replace("{}", ""));
+				String pair = leftBows.toString() + rightBows;
 				if (pair.equals("[]") ||  pair.equals("{}") || pair.equals("()")) {
 					stop = i;
 					break;
@@ -1659,26 +1656,26 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 	
 	public void lostOwnership (Clipboard clip, Transferable cont) {}
 	
-	public int debug(Interpreter interp, int mode) {
+	public void debug(Interpreter interp, int mode) {
 		if (IJ.debugMode)
 			IJ.log("debug: "+interp.getLineNumber()+"  "+mode+"  "+interp);
 		if (mode==RUN_TO_COMPLETION)
-			return 0;
+			return;
 		int n = interp.getLineNumber();
 		if (mode==RUN_TO_CARET) {
 			if (n==runToLine) {
 				mode = STEP;
 				interp.setDebugMode(mode);
 			} else
-				return 0;
+				return;
 		}
 		if (!isVisible()) { // abort macro if user closes window
 			interp.abortMacro();
-			return 0;
+			return;
 		}
 		if (n==previousLine) {
 			previousLine=0;
-			return 0;
+			return;
 		}
 		Window win = WindowManager.getActiveWindow();
 		if (win!=this)
@@ -1706,7 +1703,7 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 		//IJ.log("debug: "+debugStart+"  "+debugEnd+"  "+len+"  "+count);
 		if (debugStart==1) debugStart = 0;
 		if ((debugStart==0||debugStart==len) && debugEnd==len)
-			return 0; // skip code added with Interpreter.setAdditionalFunctions()
+			return; // skip code added with Interpreter.setAdditionalFunctions()
 		ta.select(debugStart, debugEnd);
 		if (debugWindow!=null && !debugWindow.isShowing()) {
 			interp.setDebugger(null);
@@ -1727,7 +1724,6 @@ public class Editor extends PlugInFrame implements ActionListener, ItemListener,
 			else
 				IJ.wait(150);
 		}
-		return 0;
 	}
 		
 	public static Editor getInstance() {

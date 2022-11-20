@@ -2,16 +2,15 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.text.*;
 import ij.measure.Calibration;
-import java.awt.*;
-import java.io.*;
+
+import java.util.Objects;
 
 /** The class implements the Process/FFT/Math command. */
 public class FFTMath implements PlugIn {
 
     private static final int CONJUGATE_MULTIPLY=0, MULTIPLY=1, DIVIDE=2;
-    private static String[] ops = {"Correlate", "Convolve", "Deconvolve"};
+    private static final String[] ops = {"Correlate", "Convolve", "Deconvolve"};
     private static int index1;
     private static int index2;
     private static int operation = CONJUGATE_MULTIPLY;
@@ -33,7 +32,7 @@ public class FFTMath implements PlugIn {
         int nGoodImages = 0;
         for (int i=0; i<wList.length; i++) {
             ImagePlus imp = WindowManager.getImage(wList[i]);
-            if (imp == null || imp.getWidth() != imp.getHeight() || !FHT.isPowerOf2(imp.getWidth()))
+            if (imp == null || imp.getWidth() != imp.getHeight() || FHT.isPowerOf2(imp.getWidth()))
                 wList[i] = 0;               //mark images that are not a power of 2
             else
                 nGoodImages++;
@@ -97,7 +96,7 @@ public class FFTMath implements PlugIn {
         	if (imp2!=imp1)
        	 		h2 = new FHT(ip2);
        	}
-        if (!h1.powerOf2Size()) {
+        if (h1.powerOf2Size()) {
         	IJ.error("FFT Math", "Images must be a power of 2 size (256x256, 512x512, etc.)");
         	return;
         }
@@ -135,7 +134,7 @@ public class FFTMath implements PlugIn {
 		ImagePlus imp3 = null;
 		if (doInverse) {
 			IJ.showStatus("Inverse transform");
-			result.inverseTransform();
+			Objects.requireNonNull(result).inverseTransform();
 			IJ.showStatus("Swap quadrants");
 			result.swapQuadrants();
 			IJ.showStatus("Display image");
@@ -143,7 +142,7 @@ public class FFTMath implements PlugIn {
 			imp3 = new ImagePlus(title, result);
 		} else {
 			IJ.showStatus("Power spectrum");
-			ImageProcessor ps = result.getPowerSpectrum();
+			ImageProcessor ps = Objects.requireNonNull(result).getPowerSpectrum();
 			imp3 = new ImagePlus(title, ps.convertToFloat());
 			result.quadrantSwapNeeded = true;
 			imp3.setProperty("FHT", result);
@@ -151,7 +150,7 @@ public class FFTMath implements PlugIn {
 		Calibration cal1 = imp1.getCalibration();
 		Calibration cal2 = imp2.getCalibration();
 		Calibration cal3 = cal1.scaled() ? cal1 : cal2;
-		if (cal1.scaled() && cal2.scaled() && !cal1.equals(cal2))
+		if (cal1.scaled() && cal2.scaled() && cal1.equals(cal2))
 			cal3 = null;                //can't decide between different calibrations
 		imp3.setCalibration(cal3);
 		cal3 = imp3.getCalibration();   //imp3 has a copy, which we may modify

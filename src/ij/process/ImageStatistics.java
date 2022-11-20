@@ -236,10 +236,7 @@ public class ImageStatistics implements Measurements {
 			ef = new EllipseFitter();
 		ef.fit(ip, this);
 		if (limitToThreshold) {
-			if (originalMask==null)
-				ip.setMask(null);
-			else
-				ip.setMask(originalMask);
+			ip.setMask(originalMask);
 		}
 		double psize = (Math.abs(pw-ph)/pw)<.01?pw:0.0;
 		major = ef.major*psize;

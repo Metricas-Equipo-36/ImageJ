@@ -6,7 +6,9 @@ import java.awt.event.*;
 /** A modal dialog box with a one line message and
 	"Yes", "No" and "Cancel" buttons. */
 public class YesNoCancelDialog extends Dialog implements ActionListener, KeyListener, WindowListener {
-    private Button yesB, noB, cancelB;
+    private final Button yesB;
+    private final Button noB;
+    private final Button cancelB;
     private boolean cancelPressed, yesPressed;
 	private boolean firstPaint = true;
 

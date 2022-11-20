@@ -3,6 +3,7 @@ import ij.*;
 import ij.process.*;
 import java.awt.*;
 import java.awt.geom.*;
+import java.util.Objects;
 
 
 /** This is an Roi subclass for creating and displaying arrows. */
@@ -23,9 +24,9 @@ public class Arrow extends Line {
 	private double headSize = 10;  // 0-30
 	private boolean doubleHeaded;
 	private boolean outline;
-	private float[] points = new float[2*5];
+	private final float[] points = new float[2*5];
 	private GeneralPath path = new GeneralPath();
-	private static Stroke defaultStroke = new BasicStroke();
+	private static final Stroke defaultStroke = new BasicStroke();
 	double headShaftRatio;
 	
 	static {
@@ -89,7 +90,7 @@ public class Arrow extends Line {
 		if (state!=NORMAL && imp!=null && imp.getRoi()!=null)
 			showStatus();
 		if (updateFullWindow) 
-			{updateFullWindow = false; imp.draw();}
+			{updateFullWindow = false; Objects.requireNonNull(imp).draw();}
 	}
 		
 	private void flipEnds() {
@@ -107,8 +108,8 @@ public class Arrow extends Line {
 		calculatePoints();
 		float tailx = points[0];
 		float taily = points[1];
-		float headbackx = points[2*1];
-		float headbacky = points[2*1+1];
+		float headbackx = points[2];
+		float headbacky = points[2 +1];
 		float headtipx = points[2*3];
 		float headtipy = points[2*3+1];
 		if (outline) {
@@ -121,7 +122,6 @@ public class Arrow extends Line {
 			headShaftRatio = headLength/shaftLength;
 			if (headShaftRatio>1.0)
 				headShaftRatio = 1.0;
-			//IJ.log(headShaftRatio+" "+(int)shaftLength+" "+(int)headLength+" "+(int)tailx+" "+(int)taily+" "+(int)headtipx+" "+(int)headtipy);
 		}
 		path.moveTo(tailx, taily); // tail
 		path.lineTo(headbackx, headbacky); // head back
@@ -180,46 +180,46 @@ public class Arrow extends Line {
 			case FILLED: case HEADLESS:
 				tip = Math.toRadians(20.0);
 				base = Math.toRadians(90.0);
-				points[1*2]   = (float) (points[2*3]	- length*Math.cos(alpha));
-				points[1*2+1] = (float) (points[2*3+1] - length*Math.sin(alpha));
-				SL = length*Math.sin(base)/Math.sin(base+tip);;
+				points[2]   = (float) (points[2*3]	- length*Math.cos(alpha));
+				points[2 +1] = (float) (points[2*3+1] - length*Math.sin(alpha));
+				SL = length*Math.sin(base)/Math.sin(base+tip);
 				break;
 			case NOTCHED:
 				tip = Math.toRadians(20);
 				base = Math.toRadians(120);
-				points[1*2]   = (float) (points[2*3] - length*Math.cos(alpha));
-				points[1*2+1] = (float) (points[2*3+1] - length*Math.sin(alpha));
-				SL = length*Math.sin(base)/Math.sin(base+tip);;
+				points[2]   = (float) (points[6] - length*Math.cos(alpha));
+				points[3] = (float) (points[7] - length*Math.sin(alpha));
+				SL = length*Math.sin(base)/Math.sin(base+tip);
 				break;
 			case OPEN:
 				tip = Math.toRadians(25); //30
-				points[1*2] = points[2*3];
-				points[1*2+1] = points[2*3+1];
+				points[2] = points[6];
+				points[3] = points[7];
 				SL = length;
 				break;
 			case BAR:
 				tip = Math.toRadians(90); //30
-				points[1*2] = points[2*3];
-				points[1*2+1] = points[2*3+1];
+				points[2] = points[6];
+				points[3] = points[7];
 				SL = length;
 				updateFullWindow = true;
 				break;       
 		}
 		// P2 = P3 - SL*alpha+tip
-		points[2*2] = (float) (points[2*3]	- SL*Math.cos(alpha+tip));
-		points[2*2+1] = (float) (points[2*3+1] - SL*Math.sin(alpha+tip));
+		points[4] = (float) (points[6]	- SL*Math.cos(alpha+tip));
+		points[5] = (float) (points[7] - SL*Math.sin(alpha+tip));
 		// P4 = P3 - SL*alpha-tip
-		points[2*4]   = (float) (points[2*3]	- SL*Math.cos(alpha-tip));
-		points[2*4+1] = (float) (points[2*3+1] - SL*Math.sin(alpha-tip));
+		points[8]   = (float) (points[6]	- SL*Math.cos(alpha-tip));
+		points[9] = (float) (points[7] - SL*Math.sin(alpha-tip));
  	}
  	
 	private Shape getShape() {
 		Shape arrow = getPath();
-		BasicStroke stroke = new BasicStroke((float)getStrokeWidth(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
+		BasicStroke stroke = new BasicStroke(getStrokeWidth(), BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER);
 		Shape outlineShape = stroke.createStrokedShape(arrow);
 		Area a1 = new Area(arrow);
 		Area a2 = new Area(outlineShape);
-		try {a1.add(a2);} catch(Exception e) {};
+		try {a1.add(a2);} catch(Exception e) {}
 		return a1;
 	}
 
@@ -244,9 +244,6 @@ public class Arrow extends Line {
 		double head = headSize/7.0;
 		double lineWidth = width + head + headShaftRatio;
 		if (lineWidth<1.0) lineWidth = 1.0;
-		//if (width<1) width=1;
-		//if (head<1) head=1;
-		//IJ.log(getStrokeWidth()+"  "+IJ.d2s(width,2)+"  "+IJ.d2s(head,2)+"  "+IJ.d2s(headShaftRatio,2)+"  "+IJ.d2s(lineWidth,2)+"  "+IJ.d2s(width*head,2));
 		return lineWidth;
 	}
 	
@@ -262,7 +259,7 @@ public class Arrow extends Line {
 			int lineWidth = ip.getLineWidth();
 			ip.setLineWidth((int)Math.round(getOutlineWidth()));
 			shapeRoi.drawPixels(ip);
-			if (doubleHeaded) shapeRoi2.drawPixels(ip);
+			if (doubleHeaded) Objects.requireNonNull(shapeRoi2).drawPixels(ip);
 			ip.setLineWidth(lineWidth);
 		} else {
 			ip.fill(shapeRoi);

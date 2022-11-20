@@ -4,12 +4,11 @@ import ij.gui.*;
 import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
 import java.util.Vector;
 
 /** This plugin implements the Edit/Options/Startup command. */
 	public class Startup implements PlugIn, ItemListener {
-		private static String NAME = "RunAtStartup.ijm";
+		private static final String NAME = "RunAtStartup.ijm";
 		private GenericDialog gd;
 		private static final String[] code = {
 			"[Select from list]",
@@ -72,10 +71,7 @@ import java.util.Vector;
 	private boolean runMacro(String macro) {
 		Interpreter interp = new Interpreter();
 		interp.run(macro, null);
-		if (interp.wasError())
-			return false;
-		else
-			return true;
+		return !interp.wasError();
 	}
 				
 	public void itemStateChanged(ItemEvent e) {

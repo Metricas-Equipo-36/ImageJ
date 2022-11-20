@@ -1,10 +1,9 @@
 package ij.gui;
 import java.awt.*;
-import java.awt.image.*;
-import java.util.Properties;
 import java.awt.event.*;
+import java.util.Objects;
+
 import ij.*;
-import ij.process.*;
 import ij.io.*;
 import ij.measure.*;
 import ij.plugin.frame.*;
@@ -191,7 +190,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 					if (xbase+width>maxWindow.x+maxWindow.width) {
 						xbase = maxWindow.x+maxWindow.width - width - 10;
 						if (xbase<maxWindow.x)
-							xbase = maxWindow.x + 5;;
+							xbase = maxWindow.x + 5;
 					}
 					ybase = ijBounds.y + ijBounds.height + 5;
 				} else {
@@ -247,10 +246,6 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			setLocation(x, y);
 			initialLoc = new Point(x,y);
 		}
-	}
-
-	Rectangle getMaxWindow(int xloc, int yloc) {
-		return GUI.getMaxWindowBounds(new Point(xloc, yloc));
 	}
 
 	public double getInitialMagnification() {
@@ -478,8 +473,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 	public void updateImage(ImagePlus imp) {
         if (imp!=this.imp)
             throw new IllegalArgumentException("imp!=this.imp");
-		this.imp = imp;
-        ic.updateImage(imp);
+		ic.updateImage(imp);
         setLocationAndSize(true);
         if (this instanceof StackWindow) {
         	StackWindow sw = (StackWindow)this;
@@ -672,7 +666,7 @@ public class ImageWindow extends Frame implements FocusListener, WindowListener,
 			if (srcRect.y+srcRect.height>height) srcRect.y = height-srcRect.height;
 		}
 		if (srcRect.x!=xstart || srcRect.y!=ystart)
-			ic.repaint();
+			Objects.requireNonNull(ic).repaint();
 	}
 
 	/** Copies the current ROI to the clipboard. The entire

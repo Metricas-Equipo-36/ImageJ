@@ -12,7 +12,7 @@ import java.awt.*;
 	which plots the selection mean gray value versus slice number.
 */
 public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
-	private static String[] choices = {"time", "z-axis"};
+	private static final String[] choices = {"time", "z-axis"};
 	private static String choice = choices[0];
 	private boolean showingDialog;
 	private ImagePlus imp;
@@ -165,9 +165,7 @@ public class ZAxisProfiler implements PlugIn, Measurements, PlotMaker {
 			timeProfile = frames>1 && !options.contains("z");
 		if (timeProfile)
 			size = frames;
-		else
-			size = slices;
-		float[] values = new float[size];
+        float[] values = new float[size];
 		Calibration cal = imp.getCalibration();
 		ResultsTable rt = new ResultsTable();
 		Analyzer analyzer = new Analyzer(imp, rt);

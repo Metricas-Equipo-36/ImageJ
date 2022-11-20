@@ -107,10 +107,7 @@ public class URLOpener implements PlugIn {
 		int lastSlash = url.lastIndexOf("/");
 		if (lastSlash==-1) lastSlash = 0;
 		int lastDot = url.lastIndexOf(".");
-		if (lastDot==-1 || lastDot<lastSlash || (url.length()-lastDot)>6)
-			return true;  // no extension
-		else
-			return false;
+		return lastDot == -1 || lastDot < lastSlash || (url.length() - lastDot) > 6;  // no extension
 	}
 	
 	void openTextFile(String urlString, boolean install) {
@@ -122,7 +119,7 @@ public class URLOpener implements PlugIn {
 			sb = new StringBuffer() ;
 			String line;
 			while ((line=br.readLine()) != null)
-				sb.append (line + "\n");
+				sb.append(line).append("\n");
 			in.close ();
 		} catch (IOException e) {
 			if  (!(install&&urlString.endsWith("StartupMacros.txt")))
@@ -169,7 +166,7 @@ public class URLOpener implements PlugIn {
 				IJ.log(names[i]+": "+e);
 			}
 			if (IJ.escapePressed())
-				{IJ.beep(); break;};
+				{IJ.beep(); break;}
 		}
 		IJ.showStatus("");
 	}
@@ -192,7 +189,7 @@ public class URLOpener implements PlugIn {
 			String name = items[1];
 			list.add(name);
 		}
-		return (String[])list.toArray(new String[list.size()]);
+		return (String[])list.toArray(new String[0]);
 	}
 
 }

@@ -14,17 +14,13 @@ import ij.measure.Calibration;
 import ij.measure.ResultsTable;
 import ij.measure.Measurements;
 import java.awt.event.*;
+import java.nio.charset.StandardCharsets;
 import java.text.*;
 import java.util.*;	
 import java.awt.*;	
 import java.applet.Applet;
 import java.io.*;
-import java.lang.reflect.*;
 import java.net.*;
-import javax.net.ssl.*;
-import java.security.cert.*;
-import java.security.KeyStore;
-import java.nio.ByteBuffer;
 import java.math.RoundingMode;
 
 
@@ -32,9 +28,9 @@ import java.math.RoundingMode;
 public class IJ {
 
 	/** SansSerif, plain, 10-point font */
-	public static Font font10 = new Font("SansSerif", Font.PLAIN, 10);
+	public static final Font font10 = new Font("SansSerif", Font.PLAIN, 10);
 	/** SansSerif, plain, 12-point font */
-	public static Font font12 = ImageJ.SansSerif12;
+	public static final Font font12 = ImageJ.SansSerif12;
 	
 	/** Image display modes */
 	public static final int COMPOSITE=1, COLOR=2, GRAYSCALE=3;
@@ -55,9 +51,13 @@ public class IJ {
 	private static java.applet.Applet applet;
 	private static ProgressBar progressBar;
 	private static TextPanel textPanel;
-	private static String osname, osarch;
-	private static boolean isMac, isWin, isLinux, is64Bit;
-	private static int javaVersion;
+	private static final String osname;
+	private static String osarch;
+	private static final boolean isMac;
+	private static final boolean isWin;
+	private static final boolean isLinux;
+	private static boolean is64Bit;
+	private static final int javaVersion;
 	private static boolean controlDown, altDown, spaceDown, shiftDown;
 	private static boolean macroRunning;
 	private static Thread previousThread;
@@ -69,12 +69,11 @@ public class IJ {
 	private static boolean redirectErrorMessages;
 	private static boolean suppressPluginNotFoundError;
 	private static Hashtable commandTable;
-	private static Vector eventListeners = new Vector();
+	private static final Vector eventListeners = new Vector();
 	private static String lastErrorMessage;
-	private static Properties properties;	private static DecimalFormat[] df;
+	private static Properties properties;	private static final DecimalFormat[] df;
 	private static DecimalFormat[] sf;
 	private static DecimalFormatSymbols dfs;
-	private static boolean trustManagerCreated;
 	private static String smoothMacro;
 	private static Interpreter macroInterpreter;
 	private static boolean protectStatusBar;
@@ -170,21 +169,25 @@ public class IJ {
 		return mr.runMacroFile(name, arg);
 	}
 
-	/** Runs the specified macro file. */
-	public static String runMacroFile(String name) {
-		return runMacroFile(name, null);
+	/**
+	 * Runs the specified macro file.
+	 */
+	public static void runMacroFile(String name) {
+		runMacroFile(name, null);
 	}
 
-	/** Runs the specified plugin using the specified image. */
-	public static Object runPlugIn(ImagePlus imp, String className, String arg) {
+	/**
+	 * Runs the specified plugin using the specified image.
+	 */
+	public static void runPlugIn(ImagePlus imp, String className, String arg) {
 		if (imp!=null) {
 			ImagePlus temp = WindowManager.getTempCurrentImage();
 			WindowManager.setTempCurrentImage(imp);
 			Object o = runPlugIn("", className, arg);
 			WindowManager.setTempCurrentImage(temp);
-			return o;
-		} else
-			return runPlugIn(className, arg);
+		} else {
+			runPlugIn(className, arg);
+		}
 	}
 
 	/** Runs the specified plugin and returns a reference to it. */
@@ -210,11 +213,10 @@ public class IJ {
  			else
 				new PlugInFilterRunner(thePlugIn, commandName, arg);
 		} catch (ClassNotFoundException e) {
-			if (!(className!=null && className.startsWith("ij.plugin.MacAdapter"))) {
+			if (!className.startsWith("ij.plugin.MacAdapter")) {
 				log("Plugin or class not found: \"" + className + "\"\n(" + e+")");
 				String path = Prefs.getCustomPropsPath();
-				if (path!=null);
-					log("Error may be due to custom properties at " + path);
+				log("Error may be due to custom properties at " + path);
 			}
 		}
 		catch (InstantiationException e) {log("Unable to load plugin (ins)");}
@@ -266,16 +268,6 @@ public class IJ {
 		return arg!=null && !arg.equals("") && !arg.contains("\n")?"(\""+arg+"\")":"";
 	}
 
-	static void wrongType(int capabilities, String cmd) {
-		String s = "\""+cmd+"\" requires an image of type:\n \n";
-		if ((capabilities&PlugInFilter.DOES_8G)!=0) s +=  "    8-bit grayscale\n";
-		if ((capabilities&PlugInFilter.DOES_8C)!=0) s +=  "    8-bit color\n";
-		if ((capabilities&PlugInFilter.DOES_16)!=0) s +=  "    16-bit grayscale\n";
-		if ((capabilities&PlugInFilter.DOES_32)!=0) s +=  "    32-bit (float) grayscale\n";
-		if ((capabilities&PlugInFilter.DOES_RGB)!=0) s += "    RGB color\n";
-		error(s);
-	}
-	
     /** Runs a menu command on a separete thread and returns immediately. */
 	public static void doCommand(String command) {
 		new Executer(command, null);
@@ -458,7 +450,7 @@ public class IJ {
 			ImagePlus imp = WindowManager.getCurrentImage();
 			ImageCanvas ic = imp!=null?imp.getCanvas():null;
 			if (ic!=null)
-				ic.setShowCursorStatus(s.length()==0?true:false);
+				ic.setShowCursorStatus(s.length() == 0);
 		}
 	}
 	
@@ -519,7 +511,7 @@ public class IJ {
 		} else if (ij!=null) {
 			ij.getStatusBar().setBackground(color);
 			wait(delay);
-			ij.getStatusBar().setBackground(ij.backgroundColor);
+			ij.getStatusBar().setBackground(ImageJ.backgroundColor);
 		}
 	}
 	
@@ -576,7 +568,7 @@ public class IJ {
 			logPanel = null;
 		else if (s.startsWith("\\Update:")) {
 			int n = logPanel.getLineCount();
-			String s2 = s.substring(8, s.length());
+			String s2 = s.substring(8);
 			if (n==0)
 				logPanel.append(s2);
 			else
@@ -594,7 +586,7 @@ public class IJ {
 				log("");
 				count++;
 			}
-			String s2 = s.substring(cindex+1, s.length());
+			String s2 = s.substring(cindex+1);
 			logPanel.setLine(line, s2);
 		} else if (s.equals("\\Clear")) {
 			logPanel.clear();
@@ -602,7 +594,7 @@ public class IJ {
 			logPanel.updateColumnHeadings(s.substring(10));
 		} else if (s.equals("\\Close")) {
 			Frame f = WindowManager.getFrame("Log");
-			if (f!=null && (f instanceof TextWindow))
+			if ((f instanceof TextWindow))
 				((TextWindow)f).close();
 		} else
 			logPanel.append(s);
@@ -636,7 +628,7 @@ public class IJ {
 	/** Renames a results window. */
 	public static void renameResults(String title) {
 		Frame frame = WindowManager.getFrontWindow();
-		if (frame!=null && (frame instanceof TextWindow)) {
+		if ((frame instanceof TextWindow)) {
 			TextWindow tw = (TextWindow)frame;
 			if (tw.getResultsTable()==null) {
 				IJ.error("Rename", "\""+tw.getTitle()+"\" is not a results table");
@@ -655,7 +647,6 @@ public class IJ {
 		Frame frame = WindowManager.getFrame(oldTitle);
 		if (frame==null) {
 			error("Rename", "\""+oldTitle+"\" not found");
-			return;
 		} else if (frame instanceof TextWindow) {
 			TextWindow tw = (TextWindow)frame;
 			if (tw.getResultsTable()==null) {
@@ -694,7 +685,7 @@ public class IJ {
 		int index = measurement.indexOf(" ");
 		if (index>0) {
 			if (index<measurement.length()-1)
-				options = measurement.substring(index+1, measurement.length());
+				options = measurement.substring(index+1);
 			measurement = measurement.substring(0, index);
 		}
 		int measurements = Measurements.ALL_STATS + Measurements.SLICE;
@@ -711,7 +702,7 @@ public class IJ {
 		double value = Double.NaN;
 		try {
 			value = rt.getValue(measurement, 0);
-		} catch (Exception e) {};
+		} catch (Exception e) {}
 		if (cal!=null)
 			imp.setCalibration(cal);
 		return value;
@@ -1015,7 +1006,6 @@ public class IJ {
 			}
 			return sf[decimalPlaces].format(n); // use scientific notation
 		}
-		if (decimalPlaces<0) decimalPlaces = 0;
 		if (decimalPlaces>9) decimalPlaces = 9;
 		return df[decimalPlaces].format(n);
 	}
@@ -1043,18 +1033,18 @@ public class IJ {
 
 	/** Pad 'n' with leading zeros to the specified number of digits. */
 	public static String pad(int n, int digits) {
-		String str = ""+n;
+		StringBuilder str = new StringBuilder("" + n);
 		while (str.length()<digits)
-			str = "0"+str;
-		return str;
+			str.insert(0, "0");
+		return str.toString();
 	}
 
 	/** Pad 's' with leading zeros to the specified number of digits. */
 	public static String pad(String s, int digits) {
-		String str = ""+s;
+		StringBuilder str = new StringBuilder("" + s);
 		while (str.length()<digits)
-			str = "0"+str;
-		return str;
+			str.insert(0, "0");
+		return str.toString();
 	}
 
 	/** Obsolete */
@@ -1167,21 +1157,6 @@ public class IJ {
 	public static boolean isJava2() {
 		return true;
 	}
-	
-	/** Always returns true. */
-	public static boolean isJava14() {
-		return true;
-	}
-
-	/** Always returns true. */
-	public static boolean isJava15() {
-		return true;
-	}
-
-	/** Returns true if ImageJ is running on a Java 1.6 or greater JVM. */
-	public static boolean isJava16() {
-		return javaVersion >= 6;
-	}
 
 	/** Returns true if ImageJ is running on a Java 1.7 or greater JVM. */
 	public static boolean isJava17() {
@@ -1203,16 +1178,11 @@ public class IJ {
 		return isLinux;
 	}
 
-	/** Obsolete; always returns false. */
-	public static boolean isVista() {
-		return false;
-	}
-	
 	/** Returns true if ImageJ is running a 64-bit version of Java. */
 	public static boolean is64Bit() {
 		if (osarch==null)
 			osarch = System.getProperty("os.arch");
-		return osarch!=null && osarch.indexOf("64")!=-1;
+		return osarch!=null && osarch.contains("64");
 	}
 
 	/** Displays an error message and returns true if the
@@ -1440,14 +1410,6 @@ public class IJ {
 		setRawThreshold(img, lowerThreshold, upperThreshold, displayMode);
 	}
 
-	/** This is a version of setThreshold() that uses raw (uncalibrated)
-	 * values in the range 0-255 for 8-bit images and 0-65535 for 16-bit
-	 * images and the "Red" LUT display mode.
-	*/
-	public static void setRawThreshold(ImagePlus img, double lowerThreshold, double upperThreshold) {
-		setRawThreshold(img, lowerThreshold, upperThreshold, null);
-	}
-
 	/** This is a version of setThreshold() that always uses raw (uncalibrated) values
 	 * in the range 0-255 for 8-bit images and 0-65535 for 16-bit images.
 	*/
@@ -1567,7 +1529,7 @@ public class IJ {
 			long start = System.currentTimeMillis();
 			// timeout after 1 second unless current thread is event dispatch thread
 			String thread = Thread.currentThread().getName();
-			int timeout = thread!=null&&thread.indexOf("EventQueue")!=-1?0:1000;
+			int timeout = thread!=null&& thread.contains("EventQueue") ?0:1000;
 			if (IJ.isMacOSX() && IJ.isJava18() && timeout>0)
 				timeout = 250;  //work around OS X/Java 8 window activation bug
 			while (true) {
@@ -1614,10 +1576,10 @@ public class IJ {
 	
 	static void selectWindow(Window win) {
 		if (win instanceof Frame) {
-			((Frame)win).toFront();
+			win.toFront();
 			((Frame)win).setState(Frame.NORMAL);
 		} else
-			((Dialog)win).toFront();
+			win.toFront();
 		long start = System.currentTimeMillis();
 		while (true) {
 			wait(10);
@@ -1674,15 +1636,16 @@ public class IJ {
 		return doWand(getImage(), x, y, 0, null);
 	}
 
-	/** Traces the boundary of the area with pixel values within
-	* 'tolerance' of the value of the pixel at the starting location.
-	* 'tolerance' is in uncalibrated units.
-	* 'mode' can be "4-connected", "8-connected" or "Legacy".
-	* "Legacy" is for compatibility with previous versions of ImageJ;
-	* it is ignored if 'tolerance' > 0.
-	*/
-	public static int doWand(int x, int y, double tolerance, String mode) {
-		return doWand(getImage(), x, y, tolerance, mode);
+	/**
+	 * Traces the boundary of the area with pixel values within
+	 * 'tolerance' of the value of the pixel at the starting location.
+	 * 'tolerance' is in uncalibrated units.
+	 * 'mode' can be "4-connected", "8-connected" or "Legacy".
+	 * "Legacy" is for compatibility with previous versions of ImageJ;
+	 * it is ignored if 'tolerance' > 0.
+	 */
+	public static void doWand(int x, int y, double tolerance, String mode) {
+		doWand(getImage(), x, y, tolerance, mode);
 	}
 	
 	/** This version of doWand adds an ImagePlus argument. */
@@ -1745,7 +1708,7 @@ public class IJ {
 			m = Blitter.AVERAGE;
 		else if (mode.startsWith("diff"))
 			m = Blitter.DIFFERENCE;
-		else if (mode.indexOf("zero")!=-1)
+		else if (mode.contains("zero"))
 			m = Blitter.COPY_ZERO_TRANSPARENT;
 		else if (mode.startsWith("tran"))
 			m = Blitter.COPY_TRANSPARENT;
@@ -1813,10 +1776,7 @@ public class IJ {
 		example "1.46n05", or 1.46n99 if there is no build number. */
 	public static String getFullVersion() {
 		String build = ImageJ.BUILD;
-		if (build.length()==0)
-			build = "99";
-		else if (build.length()==1)
-			build = "0" + build;
+		build = "99";
 		return ImageJ.VERSION+build;
 	}
 		
@@ -1840,10 +1800,7 @@ public class IJ {
 			dir = Menus.getMacrosPath();
 		else if (title2.equals("luts")) {
 			String ijdir = Prefs.getImageJDir();
-			if (ijdir!=null)
-				dir = ijdir + "luts" + File.separator;
-			else
-				dir = null;
+			dir = ijdir + "luts" + File.separator;
 		} else if (title2.equals("home"))
 			dir = System.getProperty("user.home");
 		else if (title2.equals("downloads"))
@@ -1864,8 +1821,7 @@ public class IJ {
 			FileInfo fi = imp!=null?imp.getOriginalFileInfo():null;
 			if (fi!=null && fi.directory!=null) {
 				dir = fi.directory;
-			} else
-				dir = null;
+			}
 		} else if (title2.equals("file"))
 			dir = OpenDialog.getLastDirectory();
 		else if (title2.equals("cwd"))
@@ -1985,63 +1941,17 @@ public class IJ {
 			if (len>5242880L)
 				return "<Error: file is larger than 5MB>";
 			InputStream in = u.openStream();
-			BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+			BufferedReader br = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 			sb = new StringBuffer() ;
 			String line;
 			while ((line=br.readLine()) != null)
-				sb.append (line + "\n");
+				sb.append(line).append("\n");
 			in.close ();
 		} catch (Exception e) {
 			return("<Error: "+e+">");
 		}
-		if (sb!=null)
-			return new String(sb);
-		else
-			return "";
+		return new String(sb);
 	}
-	
-	/* 
-	public static void addRootCA() throws Exception {
-		String path = "/Users/wayne/Downloads/Certificates/lets-encrypt-x1-cross-signed.pem";
-		InputStream fis = new BufferedInputStream(new FileInputStream(path));
-		Certificate ca = CertificateFactory.getInstance("X.509").generateCertificate(fis);
-		KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
-		ks.load(null, null);
-		ks.setCertificateEntry(Integer.toString(1), ca);
-		TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-		tmf.init(ks);
-		SSLContext ctx = SSLContext.getInstance("TLS");
-		ctx.init(null, tmf.getTrustManagers(), null); 
-		HttpsURLConnection.setDefaultSSLSocketFactory(ctx.getSocketFactory());
-	}
-	*/
-	
-	/*
-	// Create a new trust manager that trust all certificates
-	// http://stackoverflow.com/questions/10135074/download-file-from-https-server-using-java
-	private static void trustAllCerts() {
-		trustManagerCreated = true;
-		TrustManager[] trustAllCerts = new TrustManager[] {
-			new X509TrustManager() {
-				public java.security.cert.X509Certificate[] getAcceptedIssuers() {
-					return null;
-				}
-				public void checkClientTrusted (java.security.cert.X509Certificate[] certs, String authType) {
-				}
-				public void checkServerTrusted (java.security.cert.X509Certificate[] certs, String authType) {
-				}
-			}
-		};
-		// Activate the new trust manager
-		try {
-			SSLContext sc = SSLContext.getInstance("SSL");
-			sc.init(null, trustAllCerts, new java.security.SecureRandom());
-			HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
-		} catch (Exception e) {
-			IJ.log(""+e);
-		}
-	}
-	*/
 
 	/** Saves the current image, lookup table, selection or text window to the specified file path. 
 		The path must end in ".tif", ".jpg", ".gif", ".zip", ".raw", ".avi", ".bmp", ".fits", ".pgm", ".png", ".lut", ".roi" or ".txt".  */
@@ -2092,46 +2002,46 @@ public class IJ {
 		Roi roi2 = imp!=null?imp.getRoi():null;
 		if (roi2!=null)
 			roi2.endPaste();
-		if (format.indexOf("tif")!=-1) {
+		if (format.contains("tif")) {
 			saveAsTiff(imp, path);
 			return;
-		} else if (format.indexOf("jpeg")!=-1 || format.indexOf("jpg")!=-1) {
+		} else if (format.contains("jpeg") || format.contains("jpg")) {
 			path = updateExtension(path, ".jpg");
 			JpegWriter.save(imp, path, FileSaver.getJpegQuality());
 			return;
-		} else if (format.indexOf("gif")!=-1) {
+		} else if (format.contains("gif")) {
 			path = updateExtension(path, ".gif");
 			GifWriter.save(imp, path);
 			return;
-		} else if (format.indexOf("text image")!=-1) {
+		} else if (format.contains("text image")) {
 			path = updateExtension(path, ".txt");
 			format = "Text Image...";
-		} else if (format.indexOf("text")!=-1 || format.indexOf("txt")!=-1) {
+		} else if (format.contains("text") || format.contains("txt")) {
 			if (path!=null && !path.endsWith(".xls") && !path.endsWith(".csv") && !path.endsWith(".tsv"))
 				path = updateExtension(path, ".txt");
 			format = "Text...";
-		} else if (format.indexOf("zip")!=-1) {
+		} else if (format.contains("zip")) {
 			path = updateExtension(path, ".zip");
 			format = "ZIP...";
-		} else if (format.indexOf("raw")!=-1) {
+		} else if (format.contains("raw")) {
 			//path = updateExtension(path, ".raw");
 			format = "Raw Data...";
-		} else if (format.indexOf("avi")!=-1) {
+		} else if (format.contains("avi")) {
 			path = updateExtension(path, ".avi");
 			format = "AVI... ";
-		} else if (format.indexOf("bmp")!=-1) {
+		} else if (format.contains("bmp")) {
 			path = updateExtension(path, ".bmp");
 			format = "BMP...";
-		} else if (format.indexOf("fits")!=-1) {
+		} else if (format.contains("fits")) {
 			path = updateExtension(path, ".fits");
 			format = "FITS...";
-		} else if (format.indexOf("png")!=-1) {
+		} else if (format.contains("png")) {
 			path = updateExtension(path, ".png");
 			format = "PNG...";
-		} else if (format.indexOf("pgm")!=-1) {
+		} else if (format.contains("pgm")) {
 			path = updateExtension(path, ".pgm");
 			format = "PGM...";
-		} else if (format.indexOf("lut")!=-1) {
+		} else if (format.contains("lut")) {
 			path = updateExtension(path, ".lut");
 			format = "LUT...";
 		} else if (format.contains("results") || format.contains("measurements") || format.contains("table")) {
@@ -2139,7 +2049,7 @@ public class IJ {
 		} else if (format.contains("selection") || format.contains("roi")) {
 			path = updateExtension(path, ".roi");
 			format = "Selection...";
-		} else if (format.indexOf("xy")!=-1 || format.indexOf("coordinates")!=-1) {
+		} else if (format.contains("xy") || format.contains("coordinates")) {
 			path = updateExtension(path, ".txt");
 			format = "XY Coordinates...";
 		} else
@@ -2154,14 +2064,18 @@ public class IJ {
 		}
 	}
 	
-	/** Saves the specified image in TIFF format. Displays a file save dialog
-		if 'path' is null or an empty string. Returns 'false' if there is an
-		error or if the user selects "Cancel" in the file save dialog. */
-	public static boolean saveAsTiff(ImagePlus imp, String path) {
+	/**
+	 * Saves the specified image in TIFF format. Displays a file save dialog
+	 * if 'path' is null or an empty string. Returns 'false' if there is an
+	 * error or if the user selects "Cancel" in the file save dialog.
+	 */
+	public static void saveAsTiff(ImagePlus imp, String path) {
 		if (imp==null)
 			imp = getImage();
-		if (path==null || path.equals(""))
-			return (new FileSaver(imp)).saveAsTiff();
+		if (path==null || path.equals("")) {
+			(new FileSaver(imp)).saveAsTiff();
+			return;
+		}
 		if (!path.endsWith(".tiff"))
 			path = updateExtension(path, ".tif");
 		FileSaver fs = new FileSaver(imp);
@@ -2172,7 +2086,6 @@ public class IJ {
 			ok = fs.saveAsTiff(path);
 		if (ok)
 			fs.updateImagePlus(path, FileInfo.TIFF);
-		return ok;
 	}
 	
 	static String updateExtension(String path, String extension) {
@@ -2245,7 +2158,7 @@ public class IJ {
 				if (s==null)
 					break;
 				else
-					sb.append(s+"\n");
+					sb.append(s).append("\n");
 			}
 			r.close();
 			str = new String(sb);
@@ -2254,34 +2167,6 @@ public class IJ {
 			str = "Error: "+e.getMessage();
 		}
 		return str;
-	}
-	
-	public static ByteBuffer openAsByteBuffer(String path) {
-		if (path==null || path.equals("")) {
-			OpenDialog od = new OpenDialog("Open as ByteBuffer", "");
-			String directory = od.getDirectory();
-			String name = od.getFileName();
-			if (name==null) return null;
-			path = directory + name;
-		}
-		File file = new File(path);
-		if (!file.exists()) {
-			error("OpenAsByteBuffer", "File not found");
-			return null;
-		}
-		int len = (int)file.length();
-		byte[] buffer = new byte[len];
-		try {
-			InputStream in = new BufferedInputStream(new FileInputStream(path));
-			DataInputStream dis = new DataInputStream(in);
-			dis.readFully(buffer);
-			dis.close();
-		}
-		catch (Exception e) {
-			error("OpenAsByteBuffer", e.getMessage());
-			return null;
-		}
-		return ByteBuffer.wrap(buffer);
 	}
 
 	/** Creates a new image.
@@ -2413,16 +2298,6 @@ public class IJ {
 		lastErrorMessage = null;
 	}
 
-	/** Returns the state of the  'redirectErrorMessages' flag, which is set by File/Import/Image Sequence. */
-	public static boolean redirectingErrorMessages() {
-		return redirectErrorMessages;
-	}
-
-	/** Temporarily suppress "plugin not found" errors. */
-	public static void suppressPluginNotFoundError() {
-		suppressPluginNotFoundError = true;
-	}
-
 	/** Returns the class loader ImageJ uses to run plugins or the
 		system class loader if Menus.getPlugInsPath() returns null. */
 	public static ClassLoader getClassLoader() {
@@ -2476,7 +2351,7 @@ public class IJ {
 			if (command==null || command.startsWith("ij.plugin.LutLoader"))
 				list.add(label);
 		}
-		return (String[])list.toArray(new String[list.size()]);
+		return (String[])list.toArray(new String[0]);
 	}
 	
 	static void abort() {
@@ -2484,12 +2359,12 @@ public class IJ {
 			throw new RuntimeException(Macro.MACRO_CANCELED);
 	}
 	
-	static void setClassLoader(ClassLoader loader) {
-		classLoader = loader;
+	static void setClassLoader() {
+		classLoader = null;
 	}
 
 	public static void resetClassLoader() {
-		setClassLoader(null);
+		setClassLoader();
 	}
 
 	/** Displays a stack trace. Use the setExceptionHandler 
@@ -2525,7 +2400,7 @@ public class IJ {
 	}
 
 	public interface ExceptionHandler {
-		public void handle(Throwable e);
+		void handle(Throwable e);
 	}
 
 	static ExceptionHandler exceptionHandler;

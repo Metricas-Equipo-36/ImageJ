@@ -20,7 +20,7 @@ public class Rotator implements ExtendedPlugInFilter, DialogListener {
 	private boolean isEnlarged;
 	private GenericDialog gd;
 	private PlugInFilterRunner pfr;
-	private String[] methods = ImageProcessor.getInterpolationMethods();
+	private final String[] methods = ImageProcessor.getInterpolationMethods();
 	private static int interpolationMethod = ImageProcessor.BILINEAR;
 	private Overlay overlay;
 	private boolean done;

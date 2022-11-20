@@ -17,8 +17,8 @@ import java.io.PrintStream;
  */
 public class LogStream extends PrintStream {
 	
-	private static String outPrefix = "out> ";	// prefix string for System.out
-	private static String errPrefix = "err >";	// prefix string for System.err
+	private static final String outPrefix = "out> ";	// prefix string for System.out
+	private static final String errPrefix = "err >";	// prefix string for System.err
 	
 	private static PrintStream originalSystemOut = null;
 	private static PrintStream originalSystemErr = null;
@@ -138,7 +138,7 @@ public class LogStream extends PrintStream {
 	// ----------------------------------------------------------------
 	
 	private final String endOfLineSystem = System.getProperty("line.separator"); 
-	private final String endOfLineShort = String.format("\n"); 	
+	private final String endOfLineShort = "\n";
 	private final ByteArrayOutputStream byteStream;
 	private final String prefix;
 	

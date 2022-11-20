@@ -6,11 +6,11 @@ package ij;
 	*/
 	public interface ImageListener {
 
-	public void imageOpened(ImagePlus imp);
+	void imageOpened(ImagePlus imp);
 
-	public void imageClosed(ImagePlus imp);
+	void imageClosed(ImagePlus imp);
 
-	public void imageUpdated(ImagePlus imp);
+	void imageUpdated(ImagePlus imp);
 	
 	//default void imageSaved(ImagePlus imp) { }
 

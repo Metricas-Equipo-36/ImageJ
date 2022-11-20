@@ -3,30 +3,33 @@ import ij.*;
 import ij.io.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.plugin.*;
+
 import java.io.*;
-import java.awt.*;
 import java.awt.image.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Objects;
 import javax.imageio.ImageIO;
 
 /** Saves the active image in GIF format, or as an animated GIF if the image is a stack. */
 public class GifWriter implements PlugIn {
-	static int transparentIndex = Prefs.getTransparentIndex();
+	static final int transparentIndex = Prefs.getTransparentIndex();
 	private boolean showErrors = true;
 	private String error;
 		
-	/** Saves the specified image in GIF format or as an animated GIF if the image is a stack. */
-	public static String save(ImagePlus imp, String path) {
+	/**
+	 * Saves the specified image in GIF format or as an animated GIF if the image is a stack.
+	 */
+	public static void save(ImagePlus imp, String path) {
 		if (imp==null)
 			imp = IJ.getImage();
 		if (path==null || path.length()==0)
 			path = SaveDialog.getPath(imp, ".gif");
 		if (path==null)
-			return null;
+			return;
 		GifWriter gf = new GifWriter();
 		//gf.showErrors = false;
 		gf.run(imp, path);
-		return gf.error;
 	}
 
 	public void run(String path) {
@@ -44,7 +47,7 @@ public class GifWriter implements PlugIn {
 		Overlay overlay = imp.getOverlay();
 		int nSlices = stack.size();				
 		if (nSlices==1) { // save using ImageIO
-			if (overlay!=null && !imp.tempOverlay())
+			if (overlay!=null && imp.tempOverlay())
 				imp = imp.flatten();
 			try {
 				writeImage(imp, path, transparentIndex);
@@ -252,11 +255,10 @@ class AnimatedGifEncoder2 {
 	* frames.  If <code>setSize</code> was not invoked, the size of the
 	* first image is used for all subsequent frames.
 	*
-	* @param im	 containing frame to write.
-	* @return true if successful.
+	* @param im containing frame to write.
 	*/
-   public boolean addFrame(ImagePlus image) {
-	  if ((image == null) || !started) return false;
+   public void addFrame(ImagePlus image) {
+	  if ((image == null) || !started) return;
 	  boolean ok = true;
 	  try {
 		 if (firstFrame) {
@@ -307,7 +309,6 @@ class AnimatedGifEncoder2 {
 		 writePixels();					// encode and write pixel data
 	  } catch (IOException e) { ok = false; }
 
-	  return ok;
    }
    
  /* 
@@ -459,8 +460,8 @@ void Process8bitCLT(ImagePlus image) {
 	* If writing to an OutputStream, the stream is not
 	* closed.
 	*/
-   public boolean finish() {
-	  if (!started) return false;
+   public void finish() {
+	  if (!started) return;
 	  boolean ok = true;
 	  started = false;
 	  try {
@@ -484,7 +485,6 @@ void Process8bitCLT(ImagePlus image) {
 	  closeStream = false;
 	  firstFrame = true;
 
-	  return ok;
    }
 
 /*
@@ -493,7 +493,7 @@ void Process8bitCLT(ImagePlus image) {
 	*/
    public void loadGCT8bit(ImagePlus image){
    int type = image.getType();
-   if (!(((type == 0) ||( type == 3))&&(image!=null)))
+   if (!(type == 0 || type == 3))
 			throw new IllegalArgumentException("Color Table Image must be 8 bit");
    gctused = true;
    GCTloadedExternal = true;
@@ -694,16 +694,15 @@ public void loadGCTrgb(ImagePlus image){
 	* Initiates writing of a GIF file with the specified name.
 	*
 	* @param file String containing output file name.
-	* @return false if open or initial write failed.
 	*/
-   public boolean start(String file) {
+   public void start(String file) {
 	  boolean ok = true;
 	  try {
-		 out = new BufferedOutputStream(new FileOutputStream(file));
+		 out = new BufferedOutputStream(Files.newOutputStream(Paths.get(file)));
 		 ok = start(out);
 		 closeStream = true;
 	  } catch (IOException e) { ok = false; }
-	  return started = ok;
+	   started = ok;
    }
 /**
 	Sets Net sample size depending on image size
@@ -764,7 +763,7 @@ public void loadGCTrgb(ImagePlus image){
 		int k = 0;
 		int minpos;
 		for (int j = 0; j < nPix; j++){
-		int b = pixels[k++] & 0xff;
+		int b = Objects.requireNonNull(pixels)[k++] & 0xff;
 			int g = pixels[k++] & 0xff;
 			int r = pixels[k++] & 0xff;
 			minpos = 0;
@@ -858,11 +857,11 @@ public void loadGCTrgb(ImagePlus image){
 	  if(gctused)
 			out.write(0x00); //global color table
 		else
-			out.write(0x80 |		 // 1 local color table	 1=yes
-			0 |			   // 2 interlace - 0=no
-				0 |			   // 3 sorted - 0=no
-				0 |			   // 4-5 reserved
-				lctSize);		 // size of local color table
+			out.write(0x80 |         // 1 local color table	 1=yes
+					// 2 interlace - 0=no
+					0 |               // 3 sorted - 0=no
+					0 |               // 4-5 reserved
+					lctSize);		 // size of local color table
 		
    }
 
@@ -874,10 +873,10 @@ public void loadGCTrgb(ImagePlus image){
 	  writeShort(width);
 	  writeShort(height);
 	  // packed fields
-	  out.write((0x80 |		  // 1	 : global color table flag = 0 (nn
-			   0x70 |		  // 2-4 : color resolution = 7
-			   0x00 |		  // 5	 : gct sort flag = 0
-			   lctSize));		 // 6-8 : gct size = 0
+	  out.write((0x80 |          // 1	 : global color table flag = 0 (nn
+			  0x70 |          // 2-4 : color resolution = 7
+			  // 5	 : gct sort flag = 0
+			  lctSize));		 // 6-8 : gct size = 0
 
 	  out.write(0);			  // background color index
 	  out.write(0);			  // pixel aspect ratio - assume 1:1
@@ -958,9 +957,10 @@ class LZWEncoder2 {
 
   private static final int EOF = -1;
 
-  private int	  imgW, imgH;
-  private byte[]  pixAry;
-  private int	  initCodeSize;
+  private final int	  imgW;
+	private final int imgH;
+  private final byte[]  pixAry;
+  private final int	  initCodeSize;
   private int	  remaining;
   private int	  curPixel;
 
@@ -988,14 +988,14 @@ class LZWEncoder2 {
   //			  Joe Orost				 (decvax!vax135!petsd!joe)
 
   int n_bits;						  // number of bits/code
-  int maxbits = BITS;				  // user settable max # bits/code
+  final int maxbits = BITS;				  // user settable max # bits/code
   int maxcode;						  // maximum code, given n_bits
-  int maxmaxcode = 1 << BITS; // should NEVER generate this code
+  final int maxmaxcode = 1 << BITS; // should NEVER generate this code
 
-  int[] htab = new int[HSIZE];
-  int[] codetab = new int[HSIZE];
+  final int[] htab = new int[HSIZE];
+  final int[] codetab = new int[HSIZE];
 
-  int hsize = HSIZE;				  // for dynamic table sizing
+  final int hsize = HSIZE;				  // for dynamic table sizing
 
   int free_ent = 0;					  // first unused entry
 
@@ -1038,7 +1038,7 @@ class LZWEncoder2 {
   int cur_accum = 0;
   int cur_bits = 0;
 
-  int masks[] = { 0x0000, 0x0001, 0x0003, 0x0007, 0x000F,
+  final int[] masks = { 0x0000, 0x0001, 0x0003, 0x0007, 0x000F,
 			  0x001F, 0x003F, 0x007F, 0x00FF,
 			  0x01FF, 0x03FF, 0x07FF, 0x0FFF,
 			  0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF };
@@ -1047,7 +1047,7 @@ class LZWEncoder2 {
   int a_count;
 
   // Define the storage for the packet accumulator
-  byte[] accum = new byte[256];
+  final byte[] accum = new byte[256];
 
 
   //----------------------------------------------------------------------------
@@ -1330,9 +1330,9 @@ class NeuQuant {
 
    /* defs for freq and bias */
    protected static final int intbiasshift = 16; /* bias for fractions */
-   protected static final int intbias = (((int) 1) << intbiasshift);
+   protected static final int intbias = (1 << intbiasshift);
    protected static final int gammashift = 10;	 /* gamma = 1024 */
-   protected static final int gamma = (((int) 1) << gammashift);
+   protected static final int gamma = (1 << gammashift);
    protected static final int betashift = 10;
    protected static final int beta = (intbias >> betashift); /* beta = 1/1024 */
    protected static final int betagamma = (intbias << (gammashift - betashift));
@@ -1340,38 +1340,38 @@ class NeuQuant {
    /* defs for decreasing radius factor */
    protected static final int initrad = (netsize >> 3); /* for 256 cols, radius starts */
    protected static final int radiusbiasshift = 6;		/* at 32.0 biased by 6 bits */
-   protected static final int radiusbias = (((int) 1) << radiusbiasshift);
+   protected static final int radiusbias = (1 << radiusbiasshift);
    protected static final int initradius = (initrad * radiusbias); /* and decreases by a */
    protected static final int radiusdec = 30;			/* factor of 1/30 each cycle */
 
    /* defs for decreasing alpha factor */
    protected static final int alphabiasshift = 10;		/* alpha starts at 1.0 */
-   protected static final int initalpha = (((int) 1) << alphabiasshift);
+   protected static final int initalpha = (1 << alphabiasshift);
 
    protected int alphadec; /* biased by 10 bits */
 
    /* radbias and alpharadbias used for radpower calculation */
    protected static final int radbiasshift = 8;
-   protected static final int radbias = (((int) 1) << radbiasshift);
+   protected static final int radbias = (1 << radbiasshift);
    protected static final int alpharadbshift = (alphabiasshift + radbiasshift);
-   protected static final int alpharadbias = (((int) 1) << alpharadbshift);
+   protected static final int alpharadbias = (1 << alpharadbshift);
 
    /* Types and Global Variables
    -------------------------- */
 
-   protected byte[] thepicture;				 /* the input image itself */
-   protected int lengthcount;				 /* lengthcount = H*W*3 */
+   protected final byte[] thepicture;				 /* the input image itself */
+   protected final int lengthcount;				 /* lengthcount = H*W*3 */
 
    protected int samplefac; /* sampling factor 1..30 */
 
    //	typedef int pixel[4];				 /* BGRc */
-   protected int[][] network; /* the network itself - [netsize][4] */
+   protected final int[][] network; /* the network itself - [netsize][4] */
 
-   protected int[] netindex = new int[256];	 /* for network lookup - really 256 */
+   protected final int[] netindex = new int[256];	 /* for network lookup - really 256 */
 
-   protected int[] bias = new int[netsize];	 /* bias and freq arrays for learning */
-   protected int[] freq = new int[netsize];
-   protected int[] radpower = new int[initrad]; /* radpower for precomputation */
+   protected final int[] bias = new int[netsize];	 /* bias and freq arrays for learning */
+   protected final int[] freq = new int[netsize];
+   protected final int[] radpower = new int[initrad]; /* radpower for precomputation */
 
 
    /* Initialise network in range (0,0,0) to (255,255,255) and set parameters
@@ -1482,9 +1482,7 @@ class NeuQuant {
 	  radius = initradius;
 
 	  rad = radius >> radiusbiasshift;
-	  if (rad <= 1)
-		 rad = 0;
-	  for (i = 0; i < rad; i++)
+	   for (i = 0; i < rad; i++)
 		 radpower[i] = alpha * (((rad * rad - i * i) * radbias) / (rad * rad));
 
 	  //fprintf(stderr,"beginning 1D learning: initial radius=%d\n", rad);
@@ -1506,7 +1504,7 @@ class NeuQuant {
 
 	  i = 0;
 	  while (i < samplepixels) {
-		 b = (p[pix + 0] & 0xff) << netbiasshift;
+		 b = (p[pix] & 0xff) << netbiasshift;
 		 g = (p[pix + 1] & 0xff) << netbiasshift;
 		 r = (p[pix + 2] & 0xff) << netbiasshift;
 		 j = contest(b, g, r);
@@ -1695,7 +1693,7 @@ class NeuQuant {
 	  int bestpos, bestbiaspos, bestd, bestbiasd;
 	  int[] n;
 
-	  bestd = ~(((int) 1) << 31);
+	  bestd = ~(1 << 31);
 	  bestbiasd = bestd;
 	  bestpos = -1;
 	  bestbiaspos = bestpos;
@@ -1742,9 +1740,10 @@ class LZWEncoder {
 
   private static final int EOF = -1;
 
-  private int	  imgW, imgH;
-  private byte[]  pixAry;
-  private int	  initCodeSize;
+  private final int	  imgW;
+	private final int imgH;
+  private final byte[]  pixAry;
+  private final int	  initCodeSize;
   private int	  remaining;
   private int	  curPixel;
 
@@ -1772,14 +1771,14 @@ class LZWEncoder {
   //			  Joe Orost				 (decvax!vax135!petsd!joe)
 
   int n_bits;						  // number of bits/code
-  int maxbits = BITS;				  // user settable max # bits/code
+  final int maxbits = BITS;				  // user settable max # bits/code
   int maxcode;						  // maximum code, given n_bits
-  int maxmaxcode = 1 << BITS; // should NEVER generate this code
+  final int maxmaxcode = 1 << BITS; // should NEVER generate this code
 
-  int[] htab = new int[HSIZE];
-  int[] codetab = new int[HSIZE];
+  final int[] htab = new int[HSIZE];
+  final int[] codetab = new int[HSIZE];
 
-  int hsize = HSIZE;				  // for dynamic table sizing
+  final int hsize = HSIZE;				  // for dynamic table sizing
 
   int free_ent = 0;					  // first unused entry
 
@@ -1822,7 +1821,7 @@ class LZWEncoder {
   int cur_accum = 0;
   int cur_bits = 0;
 
-  int masks[] = { 0x0000, 0x0001, 0x0003, 0x0007, 0x000F,
+  final int[] masks = { 0x0000, 0x0001, 0x0003, 0x0007, 0x000F,
 			  0x001F, 0x003F, 0x007F, 0x00FF,
 			  0x01FF, 0x03FF, 0x07FF, 0x0FFF,
 			  0x1FFF, 0x3FFF, 0x7FFF, 0xFFFF };
@@ -1831,7 +1830,7 @@ class LZWEncoder {
   int a_count;
 
   // Define the storage for the packet accumulator
-  byte[] accum = new byte[256];
+  final byte[] accum = new byte[256];
 
 
   //----------------------------------------------------------------------------

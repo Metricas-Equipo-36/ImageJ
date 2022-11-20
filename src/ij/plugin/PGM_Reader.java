@@ -4,6 +4,8 @@ import ij.*;
 import ij.io.*;
 import ij.process.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * This plugin opens PxM format images.
@@ -97,7 +99,7 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
     }
 
     public ImageStack openFile(String path) throws IOException {
-        InputStream is = new BufferedInputStream(new FileInputStream(path));
+        InputStream is = new BufferedInputStream(Files.newInputStream(Paths.get(path)));
         try {
 			StreamTokenizer tok = new StreamTokenizer(is); //deprecated, but it works
 			//Reader r = new BufferedReader(new InputStreamReader(is));
@@ -143,7 +145,7 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 						} else
 							pixels[i] = (byte) (pixels[i] == 0 ? 255 : 0);
 					} else
-						pixels[i] = (byte) (0xff & (255 * (int) (0xff & pixels[i]) / maxValue));
+						pixels[i] = (byte) (0xff & (255 * (0xff & pixels[i]) / maxValue));
 				}
 				ImageStack stack = new ImageStack(width, height);
 				stack.addSlice("", ip);
@@ -159,9 +161,9 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 				else
 					openAsciiImage(tok, 3 * width * height, bytePixels);
 				for (int i = 0; i < width * height; i++) {
-					int r = (int) (0xff & bytePixels[i * 3]);
-					int g = (int) (0xff & bytePixels[i * 3 + 1]);
-					int b = (int) (0xff & bytePixels[i * 3 + 2]);
+					int r = 0xff & bytePixels[i * 3];
+					int g = 0xff & bytePixels[i * 3 + 1];
+					int b = 0xff & bytePixels[i * 3 + 2];
 					r = (r * 255 / maxValue) << 16;
 					g = (g * 255 / maxValue) << 8;
 					b = (b * 255 / maxValue);
@@ -205,7 +207,7 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
 			stack.addSlice("blue", new ShortProcessor(width, height, blue, null));
 			return stack;
         } finally {
-            if (is!=null) is.close();
+            is.close();
         }
    }
 
@@ -256,8 +258,8 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
         int i = 0;
         int inc = size/20;
         if (inc==0) inc = 1;
-        while (tok.nextToken() != tok.TT_EOF) {
-            if (tok.ttype == tok.TT_NUMBER) {
+        while (tok.nextToken() != StreamTokenizer.TT_EOF) {
+            if (tok.ttype == StreamTokenizer.TT_NUMBER) {
                 pixels[i++] = (byte) (((int) tok.nval) & 255);
                 if (i%inc==0)
                     IJ.showProgress(0.5 + ((double) i / size) / 2.0);
@@ -290,8 +292,8 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
         int inc = size/20; // Progress update interval
         if (inc==0) inc = 1;
         short[] pixels = new short[size];
-        while (tok.nextToken() != tok.TT_EOF) {
-            if (tok.ttype == tok.TT_NUMBER) {
+        while (tok.nextToken() != StreamTokenizer.TT_EOF) {
+            if (tok.ttype == StreamTokenizer.TT_NUMBER) {
                 pixels[i++] = (short) (((int) tok.nval) & 65535);
                 if (i%inc==0)
                     IJ.showProgress(0.5 + ((double) i / size) / 2.0);
@@ -302,16 +304,16 @@ public class PGM_Reader extends ImagePlus implements PlugIn {
     }
 
     String getWord(StreamTokenizer tok) throws IOException {
-        while (tok.nextToken() != tok.TT_EOF) {
-            if (tok.ttype == tok.TT_WORD)
+        while (tok.nextToken() != StreamTokenizer.TT_EOF) {
+            if (tok.ttype == StreamTokenizer.TT_WORD)
                 return tok.sval;
         }
         return null;
     }
 
     int getInt(StreamTokenizer tok) throws IOException {
-        while (tok.nextToken() != tok.TT_EOF) {
-            if (tok.ttype == tok.TT_NUMBER)
+        while (tok.nextToken() != StreamTokenizer.TT_EOF) {
+            if (tok.ttype == StreamTokenizer.TT_NUMBER)
                 return (int) tok.nval;
         }
         return -1;

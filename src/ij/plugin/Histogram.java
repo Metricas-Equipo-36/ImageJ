@@ -44,7 +44,7 @@ public class Histogram implements PlugIn, TextListener {
  				if ("Hue".equals(label1))
  					noDialog = true;
  			}
- 			int flags = noDialog?0:setupDialog(imp, 0);
+ 			int flags = noDialog?0:setupDialog(imp);
  			if (flags==PlugInFilter.DONE) return;
 			stackHistogram = flags==PlugInFilter.DOES_STACKS;
 			Calibration cal = imp.getCalibration();
@@ -137,7 +137,7 @@ public class Histogram implements PlugIn, TextListener {
 		xMin = gd.getNextNumber();
 		xMax = gd.getNextNumber();
 		yMax = gd.getNextString();
-		stackHistogram = (stackSize>1)?gd.getNextBoolean():false;
+		stackHistogram = stackSize > 1 && gd.getNextBoolean();
 		if (!IJ.isMacro()) {
 			if (nBins>=2 && nBins<=1000)
 				HistogramWindow.nBins = nBins;
@@ -157,15 +157,15 @@ public class Histogram implements PlugIn, TextListener {
 			checkbox.setState(false);
 	}
 	
-	int setupDialog(ImagePlus imp, int flags) {
+	int setupDialog(ImagePlus imp) {
 		int stackSize = imp.getStackSize();
 		if (stackSize>1) {
 			String macroOptions = Macro.getOptions();
 			if (macroOptions!=null) {
 				if (macroOptions.indexOf("stack ")>=0)
-					return flags+PlugInFilter.DOES_STACKS;
+					return 0 +PlugInFilter.DOES_STACKS;
 				else
-					return flags;
+					return 0;
 			}
 			YesNoCancelDialog d = new YesNoCancelDialog(IJ.getInstance(),
 				"Histogram", "Include all "+stackSize+" images?");
@@ -174,12 +174,12 @@ public class Histogram implements PlugIn, TextListener {
 			else if (d.yesPressed()) {
 				if (Recorder.record)
 					Recorder.recordOption("stack");
-				return flags+PlugInFilter.DOES_STACKS;
+				return 0 +PlugInFilter.DOES_STACKS;
 			}
 			if (Recorder.record)
 				Recorder.recordOption("slice");
 		}
-		return flags;
+		return 0;
 	}
 
 }

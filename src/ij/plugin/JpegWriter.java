@@ -55,7 +55,7 @@ public class JpegWriter implements PlugIn {
 		try {
 			Graphics g = bi.createGraphics();
 			Image img = imp.getImage();
-			if (overlay && !imp.tempOverlay())
+			if (overlay && imp.tempOverlay())
 				img = imp.flatten().getImage();
 			g.drawImage(img, 0, 0, null);
 			g.dispose();            
@@ -72,7 +72,7 @@ public class JpegWriter implements PlugIn {
 			ImageOutputStream ios = ImageIO.createImageOutputStream(f);
 			writer.setOutput(ios);
 			ImageWriteParam param = writer.getDefaultWriteParam();
-			param.setCompressionMode(param.MODE_EXPLICIT);
+			param.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 			param.setCompressionQuality(quality/100f);
 			if (quality == 100)
 				param.setSourceSubsampling(1, 1, 0, 0);						

@@ -5,7 +5,7 @@ import ij.process.ImageProcessor;
 
 /** Writes a raw image described by a FileInfo object to an OutputStream. */
 public class ImageWriter {
-	private FileInfo fi;
+	private final FileInfo fi;
 	private boolean showProgressBar=true;
 	private boolean savingStack;
 	

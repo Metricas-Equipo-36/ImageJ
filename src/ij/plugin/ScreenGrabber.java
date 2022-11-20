@@ -1,6 +1,5 @@
 package ij.plugin;
 import ij.*;
-import ij.process.*;
 import ij.gui.*;
 import java.awt.*;
 
@@ -9,7 +8,7 @@ import java.awt.*;
     commands may not work on Linux if windows translucency or 
     special effects are enabled in the windows manager. */
 public class ScreenGrabber implements PlugIn {
-	private static int delay = 10;
+	private static final int delay = 10;
 
 	public void run(String arg) {
 		ImagePlus imp2 = null;

@@ -12,7 +12,7 @@ import ij.util.Tools;
  * IJ.showProgress(-currentIndex,finalIndex).
 */
 public class Benchmark implements PlugIn {
-    private String[] results = {
+    private final String[] results = {
         " 9.5|MacBook Pro (M1 Max, 2021)",
         "10.9|MacBook Air (M1, 2020, Native)",
         "17.2|iMac Pro (2017)",
@@ -23,8 +23,8 @@ public class Benchmark implements PlugIn {
     	"29.7|15\" MacBook Pro (Early 2013)",
      	"62.3|Acer Aspire laptop (Core i5, 2014)"
 	};
-    private int size = 5000;
-    private int ops = 62;
+    private final int size = 5000;
+    private final int ops = 62;
     private int counter;
 
     public void run(String arg) {
@@ -109,7 +109,7 @@ public class Benchmark implements PlugIn {
         imp.resetRoi();
         if (counter==1 && (n!=1886||sumArea/n!=5843.324496288441||sumMean/n!=32637.72733693335)) {
             IJ.log(n+" "+sumArea/n+" "+sumMean/n);
-            error("Particle analyzer");
+            error();
         }
     }
     
@@ -120,8 +120,8 @@ public class Benchmark implements PlugIn {
         IJ.showProgress(-counter, ops);
     }
 
-    void error(String msg) {
-        IJ.log("Benchmark: "+msg+" error");
+    void error() {
+        IJ.log("Benchmark: "+ "Particle analyzer" +" error");
     }
 }
 

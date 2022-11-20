@@ -1,8 +1,8 @@
 package ij.plugin.filter;
 import ij.*;
-import ij.plugin.*;
 import ij.process.*;
-import ij.gui.*;
+
+import java.util.Objects;
 
 /**
  * This plugin implements the Euclidean Distance Map (EDM), Watershed,
@@ -75,7 +75,7 @@ public class EDM implements ExtendedPlugInFilter {
     private int outImageType;           //output type; BYTE_OVERWRITE, BYTE, SHORT or FLOAT
     private ImageStack outStack;        //in case output should be a new stack
     private int processType;            //can be EDM, WATERSHED, UEP, VORONOI
-    private MaximumFinder maxFinder = new MaximumFinder();    //we use only one MaximumFinder (nice progress bar)
+    private final MaximumFinder maxFinder = new MaximumFinder();    //we use only one MaximumFinder (nice progress bar)
     private double progressDone;        //for progress bar, fraction of work done so far
     private int nPasses;                //for progress bar, how many images to process (sequentially or parallel threads)
     private boolean interrupted;        //whether watershed segmentation has been interrrupted by the user
@@ -186,7 +186,7 @@ public class EDM implements ExtendedPlugInFilter {
 
         ImageProcessor outIp = null;
         if (processType==WATERSHED) {
-            if (background255) maxIp.invert();
+            if (background255) Objects.requireNonNull(maxIp).invert();
             ip.copyBits(maxIp, 0, 0, Blitter.COPY);
             ip.setBinaryThreshold();
         } else switch (outImageType) {          //for all these, output contains the values of the EDM
@@ -211,7 +211,7 @@ public class EDM implements ExtendedPlugInFilter {
             if (outStack==null) {
                 outImp = new ImagePlus(TITLE_PREFIX[processType]+imp.getShortTitle(), outIp);
             } else
-                outStack.setPixels(outIp.getPixels(), pfr.getSliceNumber());
+                outStack.setPixels(Objects.requireNonNull(outIp).getPixels(), pfr.getSliceNumber());
         }
     } //public void run
 

@@ -105,8 +105,8 @@ public class Commands extends PlugInFrame implements ActionListener, ItemListene
 		}
 		gd.enableYesNoCancel(" OK ", "Reset");
 		gd.showDialog();
-		if (gd.wasCanceled())
-			return;
+		if (gd.wasCanceled()) {
+        }
 		else if (!gd.wasOKed()) {
 			boolean ok = IJ.showMessageWithCancel("Commands", "Are you sure you want to reset?");
 			if (ok) reset();

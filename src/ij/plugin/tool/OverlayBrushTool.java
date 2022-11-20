@@ -1,11 +1,9 @@
 package ij.plugin.tool;
 import ij.*;
-import ij.process.*;
 import ij.gui.*;
 import ij.plugin.Colors;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.BasicStroke;
 import java.awt.geom.*;
 import java.util.Vector;
 
@@ -15,7 +13,7 @@ import java.util.Vector;
 
 public class OverlayBrushTool extends PlugInTool implements Runnable {
 	private final static int UNCONSTRAINED=0, HORIZONTAL=1, VERTICAL=2, DO_RESIZE=3, RESIZED=4, IDLE=5; //mode flags
-	private static String WIDTH_KEY = "obrush.width";
+	private static final String WIDTH_KEY = "obrush.width";
 	private static final String LOC_KEY = "obrush.loc";
 	private static float width = (float)Prefs.get(WIDTH_KEY, 5);
 	private int transparency;
@@ -72,7 +70,7 @@ public class OverlayBrushTool extends PlugInTool implements Runnable {
 		if (overlay==null)
 			overlay = new Overlay();
 		if (mode == DO_RESIZE || mode == RESIZED) {
-			changeBrushSize((float)(x-xStart), imp);
+			changeBrushSize(x-xStart, imp);
 			return;
 		}
 		if ((e.getModifiers() & InputEvent.SHIFT_MASK) != 0) { //shift constrains

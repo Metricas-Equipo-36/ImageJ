@@ -1,11 +1,11 @@
 package ij.macro;
-import ij.IJ;
-import java.util.ArrayList;
+
+import java.util.Objects;
 
 public class ExtensionDescriptor {
-  public String name;
-  public int[] argTypes;
-  public MacroExtension handler;
+  public final String name;
+  public final int[] argTypes;
+  public final MacroExtension handler;
   
   public ExtensionDescriptor(String theName, int[] theArgTypes, MacroExtension theHandler) {
     this.name = theName;
@@ -15,9 +15,7 @@ public class ExtensionDescriptor {
   
   public static ExtensionDescriptor newDescriptor(String theName, MacroExtension theHandler, int[] types) {
     int[] argTypes = new int[types.length];
-    for (int i=0; i < types.length; ++i) {
-      argTypes[i] = types[i];
-    }
+    System.arraycopy(types, 0, argTypes, 0, types.length);
     
     return new ExtensionDescriptor(theName, argTypes, theHandler);
   }
@@ -71,7 +69,7 @@ public class ExtensionDescriptor {
       int rawType = getRawType(argTypes[i]);
       
       if (args.length < i)
-        return optional ? true : false;
+        return optional;
       
       switch(rawType) {
       case MacroExtension.ARG_STRING:
@@ -287,7 +285,7 @@ public class ExtensionDescriptor {
     
     String retVal = handler.handleExtension(name, args);
     for (int i=0; i < argTypes.length; ++i) {
-      if (i >= vArgs.length) break;
+      if (i >= Objects.requireNonNull(vArgs).length) break;
       if (ExtensionDescriptor.isOutputArg(argTypes[i])) {
         ExtensionDescriptor.convertOutputType(vArgs[i], args[i]);
       }

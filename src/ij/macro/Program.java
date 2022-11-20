@@ -28,8 +28,7 @@ public class Program implements MacroConstants {
 			if (systemTable.length>table.length)
 				enlargeSymbolTable();
 			stLoc = systemTable.length - 1;
-			for (int i=0; i<=stLoc; i++)
-				table[i] = systemTable[i];
+			System.arraycopy(systemTable, 0, table, 0, stLoc + 1);
 		} else {
 			addKeywords();
 			addFunctions();
@@ -38,8 +37,7 @@ public class Program implements MacroConstants {
 			addArrayFunctions();
 			addVariableFunctions();
 			systemTable = new Symbol[stLoc+1];
-			for (int i=0; i<=stLoc; i++)
-				systemTable[i] = table[i];
+			System.arraycopy(table, 0, systemTable, 0, stLoc + 1);
 		}
 		if (IJ.debugMode) IJ.log("Symbol table: "+(stLoc+1)+"  "+table.length+"  "+systemTable.length);
 	}
@@ -131,8 +129,7 @@ public class Program implements MacroConstants {
 			return;
 		int n = interp.topOfStack+1;
 		globals = new Variable[n];
-		for (int i=0; i<n; i++)
-			globals[i] = interp.stack[i];
+		System.arraycopy(interp.stack, 0, globals, 0, n);
 	}
 	
 	public void dumpSymbolTable() {
@@ -248,7 +245,7 @@ public class Program implements MacroConstants {
 				} else if (token>=200) {
 					str = table[address].str;
 				} else {
-					char s[] = new char[1];
+					char[] s = new char[1];
 					s[0] = (char)token;
 					str = new String(s);
 				}

@@ -1,11 +1,10 @@
 package ij.plugin;
 import ij.*;
-import ij.gui.*;
 import ij.io.*;
 import ij.macro.*;
 import java.io.*;
-import java.net.URL;
 import java.net.*;
+import java.nio.file.Files;
 import java.util.*;
 
 /** Installs plugins dragged and dropped on the "ImageJ" window, or plugins,
@@ -153,13 +152,11 @@ public class PluginInstaller implements PlugIn {
 		int maxLength = 52428800; //50MB
 		URL url = null;
 		boolean unknownLength = false;
-		byte[] data = null;;
+		byte[] data = null;
 		int n = 0;
 		try {
 			url = new URL(urlString);
 			if (IJ.debugMode) IJ.log("PluginInstaller: "+urlString+"  " +url);
-			if (url==null)
-				return null;
 			URLConnection uc = url.openConnection();
 			int len = uc.getContentLength();
 			unknownLength = len<0;
@@ -192,8 +189,7 @@ public class PluginInstaller implements PlugIn {
 		if (unknownLength) {
 			byte[] data2 = data;
 			data = new byte[n];
-			for (int i=0; i<n; i++)
-				data[i] = data2[i];
+			System.arraycopy(data2, 0, data, 0, n);
 		}
 		return data;
 	}
@@ -206,7 +202,7 @@ public class PluginInstaller implements PlugIn {
 		byte[] data = null;
 		try {
 			int len = (int)f.length();
-			InputStream in = new BufferedInputStream(new FileInputStream(f));
+			InputStream in = new BufferedInputStream(Files.newInputStream(f.toPath()));
 			DataInputStream dis = new DataInputStream(in);
 			data = new byte[len];
 			dis.readFully(data);
@@ -230,17 +226,17 @@ public class PluginInstaller implements PlugIn {
 	}
 	
 	private String errorMessage() {
-		String s = "File name must end in ";
+		StringBuilder s = new StringBuilder("File name must end in ");
 		int len = validExtensions.length;
 		for (int i=0; i<len; i++) {
 			if (i==len-2)
-				s += "\""+validExtensions[i]+"\" or ";
+				s.append("\"").append(validExtensions[i]).append("\" or ");
 			else if (i==len-1)
-				s += "\""+validExtensions[i]+"\".";
+				s.append("\"").append(validExtensions[i]).append("\".");
 			else
-				s += "\""+validExtensions[i]+"\", ";
+				s.append("\"").append(validExtensions[i]).append("\", ");
 		}
-		return s;
+		return s.toString();
 	}
 	
 }

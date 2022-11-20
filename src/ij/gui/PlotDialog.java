@@ -1,8 +1,8 @@
 package ij.gui;
 import ij.*;
-import ij.process.*;
 import ij.plugin.frame.Recorder;
 import java.awt.*;
+import java.util.Objects;
 import java.util.Vector;
 
 /*
@@ -28,8 +28,8 @@ public class PlotDialog implements DialogListener {
 	private static final int[] TEMPLATE_FLAGS = new int[] {Plot.X_RANGE, Plot.Y_RANGE, Plot.COPY_AXIS_STYLE, Plot.COPY_LABELS,
 			Plot.COPY_LEGEND, Plot.COPY_CONTENTS_STYLE, Plot.COPY_EXTRA_OBJECTS, Plot.COPY_SIZE};
 
-	private Plot plot;
-	private int  dialogType;
+	private final Plot plot;
+	private final int  dialogType;
 	private boolean minMaxSaved;			//whether plot min&max has been saved for "previous range"
 	private boolean dialogShowing;			//when the dialog is showing, ignore the last call with event null
 	private Plot[]  templatePlots;
@@ -184,8 +184,8 @@ public class PlotDialog implements DialogListener {
 				plotYLabel = lastYLabel;
 			int nChars = 20;
 			if ((plotXLabel != null && plotXLabel.startsWith("{")) || (plotYLabel != null && plotYLabel.startsWith("{" ))) {
-					nChars = Math.max(nChars, plotXLabel.length());
-					nChars = Math.max(nChars, plotYLabel.length());
+					nChars = Math.max(nChars, Objects.requireNonNull(plotXLabel).length());
+					nChars = Math.max(nChars, Objects.requireNonNull(plotYLabel).length());
 			}
 			if (nChars > 80) nChars = 80;
 			//plotXLabel = plotXLabel.replace("\n", "|");  //multiline label currently no supported by Plot class
@@ -250,7 +250,7 @@ public class PlotDialog implements DialogListener {
 		}
 		if (dialogType == TEMPLATE) {
 			int[] idList = WindowManager.getIDList();			//create list of plots to use as template
-			int[] plotIdList = new int[idList.length];
+			int[] plotIdList = new int[Objects.requireNonNull(idList).length];
 			templatePlots = new Plot[idList.length];
 			int nPlots = 0;
 			for (int id : idList) {
@@ -271,7 +271,7 @@ public class PlotDialog implements DialogListener {
 			for (int i=0; i<nPlots; i++) {
 				ImagePlus imp = WindowManager.getImage(plotIdList[i]);
 				plotImpTitles[i] = imp==null ? "" : imp.getTitle();
-				if (imp.getID() == templateID) defaultTemplateIndex = i;
+				if (Objects.requireNonNull(imp).getID() == templateID) defaultTemplateIndex = i;
 			}
 			gd.addChoice("Template Plot", plotImpTitles, plotImpTitles[defaultTemplateIndex]);
 			gd.setInsets(10, 0, 0);			//top, left, bottom
@@ -346,7 +346,7 @@ public class PlotDialog implements DialogListener {
 		}
 		if (dialogType >= X_LEFT && dialogType <= Y_TOP) {
 			double newLimit = gd.getNextNumber();
-			double[] minMaxCopy = (double[])(plot.getLimits().clone());
+			double[] minMaxCopy = plot.getLimits().clone();
 			minMaxCopy[dialogType - X_LEFT] = newLimit;
 			plot.setLimitsNoUpdate(minMaxCopy[0], minMaxCopy[1], minMaxCopy[2], minMaxCopy[3]);
 		}

@@ -10,11 +10,11 @@ import ij.gui.*;
 
 /** Implements the Image/Color/Color Picker command. */
 public class ColorPicker extends PlugInDialog {
-	public static int ybase = 2;
-	private int colorWidth = 22;
-	private int colorHeight = 16;
-	private int columns = 5;
-	private int rows = 20;
+	public static final int ybase = 2;
+	private final int colorWidth = 22;
+	private final int colorHeight = 16;
+	private final int columns = 5;
+	private final int rows = 20;
 	private static final String LOC_KEY = "cp.loc";
 	private static ColorPicker instance;
 	private ColorGenerator cg; 
@@ -35,7 +35,7 @@ public class ColorPicker extends PlugInDialog {
         addKeyListener(IJ.getInstance());
 		setLayout(new BorderLayout());
 		cg = new ColorGenerator(width, height, new int[width*height]);
-        cg.drawColors(colorWidth, colorHeight, columns, rows);
+        cg.drawColors();
         colorCanvas = new ColorCanvas(width, height, this, cg, scale);
         Panel panel = new Panel();
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
@@ -77,18 +77,18 @@ public class ColorPicker extends PlugInDialog {
 }
 
 class ColorGenerator extends ColorProcessor {
-	private int ybase = ColorPicker.ybase;
+	private final int ybase = ColorPicker.ybase;
     private int w, h;
-    private int[] colors = {0xff0000, 0x00ff00, 0x0000ff, 0xffffff, 0x00ffff, 0xff00ff, 0xffff00, 0x000000};
+    private final int[] colors = {0xff0000, 0x00ff00, 0x0000ff, 0xffffff, 0x00ffff, 0xff00ff, 0xffff00, 0x000000};
 
     public ColorGenerator(int width, int height, int[] pixels) {
         super(width, height, pixels);
         setAntialiasedText(true);
     }
     
-    void drawColors(int colorWidth, int colorHeight, int columns, int rows) {
-        w = colorWidth;
-        h = colorHeight;
+    void drawColors() {
+        w = 22;
+        h = 16;
         setColor(0xffffff);
         setRoi(0, ybase, 110, 320);
         fill();
@@ -102,7 +102,7 @@ class ColorGenerator extends ColorProcessor {
 
         Color c;
         float hue, saturation=1f, brightness=1f;
-        double w=colorWidth, h=colorHeight;
+        double w= 22, h= 16;
         for (int x=2; x<10; x++) {
             for (int y=0; y<32; y++) {
                 hue = (float)(y/(2*h)-.15);
@@ -170,7 +170,7 @@ class ColorGenerator extends ColorProcessor {
 			for ( int y=0; y<32; y++) {
 				float hue = (float)(y/(2*h)-.15);        
 				c = Color.getHSBColor(hue, 1f, 1f);
-				setRoi(x*(int)(w/2), ybase+y*(int)(h/2), (int)w/2, (int)h/2);
+				setRoi(x* (w/2), ybase+y*(int)(h/2), w /2, (int)h/2);
 				setColor(c);
 				fill();
 			}
@@ -235,22 +235,23 @@ class ColorGenerator extends ColorProcessor {
 } 
 
 class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
-	private static Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
-	private static Cursor crosshairCursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
-	int ybase = ColorPicker.ybase;
-	Rectangle flipperRect = new Rectangle(86, ybase+268, 18, 18);
-	Rectangle resetRect = new Rectangle(84, ybase+293, 21, 18);
-	Rectangle foreground1Rect = new Rectangle(9, ybase+266, 45, 10);
-	Rectangle foreground2Rect = new Rectangle(9, ybase+276, 23, 25);
-	Rectangle background1Rect = new Rectangle(33, ybase+302, 45, 10);
-	Rectangle background2Rect = new Rectangle(56, ybase+277, 23, 25);
-	int width, height;
+	private static final Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
+	private static final Cursor crosshairCursor = new Cursor(Cursor.CROSSHAIR_CURSOR);
+	final int ybase = ColorPicker.ybase;
+	final Rectangle flipperRect = new Rectangle(86, ybase+268, 18, 18);
+	final Rectangle resetRect = new Rectangle(84, ybase+293, 21, 18);
+	final Rectangle foreground1Rect = new Rectangle(9, ybase+266, 45, 10);
+	final Rectangle foreground2Rect = new Rectangle(9, ybase+276, 23, 25);
+	final Rectangle background1Rect = new Rectangle(33, ybase+302, 45, 10);
+	final Rectangle background2Rect = new Rectangle(56, ybase+277, 23, 25);
+	final int width;
+	final int height;
 	Vector colors;
 	boolean background;
 	long mouseDownTime;
-	ColorGenerator ip;
-	ColorPicker cp;
-	double scale;
+	final ColorGenerator ip;
+	final ColorPicker cp;
+	final double scale;
 	String status = "";
 			
 	public ColorCanvas(int width, int height, ColorPicker cp, ColorGenerator ip, double scale) {
@@ -317,11 +318,11 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 		}
 		Color color;
 		if (background) {
-			ip.refreshForeground(background);
+			ip.refreshForeground(true);
 			ip.refreshBackground(background);
 			color= Toolbar.getBackgroundColor();
 		} else {
-			ip.refreshBackground(background);
+			ip.refreshBackground(false);
 			ip.refreshForeground(background);
 			color= Toolbar.getForegroundColor();
 		}
@@ -346,10 +347,10 @@ class ColorCanvas extends Canvas implements MouseListener, MouseMotionListener {
 	}
 
 	String pad(int n) {
-		String str = ""+n;
+		StringBuilder str = new StringBuilder("" + n);
 		while (str.length()<3)
-		str = "0" + str;
-		return str;
+		str.insert(0, "0");
+		return str.toString();
 	}	
 
 	void setDrawingColor(int x, int y, boolean setBackground) {

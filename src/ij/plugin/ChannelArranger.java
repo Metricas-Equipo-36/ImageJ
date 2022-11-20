@@ -165,17 +165,17 @@ public class ChannelArranger implements PlugIn, TextListener {
 
 class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListener, ActionListener {
 
-	protected static Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
-	protected static Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
+	protected static final Cursor handCursor = new Cursor(Cursor.HAND_CURSOR);
+	protected static final Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 	Image os;
 	Graphics osg;
 	CompositeImage cImp;
-	int iconSize = 100;
+	final int iconSize = 100;
 	int iconWidth = iconSize, iconHeight = iconSize;
 	int dx = 0, dy = 0;
-	int separatorY = 6;
-	int marginY = 10;
-	int marginX = 44;
+	final int separatorY = 6;
+	final int marginY = 10;
+	final int marginX = 44;
 	int nChannels;
 	int channelUnderCursor = 0;
 	String seq = "1234567890";
@@ -247,7 +247,7 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 					osg.setColor(Color.BLACK);
 					osg.drawRoundRect(xx + iconSize / 2 - 4, y1 + iconSize - 22, 18, 18, 6, 6);
 					osg.drawString("" + chn, xx + 52, y1 + iconSize - 7);
-					index = seq.indexOf("" + chn, 0);
+					index = seq.indexOf("" + chn);
 					if (seq.indexOf("" + chn, index) == -1) {//char must not occur twice
 						index = -1;
 					}
@@ -293,7 +293,7 @@ class ThumbnailsCanvas extends Canvas implements MouseListener, MouseMotionListe
 	public void actionPerformed(ActionEvent e) {
 		String cmd = e.getActionCommand();
 		cImp.setPosition(currentChannel, currentSlice, currentFrame);
-		CompositeImage cImp = (CompositeImage) this.cImp;
+		CompositeImage cImp = this.cImp;
 		IJ.run(cmd);
 		repaint();
 		setCursor(defaultCursor);

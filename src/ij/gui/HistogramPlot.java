@@ -6,6 +6,7 @@ import ij.measure.*;
 import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.image.*;
+import java.util.Objects;
 
 public class HistogramPlot extends ImagePlus {
 	static final double SCALE = Prefs.getGuiScale();
@@ -32,17 +33,17 @@ public class HistogramPlot extends ImagePlus {
 	int yMax;
 	int srcImageID;
 	Rectangle frame;
-	Font font = new Font("SansSerif",Font.PLAIN,(int)(12*SCALE));
+	final Font font = new Font("SansSerif",Font.PLAIN,(int)(12*SCALE));
 	boolean showBins;
 	int col1, col2, row1, row2, row3, row4, row5;
 	    
 	public HistogramPlot() {
-		setImage(NewImage.createRGBImage("Histogram", WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE));
+		setImage(Objects.requireNonNull(NewImage.createRGBImage("Histogram", WIN_WIDTH, WIN_HEIGHT, 1, NewImage.FILL_WHITE)));
 	}
 
 	/** Plots a histogram using the specified title and number of bins. 
 		Currently, the number of bins must be 256 expect for 32 bit images. */
-	public void draw(String title, ImagePlus imp, int bins) {
+	public void draw(ImagePlus imp, int bins) {
 		draw(imp, bins, 0.0, 0.0, 0);
 	}
 
@@ -72,7 +73,7 @@ public class HistogramPlot extends ImagePlus {
 	}
 	
 	private ImageStatistics RGBHistogram(ImagePlus imp, int bins, double histMin, double histMax) {
-		ImageProcessor ip = (ColorProcessor)imp.getProcessor();
+		ImageProcessor ip = imp.getProcessor();
 		ip = ip.crop();
 		int w = ip.getWidth();
 		int h = ip.getHeight();
@@ -103,7 +104,6 @@ public class HistogramPlot extends ImagePlus {
 		ip.setColor(Color.white);
 		ip.resetRoi();
 		ip.fill();
-		ImageProcessor srcIP = imp.getProcessor();
 		drawHistogram(imp, ip, fixedRange, stats.histMin, stats.histMax);
 	}
 	
@@ -137,21 +137,18 @@ public class HistogramPlot extends ImagePlus {
 		histogram[stats.mode] = saveModalCount;
  		x = XMARGIN + 1;
 		y = YMARGIN + HIST_HEIGHT + 2;
-		if (imp==null)
-			lut.drawUnscaledColorBar(ip, x-1, y, HIST_WIDTH, BAR_HEIGHT);
-		else
-			drawAlignedColorBar(imp, xMin, xMax, ip, x-1, y, HIST_WIDTH, BAR_HEIGHT);
+		drawAlignedColorBar(imp, xMin, xMax, ip, x-1, y);
 		y += BAR_HEIGHT+(int)(15*SCALE);
   		drawText(ip, x, y, fixedRange);
   		srcImageID = imp.getID();
 	}
        
-	void drawAlignedColorBar(ImagePlus imp, double xMin, double xMax, ImageProcessor ip, int x, int y, int width, int height) {
+	void drawAlignedColorBar(ImagePlus imp, double xMin, double xMax, ImageProcessor ip, int x, int y) {
 		ImageProcessor ipSource = imp.getProcessor();
 		float[] pixels = null;
 		ImageProcessor ipRamp = null;
 		if (rgbMode>=INTENSITY1) {
-			ipRamp = new FloatProcessor(width, height);
+			ipRamp = new FloatProcessor(HistogramPlot.HIST_WIDTH, HistogramPlot.BAR_HEIGHT);
 			if (rgbMode==RED)
 				ipRamp.setColorModel(LUT.createLutFromColor(Color.red));
 			else if (rgbMode==GREEN)
@@ -160,10 +157,10 @@ public class HistogramPlot extends ImagePlus {
 				ipRamp.setColorModel(LUT.createLutFromColor(Color.blue));
 			pixels = (float[])ipRamp.getPixels();
 		} else
-			pixels = new float[width*height];
-		for (int j=0; j<height; j++) {
-			for(int i=0; i<width; i++)
-				pixels[i+width*j] = (float)(xMin+i*(xMax-xMin)/(width - 1));
+			pixels = new float[HistogramPlot.HIST_WIDTH * HistogramPlot.BAR_HEIGHT];
+		for (int j = 0; j< HistogramPlot.BAR_HEIGHT; j++) {
+			for(int i = 0; i< HistogramPlot.HIST_WIDTH; i++)
+				pixels[i+ HistogramPlot.HIST_WIDTH *j] = (float)(xMin+i*(xMax-xMin)/(HistogramPlot.HIST_WIDTH - 1));
 		}
 		double min = ipSource.getMin();
 		double max = ipSource.getMax();
@@ -180,9 +177,9 @@ public class HistogramPlot extends ImagePlus {
 				cm = ipSource.getColorModel();
 			else
 				cm = ipSource.getCurrentColorModel();
-			ipRamp = new FloatProcessor(width, height, pixels, cm);
+			ipRamp = new FloatProcessor(HistogramPlot.HIST_WIDTH, HistogramPlot.BAR_HEIGHT, pixels, cm);
 		}
-		ipRamp.setMinAndMax(min,max);
+		Objects.requireNonNull(ipRamp).setMinAndMax(min,max);
 		ImageProcessor bar = null;
 		if (ip instanceof ColorProcessor)
 			bar = ipRamp.convertToRGB();
@@ -190,17 +187,7 @@ public class HistogramPlot extends ImagePlus {
 			bar = ipRamp.convertToByte(true);
 		ip.insert(bar, x,y);
 		ip.setColor(Color.black);
-		ip.drawRect(x-1, y, width+2, height);
-	}
-
-	/** Scales a threshold level to the range 0-255. */
-	int scaleDown(ImageProcessor ip, double threshold) {
-		double min = ip.getMin();
-		double max = ip.getMax();
-		if (max>min)
-			return (int)(((threshold-min)/(max-min))*255.0);
-		else
-			return 0;
+		ip.drawRect(x-1, y, HistogramPlot.HIST_WIDTH +2, HistogramPlot.BAR_HEIGHT);
 	}
 
 	void drawPlot(long maxCount, ImageProcessor ip) {
@@ -352,20 +339,13 @@ public class HistogramPlot extends ImagePlus {
 			hist[i] = (int)histogram[i];
 		return hist;
 	}
-
-	public double[] getXValues() {
-		double[] values = new double[stats.nBins];
-		for (int i=0; i<stats.nBins; i++)
-			values[i] = cal.getCValue(stats.histMin+i*stats.binSize);
-		return values;
-	}
 	
     @Override
     public void show() {
 		if (IJ.isMacro()&&Interpreter.isBatchMode())
 			super.show();
 		else
-			new HistogramWindow(this, WindowManager.getImage(srcImageID));
+			new HistogramWindow(this, Objects.requireNonNull(WindowManager.getImage(srcImageID)));
 	}
 	
 }

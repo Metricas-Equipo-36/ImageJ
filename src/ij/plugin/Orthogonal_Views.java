@@ -7,8 +7,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
 import java.awt.geom.*;
-import java.util.*;
- 
+
 /**
  * This plugin projects dynamically orthogonal XZ and YZ views of a stack. 
  * The output images are calibrated, which allows measurements to be performed more easily. 
@@ -29,20 +28,20 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	private int currentChannel, currentFrame, currentMode; 
 	private ImageCanvas canvas;
 	private static final int H_ROI=0, H_ZOOM=1;
-	private static boolean sticky=true;
+	private static final boolean sticky=true;
 	private static int xzID, yzID;
 	private static Orthogonal_Views instance;
 	private ImagePlus xz_image, yz_image;
 	/** ImageProcessors for the xz and yz images */
 	private ImageProcessor fp1, fp2;
 	private double ax, ay, az;
-	private boolean rotateYZ = Prefs.rotateYZ;
+	private final boolean rotateYZ = Prefs.rotateYZ;
 	private boolean flipXZ = Prefs.flipXZ;
 	
 	private int xyX, xyY;
 	private Calibration cal, cal_xz, cal_yz;
 	private double magnification=1.0;
-	private Color color = Roi.getColor();
+	private final Color color = Roi.getColor();
 	private double min, max;
 	private boolean syncZoom = true;
 	private Point crossLoc;
@@ -313,7 +312,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		 
 	}
 	
-	void arrangeWindows(boolean sticky) {
+	void arrangeWindows() {
 		ImageWindow xyWin = imp.getWindow();
 		if (xyWin==null) return;
 		Point loc = xyWin.getLocation();
@@ -458,7 +457,6 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 					System.arraycopy(pixels, width*y, newpix, width*i, width);
 			}
 			fp1.setPixels(newpix);
-			return;
 		}
 		
 	}
@@ -752,7 +750,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 		canvas.setCustomRoi(true);
 		updateCrosses(p.x, p.y, arat, brat);
 		if (syncZoom) updateMagnification(p.x, p.y);
-		arrangeWindows(sticky);
+		arrangeWindows();
 		initialized = true;
 	}
 
@@ -869,7 +867,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	}
 
 	public void windowActivated(WindowEvent e) {
-		 arrangeWindows(sticky);
+		 arrangeWindows();
 	}
 
 	public void windowClosed(WindowEvent e) {
@@ -884,7 +882,7 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	}
 
 	public void windowDeiconified(WindowEvent e) {
-		 arrangeWindows(sticky);
+		 arrangeWindows();
 	}
 
 	public void windowIconified(WindowEvent e) {
@@ -909,11 +907,11 @@ public class Orthogonal_Views implements PlugIn, MouseListener, MouseMotionListe
 	public void focusGained(FocusEvent e) {
 		ImageCanvas ic = imp.getCanvas();
 		if (ic!=null) canvas.requestFocus();
-		arrangeWindows(sticky);
+		arrangeWindows();
 	}
 
 	public void focusLost(FocusEvent e) {
-		arrangeWindows(sticky);
+		arrangeWindows();
 	}
 	
 	public static ImagePlus getImage() {

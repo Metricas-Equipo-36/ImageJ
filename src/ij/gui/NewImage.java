@@ -1,9 +1,5 @@
 package ij.gui;
 
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
-import java.awt.event.*;
 import java.util.*;
 import ij.*;
 import ij.process.*;
@@ -28,8 +24,8 @@ public class NewImage {
     private static int staticSlices = Prefs.getInt(SLICES, 1);
     private static int staticType = Prefs.getInt(TYPE, GRAY8);
     private static int staticFillWith = Prefs.getInt(FILL, FILL_BLACK);
-    private static String[] types = {"8-bit", "16-bit", "32-bit", "RGB"};
-    private static String[] fill = {"White", "Black", "Ramp", "Noise"}; 
+    private static final String[] types = {"8-bit", "16-bit", "32-bit", "RGB"};
+    private static final String[] fill = {"White", "Black", "Ramp", "Noise"};
     private int gwidth, gheight, gslices, gtype, gfill;
 	
     public NewImage() {
@@ -106,9 +102,9 @@ public class NewImage {
 						break;
 				}
 				if (fill==FILL_WHITE||fill==FILL_RAMP)
-					System.arraycopy(ip.getPixels(), 0, pixels2, 0, width*height);
+					System.arraycopy(ip.getPixels(), 0, Objects.requireNonNull(pixels2), 0, width*height);
 				stack.addSlice(null, pixels2);
-				if (IJ.escapePressed()) {IJ.beep(); break;};
+				if (IJ.escapePressed()) {IJ.beep(); break;}
 			}
 		}
 		catch(OutOfMemoryError e) {
@@ -234,7 +230,7 @@ public class NewImage {
 				break;
 				
 			case FILL_NOISE:
-				fillNoiseInt(new IntProcessor(width,height,(int[])pixels));
+				fillNoiseInt(new IntProcessor(width,height, pixels));
 				break;
 		}
 		ImagePlus imp = new ImagePlus(title, ip);
@@ -302,7 +298,7 @@ public class NewImage {
 			boolean ok = createStack(imp, ip, slices, GRAY16, options);
 			if (!ok) imp = null;
 		}
-		imp.getProcessor().setMinAndMax(0, 65535); // default display range
+		Objects.requireNonNull(imp).getProcessor().setMinAndMax(0, 65535); // default display range
 		return imp;
 	}
 
@@ -351,7 +347,7 @@ public class NewImage {
 			if (!ok) imp = null;
 		}
 		if (fill!=FILL_NOISE)
-			imp.getProcessor().setMinAndMax(0.0, 1.0); // default display range
+			Objects.requireNonNull(imp).getProcessor().setMinAndMax(0.0, 1.0); // default display range
 		return imp;
 	}
 

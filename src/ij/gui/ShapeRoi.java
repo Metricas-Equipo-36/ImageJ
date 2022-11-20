@@ -1,13 +1,10 @@
 package ij.gui;
 import java.awt.*;
-import java.awt.image.*;
 import java.awt.geom.*;
-import java.awt.event.KeyEvent;
 import java.util.*;
-import ij.*;
+
 import ij.process.*;
 import ij.measure.*;
-import ij.plugin.filter.Analyzer;
 import ij.util.Tools;
 import ij.util.FloatArray;
 
@@ -79,12 +76,12 @@ public class ShapeRoi extends Roi {
 	private boolean forceAngle = false;
 	
 	private Vector savedRois; //not really used any more
-	private static Stroke defaultStroke = new BasicStroke();
+	private static final Stroke defaultStroke = new BasicStroke();
 
 
 	/** Constructs a ShapeRoi from an Roi. */
 	public ShapeRoi(Roi r) {
-		this(r, ShapeRoi.FLATNESS, ShapeRoi.MAXERROR, false, false, false, ShapeRoi.MAXPOLY);
+		this(r, ShapeRoi.FLATNESS);
 	}
 
 	/** Constructs a ShapeRoi from a Shape. */
@@ -103,29 +100,21 @@ public class ShapeRoi extends Roi {
 		type = COMPOSITE;
 	}
 
-	/**Creates a ShapeRoi object from a "classical" ImageJ ROI.
-	 * @param r An ij.gui.Roi object
+	/**
+	 * Creates a ShapeRoi object from a "classical" ImageJ ROI.
+	 *
+	 * @param r        An ij.gui.Roi object
 	 * @param flatness The flatness factor used in convertion of curve segments into line segments.
-	 * @param maxerror Error correction for calculating length of Bezeir curves.
-	 * @param forceAngle flag used in the conversion of Shape objects to Roi objects (see {@link #shapeToRois()}.
-	 * @param forceTrace flag for conversion of Shape objects to Roi objects (see {@link #shapeToRois()}.
-	 * @param flatten if <strong><code>true</code></strong> then the shape of this ROI will be flattened
-	 * (i.e., curve segments will be aproximated by line segments).
-	 * @param maxPoly Roi objects constructed from shapes composed of linear segments fewer than this
-	 * value will be of type {@link ij.gui.Roi#POLYLINE} or {@link ij.gui.Roi#POLYGON}; conversion of
-	 * shapes with linear segments more than this value will result in Roi objects of type
-	 * {@link ij.gui.Roi#FREELINE} or {@link ij.gui.Roi#FREEROI} unless the average side length
-	 * is large (see {@link #shapeToRois()}).
 	 */
-	ShapeRoi(Roi r, double flatness, double maxerror, boolean forceAngle, boolean forceTrace, boolean flatten, int maxPoly) {
+	ShapeRoi(Roi r, double flatness) {
 		super(r.startX, r.startY, r.width, r.height);
 		this.type = COMPOSITE;
 		this.flatness = flatness;
-		this.maxerror = maxerror;
-		this.forceAngle = forceAngle;
-		this.forceTrace = forceTrace;
-		this.maxPoly= maxPoly;
-		this.flatten = flatten;
+		this.maxerror = ShapeRoi.MAXERROR;
+		this.forceAngle = false;
+		this.forceTrace = false;
+		this.maxPoly= ShapeRoi.MAXPOLY;
+		this.flatten = false;
 		shape = roiToShape((Roi)r.clone());
 	}
 
@@ -186,11 +175,13 @@ public class ShapeRoi extends Roi {
 	/***                  Logical operations on shaped rois                        ****/
 	/**********************************************************************************/
 
-	/**Unary union operator.
+	/**
+	 * Unary union operator.
 	 * The caller is set to its union with the argument.
-	 * @return the union of <strong><code>this</code></strong> and <code>sr</code>
 	 */
-	public ShapeRoi or(ShapeRoi sr) {return unaryOp(sr, OR);}
+	public void or(ShapeRoi sr) {
+		unaryOp(sr, OR);
+	}
 
 	/**Unary intersection operator.
 	 * The caller is set to its intersection with the argument (i.e., the overlapping regions between the
@@ -270,20 +261,20 @@ public class ShapeRoi extends Roi {
 		if (roi.isLine())
 			roi = Roi.convertLineToArea(roi);
 		Shape shape = null;
-		Rectangle r = roi.getBounds();
+		Rectangle r = Objects.requireNonNull(roi).getBounds();
 		boolean closeShape = true;
 		int roiType = roi.getType();
 		switch(roiType) {
 			case Roi.LINE:
 				Line line = (Line)roi;				
-				shape = new Line2D.Double ((double)(line.x1-r.x), (double)(line.y1-r.y), (double)(line.x2-r.x), (double)(line.y2-r.y) );
+				shape = new Line2D.Double (line.x1-r.x, line.y1-r.y, line.x2-r.x, line.y2-r.y);
 				break;
 			case Roi.RECTANGLE:
 				int arcSize = roi.getCornerDiameter();
 				if (arcSize>0)
 					shape = new RoundRectangle2D.Double(0, 0, r.width, r.height, arcSize, arcSize);
 				else
-					shape = new Rectangle2D.Double(0.0, 0.0, (double)r.width, (double)r.height);
+					shape = new Rectangle2D.Double(0.0, 0.0, r.width, r.height);
 				break;
 			case Roi.POLYLINE: case Roi.FREELINE: case Roi.ANGLE:
 				closeShape = false;
@@ -364,19 +355,19 @@ public class ShapeRoi extends Roi {
 			int type = (int)seg[0];
 			switch(type) {
 				case PathIterator.SEG_MOVETO:
-					((GeneralPath)s).moveTo(seg[1], seg[2]);
+					s.moveTo(seg[1], seg[2]);
 					break;
 				case PathIterator.SEG_LINETO:
-					((GeneralPath)s).lineTo(seg[1], seg[2]);
+					s.lineTo(seg[1], seg[2]);
 					break;
 				case PathIterator.SEG_QUADTO:
-					((GeneralPath)s).quadTo(seg[1], seg[2],seg[3], seg[4]);
+					s.quadTo(seg[1], seg[2],seg[3], seg[4]);
 					break;
 				case PathIterator.SEG_CUBICTO:
-					((GeneralPath)s).curveTo(seg[1], seg[2], seg[3], seg[4], seg[5], seg[6]);
+					s.curveTo(seg[1], seg[2], seg[3], seg[4], seg[5], seg[6]);
 					break;
 				case PathIterator.SEG_CLOSE:
-					((GeneralPath)s).closePath();
+					s.closePath();
 					break;
 				default: break;
 			}
@@ -469,7 +460,7 @@ public class ShapeRoi extends Roi {
 		if (shape==null)
 			return new Roi[0];
 		if (savedRois!=null)
-			return (Roi[])savedRois.toArray(new Roi[savedRois.size()]);
+			return (Roi[])savedRois.toArray(new Roi[0]);
 		ArrayList rois = new ArrayList();
 		if (shape instanceof Rectangle2D.Double) {
 			Roi r = new Roi((int)((Rectangle2D.Double)shape).getX(), (int)((Rectangle2D.Double)shape).getY(), (int)((Rectangle2D.Double)shape).getWidth(), (int)((Rectangle2D.Double)shape).getHeight());
@@ -491,7 +482,7 @@ public class ShapeRoi extends Roi {
 				pIter = shape.getPathIterator(new AffineTransform());
 			parsePath(pIter, ALL_ROIS, rois);
 		}
-		return (Roi[])rois.toArray(new Roi[rois.size()]);
+		return (Roi[])rois.toArray(new Roi[0]);
 	}
 
 
@@ -544,8 +535,8 @@ public class ShapeRoi extends Roi {
 				roiType = closed ? NO_TYPE : Roi.LINE;
 			else if (nSegments == 3 && !closed && forceAngle)
 				roiType = Roi.ANGLE;
-			else if (nSegments == 4 && closed && horizontalVerticalIntOnly && longEdges && !forceTrace && !this.forceTrace)
-				roiType = Roi.RECTANGLE;
+			else if (nSegments == 4 && closed && horizontalVerticalIntOnly && longEdges && !forceTrace && !this.forceTrace) {
+			}
 			else if (closed && horizontalVerticalIntOnly && (!longEdges || forceTrace || this.forceTrace))
 				roiType = Roi.TRACED_ROI;
 			else if (nSegments <= MAXPOLY || longEdges)
@@ -839,7 +830,7 @@ public class ShapeRoi extends Roi {
 				closed = closed || (xPoints.size()>0 && xPoints.get(0) == xPoints.getLast() && yPoints.get(0) == yPoints.getLast());
 				float[] xpf = xPoints.toArray();
 				float[] ypf = yPoints.toArray();
-				if (Double.isNaN(uncalLength) || !allInteger(xpf) || !allInteger(ypf))
+				if (Double.isNaN(uncalLength) || allInteger(xpf) || allInteger(ypf))
 					horVertOnly = false;         //allow conversion to rectangle or traced roi only for integer coordinates
 				boolean forceTrace = getLength && (!done || nSubPaths>0);  //when calculating the length for >1 subpath, assume traced rois if it can be such
 				int roiType = guessType(xPoints.size(), uncalLength, horVertOnly, forceTrace, closed);
@@ -854,7 +845,7 @@ public class ShapeRoi extends Roi {
 				if (rois != null && roi != null)
 					rois.add(roi);
 				if (task == ONE_ROI) {
-					if (rois.size() > 1) {       //we can't make a single roi from this; so we can only keep the roi as it is
+					if (Objects.requireNonNull(rois).size() > 1) {       //we can't make a single roi from this; so we can only keep the roi as it is
 						rois.clear();
 						rois.add(this);
 						return 0.0;
@@ -880,7 +871,6 @@ public class ShapeRoi extends Roi {
 					pathLength = 0;
 					startCalX = coords[0];  
 					startCalY = coords[1];
-					closed = false;
 					horVertOnly = true;
 					break;
 				case PathIterator.SEG_LINETO:
@@ -967,7 +957,7 @@ public class ShapeRoi extends Roi {
 		if (state!=NORMAL && imp!=null && imp.getRoi()!=null)
 			showStatus();
 		if (updateFullWindow) 
-			{updateFullWindow = false; imp.draw();}
+			{updateFullWindow = false; Objects.requireNonNull(imp).draw();}
 	}
 
 	public void drawRoiBrush(Graphics g) {
@@ -1059,23 +1049,22 @@ public class ShapeRoi extends Roi {
 		return shape;
 	}
 
-	/**Sets the <code>java.awt.Shape</code> object encapsulated by <strong><code>this</code></strong>
+	/**
+	 * Sets the <code>java.awt.Shape</code> object encapsulated by <strong><code>this</code></strong>
 	 * to the argument.
 	 * <br>This object will hold a (shallow) copy of the shape argument. If a deep copy
 	 * of the shape argumnt is required, then a clone of the argument should be passed
 	 * in; a possible example is <code>setShape(ShapeRoi.cloneShape(shape))</code>.
-	 * @return <strong><code>false</code></strong> if the argument is null.
 	 */
-	boolean setShape(Shape rhs) {
+	void setShape(Shape rhs) {
 		boolean result = true;
-		if (rhs==null) return false;
-		if (shape.equals(rhs)) return false;
+		if (rhs==null) return;
+		if (shape.equals(rhs)) return;
 		shape = rhs;
 		type = Roi.COMPOSITE;
 		Rectangle rect = shape.getBounds();
 		width = rect.width;
 		height = rect.height;
-		return true;
 	}
 
 	/**Returns the element with the smallest value in the array argument.*/
@@ -1201,7 +1190,7 @@ public class ShapeRoi extends Roi {
 
 	boolean allInteger(float[] a) {
 		for (int i=0; i<a.length; i++)
-			if (a[i] != (int)a[i]) return false;
-		return true;
+			if (a[i] != (int)a[i]) return true;
+		return false;
 	}
 }

@@ -4,9 +4,9 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.Calibration;
-import ij.macro.Interpreter;
 import ij.io.FileInfo;
 import java.awt.Color;
+import java.util.Objects;
 
 
 /** Implements the Image/Stacks/Images to Stack" command. */
@@ -59,7 +59,7 @@ public class ImagesToStack implements PlugIn {
 		images = new ImagePlus[wList.length];
 		for (int i=0; i<wList.length; i++) {
 			ImagePlus imp = WindowManager.getImage(wList[i]);
-			if (imp.getStackSize()==1)
+			if (Objects.requireNonNull(imp).getStackSize()==1)
 				images[count++] = imp;
 			else
 				stackCount++;
@@ -189,7 +189,7 @@ public class ImagesToStack implements PlugIn {
 							case rgb: ip2 = new ColorProcessor(width, height); break;
 						}
 						if (fillColor!=null) {
-							ip2.setColor(fillColor);
+							Objects.requireNonNull(ip2).setColor(fillColor);
 							ip2.fill();
 						}							
 						int xoff=0, yoff=0;
@@ -197,7 +197,7 @@ public class ImagesToStack implements PlugIn {
 							xoff = (width-ip.getWidth())/2;
 							yoff = (height-ip.getHeight())/2;
 						}
-						ip2.insert(ip, xoff, yoff);
+						Objects.requireNonNull(ip2).insert(ip, xoff, yoff);
 						ip = ip2;
 						break;
 					case SCALE_SMALL: case SCALE_LARGE:
@@ -280,7 +280,7 @@ public class ImagesToStack implements PlugIn {
 				maxHeight = h;
 			}
 			Calibration cal = images[i].getCalibration();
-			if (!images[i].getCalibration().equals(cal2))
+			if (images[i].getCalibration().equals(cal2))
 				cal2 = null;
 			images[index++] = images[i];
 		}

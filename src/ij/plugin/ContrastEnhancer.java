@@ -3,7 +3,6 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
-import java.awt.*;
 
 /** Implements ImageJ's Process/Enhance Contrast command. */
 public class ContrastEnhancer implements PlugIn, Measurements {
@@ -84,8 +83,8 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 				updateSelectionOnly = false;
 		}
 		equalize = gd.getNextBoolean();
-		processStack = stackSize>1?gd.getNextBoolean():false;
-		useStackHistogram = stackSize>1?gd.getNextBoolean():false;
+		processStack = stackSize > 1 && gd.getNextBoolean();
+		useStackHistogram = stackSize > 1 && gd.getNextBoolean();
 		if (saturated<0.0) saturated = 0.0;
 		if (saturated>100.0) saturated = 100;
 		if (processStack && !equalize)
@@ -220,7 +219,7 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 			else if (i>=max)
 				lut[i] = max2;
 			else
-				lut[i] = (int)(((double)(i-min)/(max-min))*max2);
+				lut[i] = (int)(((i-min) /(max-min))*max2);
 		}
 		applyTable(ip, lut);
 	}
@@ -331,8 +330,8 @@ public class ContrastEnhancer implements PlugIn, Measurements {
 
 	private double getWeightedValue(int[] histogram, int i) {
 		int h = histogram[i];
-		if (h<2 || classicEqualization) return (double)h;
-		return Math.sqrt((double)(h));
+		if (h<2 || classicEqualization) return h;
+		return Math.sqrt(h);
 	}
 	
 	public void setNormalize(boolean normalize) {

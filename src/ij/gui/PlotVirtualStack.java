@@ -6,13 +6,12 @@ import java.io.*;
 
 /** This is a virtual stack of frozen plots. */
 public class PlotVirtualStack extends VirtualStack {
-	private Vector plots = new Vector(50);
+	private final Vector plots = new Vector(50);
 	private int bitDepth = 8;
 	
 	public PlotVirtualStack(int width, int height) {
 		super(width, height);
-		this.bitDepth = bitDepth;
-	}
+    }
 	
 	/** Adds a plot to the end of the stack. */
 	public void addPlot(Plot plot) {
@@ -75,8 +74,6 @@ public class PlotVirtualStack extends VirtualStack {
 	public void deleteSlice(int n) {
 		if (n<1 || n>plots.size())
 			throw new IllegalArgumentException("Argument out of range: "+n);
-		if (plots.size()<1)
-			return;			
 		plots.remove(n-1);
 	}
 

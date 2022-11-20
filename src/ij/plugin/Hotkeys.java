@@ -1,10 +1,8 @@
 package ij.plugin;
 import ij.*;
 import ij.gui.*;
-import ij.util.*;
 import ij.measure.ResultsTable;
-import java.awt.*;
-import java.io.*;
+
 import java.util.*;
 
 /** Implements the Plugins/Hotkeys/Create Shortcut and Remove commands. */
@@ -48,7 +46,7 @@ public class Hotkeys implements PlugIn {
 			Hashtable cmds = Menus.getCommands();
 			if (cmds==null || cmds.get(command)==null) {
 				String command2 = command;
-				if (cmds.get(command)==null)
+				if (Objects.requireNonNull(cmds).get(command)==null)
 					command = command+" ";
 				if (cmds.get(command)==null) {
 					command = command2 + "...";
@@ -146,7 +144,7 @@ public class Hotkeys implements PlugIn {
 				v.addElement(cmd);
 		}
 		String[] list = new String[v.size()];
-		v.copyInto((String[])list);
+		v.copyInto(list);
 		Arrays.sort(list, String.CASE_INSENSITIVE_ORDER);
 		return list;
 	}
@@ -175,7 +173,7 @@ public class Hotkeys implements PlugIn {
 				v.add(shortcut);
 		}
 		String[] list = new String[v.size()];
-		v.copyInto((String[])list);
+		v.copyInto(list);
 		return list;
 	}
 
@@ -190,7 +188,7 @@ public class Hotkeys implements PlugIn {
 		if (v.size()==0)
 			return null;
 		String[] list = new String[v.size()];
-		v.copyInto((String[])list);
+		v.copyInto(list);
 		Arrays.sort(list, String.CASE_INSENSITIVE_ORDER);
 		return list;
 	}

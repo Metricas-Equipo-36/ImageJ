@@ -12,7 +12,7 @@ public class DicomTools {
 	public static ImageStack sort(ImageStack stack) {
 		if (IJ.debugMode) IJ.log("Sorting by DICOM image number");
 		if (stack.size()==1) return stack;
-		String[] strings = getSortStrings(stack, "0020,0013");
+		String[] strings = getSortStrings(stack);
 		if (strings==null) return stack;
 		StringSorter.sort(strings);
 		ImageStack stack2 = null;
@@ -35,10 +35,10 @@ public class DicomTools {
 		return stack2;
 	}
 
-	private static String[] getSortStrings(ImageStack stack, String tag) {
+	private static String[] getSortStrings(ImageStack stack) {
 		double series = getSeriesNumber(getSliceLabel(stack,1));
 		int n = stack.size();
-		boolean checkRescaleSlope = (stack instanceof VirtualStack)?((VirtualStack)stack).getBitDepth()==16:false;
+		boolean checkRescaleSlope = stack instanceof VirtualStack && stack.getBitDepth() == 16;
 		if (Prefs.ignoreRescaleSlope)
 			checkRescaleSlope = false;
 		boolean showError = false;
@@ -48,9 +48,9 @@ public class DicomTools {
 			String tags = getSliceLabel(stack,i);
 			if (tags==null) return null;
 			sliceLabels[i-1] = tags;
-			double value = getNumericTag(tags, tag);
+			double value = getNumericTag(tags, "0020,0013");
 			if (Double.isNaN(value)) {
-				if (IJ.debugMode) IJ.log("  "+tag+"  tag missing in slice "+i);
+				if (IJ.debugMode) IJ.log("  "+ "0020,0013" +"  tag missing in slice "+i);
 				if (showError) rescaleSlopeError(stack);
 				return null;
 			}
@@ -59,7 +59,7 @@ public class DicomTools {
 				if (showError) rescaleSlopeError(stack);
 				return null;
 			}
-			values[i-1] = toString(value, MAX_DIGITS) + toString(i, MAX_DIGITS);
+			values[i-1] = toString(value) + toString(i);
 			if (checkRescaleSlope) {
 				double rescaleSlope = getNumericTag(tags, "0028,1053");
 				if (rescaleSlope!=1.0)
@@ -71,10 +71,10 @@ public class DicomTools {
 	}
 	
 	private static void rescaleSlopeError(ImageStack stack) {
-		((VirtualStack)stack).setBitDepth(32);
+		stack.setBitDepth(32);
 	}
 
-	private static String toString(double value, int width) {
+	private static String toString(double value) {
 		String s = "       " + IJ.d2s(value,0);
 		return s.substring(s.length()-MAX_DIGITS);
 	}

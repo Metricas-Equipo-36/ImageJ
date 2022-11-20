@@ -7,7 +7,6 @@ import ij.plugin.TextReader;
 import ij.plugin.frame.Recorder;
 import ij.util.Tools;
 import java.awt.*;
-import java.util.*;
 import java.awt.event.*;
 import java.io.*;
 
@@ -30,8 +29,8 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 	private PlugInFilterRunner pfr;
 	private Thread mainThread;
 	private int pass;
-	private static String defaultKernelText = "-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n";
-	private static boolean defaultNormalizeFlag = true;
+	private static final String defaultKernelText = "-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 24 -1 -1\n-1 -1 -1 -1 -1\n-1 -1 -1 -1 -1\n";
+	private static final boolean defaultNormalizeFlag = true;
 	private static String lastKernelText = defaultKernelText;
 	private static boolean lastNormalizeFlag = defaultNormalizeFlag;
 	private String kernelText = defaultKernelText;
@@ -160,7 +159,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 			int i = 0;
 			for (int y=0; y<kh; y++) {
 				for (int x=0; x<kw; x++) {
-					sb.append(""+kernel[i++]);
+					sb.append("").append(kernel[i++]);
 					if (x<kw-1) sb.append(" ");
 				}
 				sb.append("\n");
@@ -187,11 +186,13 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		return buttons;
 	}
 
-	/** Convolves <code>ip</code> with a kernel of width <code>kw</code> and
-		height <code>kh</code>. Returns false if the user cancels the operation. */
-	public boolean convolve(ImageProcessor ip, float[] kernel, int kw, int kh) {
+	/**
+	 * Convolves <code>ip</code> with a kernel of width <code>kw</code> and
+	 * height <code>kh</code>. Returns false if the user cancels the operation.
+	 */
+	public void convolve(ImageProcessor ip, float[] kernel, int kw, int kh) {
 		if (canceled || kernel==null || kw*kh!=kernel.length)
-			return false;
+			return;
 		if ((kw&1)!=1 || (kh&1)!=1)
 			throw new IllegalArgumentException("Kernel width or height not odd ("+kw+"x"+kh+")");
 		boolean notFloat = !(ip instanceof FloatProcessor);
@@ -212,7 +213,6 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 				ip2 = ip2.convertToShort(false);
 			ip.setPixels(ip2.getPixels());
 		}
-		return !canceled;
 	}
 
 	/** If 'normalize' is true (the default), the convolve(), convolveFloat() and
@@ -222,13 +222,15 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 		normalize = normalizeKernel;
 	}
 
-	/** Convolves the float image <code>ip</code> with a kernel of width
-		<code>kw</code> and height <code>kh</code>. Returns false if
-		the user cancels the operation by pressing 'Esc'. */
-	public boolean convolveFloat(ImageProcessor ip, float[] kernel, int kw, int kh) {
+	/**
+	 * Convolves the float image <code>ip</code> with a kernel of width
+	 * <code>kw</code> and height <code>kh</code>. Returns false if
+	 * the user cancels the operation by pressing 'Esc'.
+	 */
+	public void convolveFloat(ImageProcessor ip, float[] kernel, int kw, int kh) {
 		if (!(ip instanceof FloatProcessor))
 			throw new IllegalArgumentException("FloatProcessor required");
-		if (canceled) return false;
+		if (canceled) return;
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		Rectangle r = ip.getRoi();
@@ -256,7 +258,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 			long time = System.currentTimeMillis();
 			if (time-lastTime>100) {
 				lastTime = time;
-				if (thread.isInterrupted()) return false;
+				if (thread.isInterrupted()) return;
 				if (isMainThread) {
 					if (IJ.escapePressed()) {
 						canceled = true;
@@ -264,13 +266,13 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 						ImageProcessor originalIp = imp.getProcessor();
 						if (originalIp.getNChannels() > 1)
 							originalIp.reset();
-						return false;
+						return;
 					}
 					showProgress((y-y1)/(double)(y2-y1));
 				}
 			}
 			for (int x=x1; x<x2; x++) {
-				if (canceled) return false;
+				if (canceled) return;
 				sum = 0.0;
 				i = 0;
 				edgePixel = y<vc || y>=yedge || x<uc || x>=xedge;
@@ -288,8 +290,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 				pixels[x+y*width] = (float)(sum*scale);
 			}
     	}
-   		return true;
-   	 }
+	}
 
 	/** Convolves the image <code>ip</code> with a kernel of width
 		<code>kw</code> and height <code>kh</code>. */
@@ -428,7 +429,7 @@ public class Convolver implements ExtendedPlugInFilter, DialogListener, ActionLi
 				if (integers)
 					sb.append(IJ.d2s(ip.getPixelValue(x, y),0));
 				else
-					sb.append(""+ip.getPixelValue(x, y));
+					sb.append("").append(ip.getPixelValue(x, y));
 			}
 			if (y!=height-1)
 				sb.append("\n");

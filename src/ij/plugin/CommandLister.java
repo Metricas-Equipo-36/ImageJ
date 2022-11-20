@@ -1,9 +1,8 @@
 package ij.plugin;
 import ij.*;
 import ij.text.*;
-import ij.util.*;
+
 import java.util.*;
-import java.awt.*;
 import java.awt.event.*;
 
 /** This class is used by the Plugins/Shortcuts/List Shortcuts 
@@ -23,11 +22,11 @@ public class CommandLister implements PlugIn {
 		int index = 1;
 		for (Enumeration en=commands.keys(); en.hasMoreElements();) {
 			String command = (String)en.nextElement();
-			v.addElement(index+"\t"+command+"\t"+(String)commands.get(command));
+			v.addElement(index+"\t"+command+"\t"+ commands.get(command));
 			index++;
 		}
 		String[] list = new String[v.size()];
-		v.copyInto((String[])list);
+		v.copyInto(list);
 		showList("Commands", " \tCommand\tPlugin", list);
 	}
 
@@ -47,7 +46,7 @@ public class CommandLister implements PlugIn {
 		Hashtable macroShortcuts = Menus.getMacroShortcuts();
 		addShortcutsToVector(macroShortcuts, v);
 		String[] list = new String[v.size()];
-		v.copyInto((String[])list);
+		v.copyInto(list);
 		return list;
 	}
 
@@ -71,15 +70,14 @@ public class CommandLister implements PlugIn {
 			}
 			if (shortcut.length()>1)
 				shortcut = " " + shortcut; 
-			v.addElement(shortcut+"\t"+(String)shortcuts.get(key));
+			v.addElement(shortcut+"\t"+ shortcuts.get(key));
 		}
 	}
 
 	void showList(String title, String headings, String[] list) {
 		Arrays.sort(list, String.CASE_INSENSITIVE_ORDER);
 		ArrayList list2 = new ArrayList();
-		for (int i=0; i<list.length; i++)
-			list2.add(list[i]);
+		Collections.addAll(list2, list);
 		TextWindow tw = new TextWindow(title, headings, list2, 600, 500);
 	}
 }

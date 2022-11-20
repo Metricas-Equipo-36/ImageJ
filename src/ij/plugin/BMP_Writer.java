@@ -1,10 +1,9 @@
 package ij.plugin;
 import ij.*;
 import ij.io.*;
-import ij.process.*;
+
 import java.awt.*;
 import java.io.*;
-import java.awt.image.*;
 
 /** Implements the File/Save As/BMP command. Based on BMPFile class from
    http://www.javaworld.com/javaworld/javatips/jw-javatip60-p2.html */
@@ -15,29 +14,29 @@ public class BMP_Writer implements PlugIn {
  private final static int BITMAPINFOHEADER_SIZE = 40;
  //--- Private variable declaration
  //--- Bitmap file header
- private byte bitmapFileHeader [] = new byte [14];
- private byte bfType [] =  {(byte)'B', (byte)'M'};
+ private final byte[] bitmapFileHeader = new byte [14];
+ private final byte[] bfType =  {(byte)'B', (byte)'M'};
  private int bfSize = 0;
- private int bfReserved1 = 0;
- private int bfReserved2 = 0;
+ private final int bfReserved1 = 0;
+ private final int bfReserved2 = 0;
  private int bfOffBits = BITMAPFILEHEADER_SIZE + BITMAPINFOHEADER_SIZE;
  //--- Bitmap info header
- private byte bitmapInfoHeader [] = new byte [40];
- private int biSize = BITMAPINFOHEADER_SIZE;
+ private final byte[] bitmapInfoHeader = new byte [40];
+ private final int biSize = BITMAPINFOHEADER_SIZE;
  private int biWidth = 0;
  private int padWidth = 0;
  private int biHeight = 0;
- private int biPlanes = 1;
+ private final int biPlanes = 1;
  private int biBitCount = 24;
- private int biCompression = 0;
- private int biSizeImage = 0;
- private int biXPelsPerMeter = 0x0;
- private int biYPelsPerMeter = 0x0;
+ private final int biCompression = 0;
+ private final int biSizeImage = 0;
+ private final int biXPelsPerMeter = 0x0;
+ private final int biYPelsPerMeter = 0x0;
  private int biClrUsed = 0;
- private int biClrImportant = 0;
+ private final int biClrImportant = 0;
  //--- Bitmap raw data
- private int intBitmap [];
- private byte byteBitmap [];
+ private int[] intBitmap;
+ private byte[] byteBitmap;
  //--- File section
  private FileOutputStream fo;
  private BufferedOutputStream bfo;
@@ -124,7 +123,7 @@ public class BMP_Writer implements PlugIn {
   * It also computes some information for the bitmap info header.
   *
   */
- private boolean convertImage (Image parImage, int parWidth, int parHeight) {
+ private void convertImage (Image parImage, int parWidth, int parHeight) {
    int pad;
    if(biBitCount == 24)
      intBitmap = (int[]) imp.getProcessor().getPixels();
@@ -139,7 +138,6 @@ public class BMP_Writer implements PlugIn {
    if (pad == 4)       // <==== Bug correction
      pad = 0;            // <==== Bug correction
    padWidth = biWidth*(biBitCount==24?3:1)+pad;
-   return (true);
  }
 
  /*
@@ -153,7 +151,7 @@ public class BMP_Writer implements PlugIn {
    int value;
    int i;
    int pad;
-   byte rgb [] = new byte [3];
+   byte[] rgb = new byte [3];
    if(biBitCount==24)
      pad = 4 - ((biWidth * 3) % 4);
    else
@@ -224,7 +222,7 @@ public class BMP_Writer implements PlugIn {
   *
   */
  private byte [] intToWord (int parValue) {
-   byte retValue [] = new byte [2];
+   byte[] retValue = new byte [2];
    retValue [0] = (byte) (parValue & 0x00FF);
    retValue [1] = (byte) ((parValue >> 8) & 0x00FF);
    return (retValue);
@@ -237,7 +235,7 @@ public class BMP_Writer implements PlugIn {
   *
   */
  private byte [] intToDWord (int parValue) {
-   byte retValue [] = new byte [4];
+   byte[] retValue = new byte [4];
    retValue [0] = (byte) (parValue & 0x00FF);
    retValue [1] = (byte) ((parValue >> 8) & 0x000000FF);
    retValue [2] = (byte) ((parValue >> 16) & 0x000000FF);

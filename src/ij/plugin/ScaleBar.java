@@ -4,7 +4,6 @@ import ij.process.*;
 import ij.gui.*;
 import java.awt.*;
 import ij.measure.*;
-import java.awt.event.*;
 
 /** This plugin implements the Analyze/Tools/Scale Bar command.
  * Divakar Ramachandran added options to draw a background 
@@ -22,21 +21,21 @@ public class ScaleBar implements PlugIn {
 	final static String SCALE_BAR = "|SB|";
 	
 	private static final ScaleBarConfiguration sConfig = new ScaleBarConfiguration();
-	private ScaleBarConfiguration config = new ScaleBarConfiguration(sConfig);
+	private final ScaleBarConfiguration config = new ScaleBarConfiguration(sConfig);
 
 	ImagePlus imp;
 	int hBarWidthInPixels;
 	int vBarHeightInPixels;
 	int roiX, roiY, roiWidth, roiHeight;
 	boolean userRoiExists;
-	boolean[] checkboxStates = new boolean[6];
+	final boolean[] checkboxStates = new boolean[6];
 
-	Rectangle hBackground = new Rectangle();
-	Rectangle hBar = new Rectangle();
-	Rectangle hText = new Rectangle();
-	Rectangle vBackground = new Rectangle();
-	Rectangle vBar = new Rectangle();
-	Rectangle vText = new Rectangle();
+	final Rectangle hBackground = new Rectangle();
+	final Rectangle hBar = new Rectangle();
+	final Rectangle hText = new Rectangle();
+	final Rectangle vBackground = new Rectangle();
+	final Rectangle vBar = new Rectangle();
+	final Rectangle vText = new Rectangle();
 
 	/**
 	 * This method is called when the plugin is loaded. 'arg', which
@@ -623,7 +622,7 @@ public class ScaleBar implements PlugIn {
 
 	class BarDialogListener implements DialogListener {
 
-		boolean multipleSlices;
+		final boolean multipleSlices;
 
 		public BarDialogListener(boolean multipleSlices) {
 			super();
@@ -683,7 +682,7 @@ public class ScaleBar implements PlugIn {
 		}
 	}
 
-   class MissingRoiException extends Exception {
+   static class MissingRoiException extends Exception {
 		MissingRoiException() {
 			super("Scalebar location is set to AT_SELECTION but there is no selection on the image.");
 		}
@@ -691,7 +690,7 @@ public class ScaleBar implements PlugIn {
 
 	static class ScaleBarConfiguration {
 	
-		private static int defaultBarHeight = 4;
+		private static final int defaultBarHeight = 4;
 
 		boolean showHorizontal;
 		boolean showVertical;

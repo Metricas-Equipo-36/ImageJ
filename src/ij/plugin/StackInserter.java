@@ -1,9 +1,9 @@
 package ij.plugin;
-import java.awt.*;
-import java.io.*;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
+
+import java.util.Objects;
 
 /** This plugin, which implements the Image/Stacks/Tools/Insert 
 	command, inserts an image or stack into another image or stack. */
@@ -49,7 +49,7 @@ public class StackInserter implements PlugIn {
 		String title2 = titles[index2];
 		ImagePlus imp1 = WindowManager.getImage(wList[index1]);
 		ImagePlus imp2 = WindowManager.getImage(wList[index2]);
-		if (imp1.getType()!= imp2.getType()) {
+		if (Objects.requireNonNull(imp1).getType()!= Objects.requireNonNull(imp2).getType()) {
 			IJ.showMessage("Stack Inserter", "The source and destination must be the same type.");
 			return;
 		}

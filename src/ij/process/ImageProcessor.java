@@ -264,7 +264,7 @@ public abstract class ImageProcessor implements Cloneable {
 		int r1 = c.getRed();
 		int g1 = c.getGreen();
 		int b1 = c.getBlue();
-		if (!(r1==g1&&g1==b1&&r1==b1) && icm==defaultColorModel) {
+		if (!(r1 == g1 && g1 == b1) && icm == defaultColorModel) {
 			double[] w = ColorProcessor.getWeightingFactors();
 			r1 = (int)Math.round(3*r1*w[0]);
 			g1 = (int)Math.round(3*g1*w[1]);
@@ -429,7 +429,7 @@ public abstract class ImageProcessor implements Cloneable {
 
 	/** Returns 'true' if the fill/draw value has been set. */
 	public boolean fillValueSet() {
-		return fillValueSet;
+		return !fillValueSet;
 	}
 
 	/** Sets the background fill value used by the rotate() and scale() methods. */
@@ -601,7 +601,6 @@ public abstract class ImageProcessor implements Cloneable {
 		try {
 			m = Method.valueOf(Method.class, mString);
 		} catch(Exception e) {
-			m = null;
 		}
 		if (m==null)
 			throw new IllegalArgumentException("Invalid method (\""+mString+"\")");
@@ -964,7 +963,7 @@ public abstract class ImageProcessor implements Cloneable {
 		if (method<NONE || method>BICUBIC)
 			throw new IllegalArgumentException("Invalid interpolation method");
 		interpolationMethod = method;
-		interpolate = method!=NONE?true:false;
+		interpolate = method != NONE;
 	}
 
 	/** Returns the current interpolation method (NONE, BILINEAR or BICUBIC). */
@@ -1107,14 +1106,15 @@ public abstract class ImageProcessor implements Cloneable {
 			data[i] = getPixel(x++, y);
 	}
 
-	/** Returns the pixel values along the horizontal line starting at (x,y). */
-	public float[] getRow(int x, int y, float[] data, int length) {
+	/**
+     * Returns the pixel values along the horizontal line starting at (x,y).
+     */
+	public void getRow(int x, int y, float[] data, int length) {
 		if (data==null)
 			data = new float[length];
 		for (int i=0; i<length; i++)
 			data[i] = getf(x++, y);
-		return data;
-	}
+    }
 
 	/** Returns the pixel values down the column starting at (x,y). */
 	public void getColumn(int x, int y, int[] data, int length) {
@@ -1530,10 +1530,7 @@ public abstract class ImageProcessor implements Cloneable {
 		work with 8-bit images that are not using 0-255 display range. */
 	public void setAntialiasedText(boolean antialiasedText) {
 		setupFontMetrics();
-		if (antialiasedText && (((this instanceof ByteProcessor)&&getMin()==0.0&&getMax()==255.0) || (this instanceof ColorProcessor)))
-			this.antialiasedText = true;
-		else
-			this.antialiasedText = false;
+		this.antialiasedText = antialiasedText && (((this instanceof ByteProcessor) && getMin() == 0.0 && getMax() == 255.0) || (this instanceof ColorProcessor));
 		Java2.setAntialiasedText(fmGraphics, this.antialiasedText);
 		fontMetrics = fmGraphics.getFontMetrics(font);
 	}

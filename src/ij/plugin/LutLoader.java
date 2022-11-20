@@ -2,11 +2,13 @@ package ij.plugin;
 import ij.*;
 import ij.io.*;
 import ij.process.*;
-import ij.gui.ImageWindow;
+
 import java.awt.*;
 import java.io.*;
 import java.awt.image.*;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /** Opens NIH Image look-up tables (LUTs), 768 byte binary LUTs
 	(256 reds, 256 greens and 256 blues), LUTs in text format, 
@@ -14,7 +16,7 @@ import java.net.*;
 	passed to the run() method. */
 public class LutLoader extends ImagePlus implements PlugIn {
 
-	private static String defaultDirectory = null;
+	private static final String defaultDirectory = null;
 	private boolean suppressErrors;
 	
 	/** Returns the LUT 'name' as an IndexColorModel, where
@@ -328,7 +330,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		int size = 0;
 		try {
 			if (length>768)
-				size = openBinaryLut(fi, isURL, false); // attempt to read NIH Image LUT
+				size = openBinaryLut(fi, false, false); // attempt to read NIH Image LUT
 			if (size==0 && (length==0||length==768||length==970))
 				size = openBinaryLut(fi, isURL, true); // otherwise read raw LUT
 			if (size==0 && length>768)
@@ -352,7 +354,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 		if (isURL)
 			is = new URL(fi.url+fi.fileName).openStream();
 		else
-			is = new FileInputStream(fi.getFilePath());
+			is = Files.newInputStream(Paths.get(fi.getFilePath()));
 		DataInputStream f = new DataInputStream(is);
 		int nColors = 256;
 		if (!raw) {
@@ -412,7 +414,7 @@ public class LutLoader extends ImagePlus implements PlugIn {
 	/** Opens the specified ImageJ LUT and returns
 		it as an IndexColorModel. Since 1.43t. */
 	public static IndexColorModel open(String path) throws IOException {
-		return open(new FileInputStream(path));
+		return open(Files.newInputStream(Paths.get(path)));
 	}
 
 	/** Opens an ImageJ LUT using an InputStream

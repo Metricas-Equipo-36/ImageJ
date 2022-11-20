@@ -2,15 +2,12 @@ package ij.plugin.frame;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
-import java.io.*;
+
 import ij.*;
 import ij.plugin.*;
-import ij.plugin.frame.*; 
-import ij.text.*;
+import ij.plugin.frame.*;
 import ij.gui.*;
 import ij.util.*;
-import ij.io.*;
-import ij.process.*;
 import ij.measure.*;
 
 /** This is ImageJ's macro recorder. */
@@ -27,12 +24,12 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 	private Choice mode;
 	private Button makeMacro, help;
 	private TextField fileName;
-	private String fitTypeStr = CurveFitter.fitList[0];
+	private final String fitTypeStr = CurveFitter.fitList[0];
 	private static TextArea textArea;
 	private static Recorder instance;
 	private static String commandName;
 	private static String commandOptions;
-	private static String defaultName = "Macro.ijm";
+	private static final String defaultName = "Macro.ijm";
 	private static boolean recordPath = true;
 	private static boolean scriptMode;
 	private static boolean imageUpdated;
@@ -151,14 +148,14 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		for (int i=0; i<str.length(); i++) {
 			c = str.charAt(i);
 			if (c =='\\' || c=='"')
-				sb.append("\\"+c);
+				sb.append("\\").append(c);
 			else if (c == '\n')
 				sb.append("\\n");
 			else if (c < ' ' || c > '~' && c < 0xa0) {
 				sb.append('\\');
-				String octal = Integer.toString(c,8);
+				StringBuilder octal = new StringBuilder(Integer.toString(c, 8));
 				while (octal.length()<3)
-					octal = '0' + octal;
+					octal.insert(0, '0');
 				sb.append(octal);
 			} else
 				sb.append(c);
@@ -352,11 +349,11 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 			String method = type>=Roi.LINE && type<=Roi.FREELINE?"makeLine":"makePolygon";
 			StringBuffer args = new StringBuffer();
 			for (int i=0; i<p.npoints; i++) {
-				args.append(p.xpoints[i]+",");
-				args.append(""+p.ypoints[i]);
+				args.append(p.xpoints[i]).append(",");
+				args.append("").append(p.ypoints[i]);
 				if (i!=p.npoints-1) args.append(",");
 			}
-			textArea.append(method+"("+args.toString()+");\n");
+			textArea.append(method+"("+ args +");\n");
 		}
 	}
 
@@ -427,7 +424,7 @@ public class Recorder extends PlugInFrame implements PlugIn, ActionListener, Ima
 		if (scriptMode) {
 			if (isTextOrTable(path))
 				s = "IJ.open";
-			else if (path!=null && path.endsWith(".lut")) {
+			else if (path.endsWith(".lut")) {
 				s = "lut = Opener.openLut";
 				openingLut = true;
 			}

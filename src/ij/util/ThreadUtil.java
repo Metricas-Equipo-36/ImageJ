@@ -48,7 +48,7 @@ public class ThreadUtil {
 	/** The threadPoolExecutor holds at least as many threads for parallel execution as the number of
 	 *  processors; additional threads are added as required. These additional threads will be
 	 *  terminated if idle for 120 seconds. */
-	public static ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
+	public static final ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
 			Runtime.getRuntime().availableProcessors(),	//minimum number of threads
 			Integer.MAX_VALUE,							//maximum number of threads
 			120,										//unused threads are terminated after this time
@@ -56,24 +56,23 @@ public class ThreadUtil {
 			new SynchronousQueue<Runnable>()			//requests will be processed immediately (not a real queue)
 			);
 
-	/** Starts all callables for parallel execution (using a ThreadPoolExecutor)
-	 *  and waits until each of them has finished.
-	 *  If the current thread is interrupted, each of the callables gets
-	 *  cancelled and interrupted. Also in that case, waits until all callables have
-	 *  finished. The 'interrupted' status of the current thread is
-	 *  preserved, as required for preview in an ImageJ ExtendedPlugInFilter.
-	 *  Note that ImageJ requires that all callables can run concurrently,
-	 *  and none of them must stay in the queue while others run.
-	 *  (This is required by the RankFilters, where the threads are not independent)
-	 *  @param callables Array of tasks. If no return value is needed,
-	 *  best use <code>Callable<Void></code> (then the <code>Void call()</code> method
-	 *  should return null). If the array size is 1, the <code>call()</code> method
-	 *  is executed in the current thread.
-	 *  @return Array of the <code>java.util.concurrent.Future</code>s,
-	 *  corresponding to the callables. If the call methods of the callables
-	 *  return results, the get() methods of these Futures may be used to get the results.
+	/**
+	 * Starts all callables for parallel execution (using a ThreadPoolExecutor)
+	 * and waits until each of them has finished.
+	 * If the current thread is interrupted, each of the callables gets
+	 * cancelled and interrupted. Also in that case, waits until all callables have
+	 * finished. The 'interrupted' status of the current thread is
+	 * preserved, as required for preview in an ImageJ ExtendedPlugInFilter.
+	 * Note that ImageJ requires that all callables can run concurrently,
+	 * and none of them must stay in the queue while others run.
+	 * (This is required by the RankFilters, where the threads are not independent)
+	 *
+	 * @param callables Array of tasks. If no return value is needed,
+	 *                  best use <code>Callable<Void></code> (then the <code>Void call()</code> method
+	 *                  should return null). If the array size is 1, the <code>call()</code> method
+	 *                  is executed in the current thread.
 	 */
-	public static Future[] startAndJoin(Callable[] callables) {
+	public static void startAndJoin(Callable[] callables) {
 		if (callables.length == 1) {	//special case: call in current thread and create a Future
 			Object callResult = null;
 			try {
@@ -91,11 +90,9 @@ public class ThreadUtil {
 					public boolean isDone() {return true;}
 				}	
 			};
-			return futures;
 		} else {
 			Future[] futures = start(callables);
 			joinAll(futures);
-			return futures;
 		}
 	}
 

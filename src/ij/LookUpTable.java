@@ -4,9 +4,7 @@ import java.awt.image.*;
 import ij.process.*;
 
 /** This class represents a color look-up table. */
-public class LookUpTable extends Object {
-	private int width, height;
-	private byte[] pixels;
+public class LookUpTable {
 	private int mapSize = 0;
 	private ColorModel cm;
 	private byte[] rLUT, gLUT,bLUT;
@@ -18,7 +16,7 @@ public class LookUpTable extends Object {
 			pg.grabPixels();
 			cm = pg.getColorModel();
 		}
-		catch (InterruptedException e){};
+		catch (InterruptedException e){}
 		getColors(cm);
 	}
 
@@ -70,8 +68,10 @@ public class LookUpTable extends Object {
 		if (mapSize < 256)
 			return false;
 		for (int i=0; i<mapSize; i++)
-			if ((rLUT[i] != gLUT[i]) || (gLUT[i] != bLUT[i]))
+			if ((rLUT[i] != gLUT[i]) || (gLUT[i] != bLUT[i])) {
 				isGray = false;
+				break;
+			}
 		return isGray;
 	}
 			

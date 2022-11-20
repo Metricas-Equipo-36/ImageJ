@@ -12,11 +12,12 @@ public class MedianCut {
 	
 	static final int MAXCOLORS = 256;	// maximum # of output colors
 	static final int HSIZE = 32768;		// size of image histogram
-	private int[] hist;					// RGB histogram and reverse color lookup table
+	private final int[] hist;					// RGB histogram and reverse color lookup table
 	private int[] histPtr;				// points to colors in "hist"
 	private Cube[] list;				// list of cubes
-	private int[] pixels32;
-	private int width, height;
+	private final int[] pixels32;
+	private final int width;
+	private final int height;
 	private IndexColorModel cm; 
 
 	public MedianCut(int[] pixels, int width, int height) {
@@ -325,7 +326,7 @@ public class MedianCut {
 	}
 	
 	
-	void quickSort(int a[], int lo0, int hi0) {
+	void quickSort(int[] a, int lo0, int hi0) {
    // Based on the QuickSort method by James Gosling from Sun's SortDemo applet
    
       int lo = lo0;

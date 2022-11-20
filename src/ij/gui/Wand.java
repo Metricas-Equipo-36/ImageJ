@@ -36,12 +36,13 @@ public class Wand {
     public int[] ypoints = new int[maxPoints];
 
     private final static int THRESHOLDED_MODE = 256; //work on threshold
-    private ImageProcessor ip;
+    private final ImageProcessor ip;
     private byte[] bpixels;
     private int[] cpixels;
     private short[] spixels;
     private float[] fpixels;
-    private int width, height;
+    private final int width;
+    private final int height;
     private float lowerThreshold, upperThreshold;
     private int xmin;                   // of selection created
     private boolean exactPixelValue;    // For color, match RGB, not gray value
@@ -92,7 +93,7 @@ public class Wand {
 
     /** This is a variation of legacy autoOutline that uses int threshold arguments. */
     public void autoOutline(int startX, int startY, int lower, int upper) {
-        autoOutline(startX, startY, (double)lower, (double)upper, THRESHOLDED_MODE|LEGACY_MODE);
+        autoOutline(startX, startY, lower, upper, THRESHOLDED_MODE|LEGACY_MODE);
     }
 
     /** Traces the boundary of an area of uniform color, where

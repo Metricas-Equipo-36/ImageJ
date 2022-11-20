@@ -1,11 +1,10 @@
 package ij;
 import ij.io.*;
 import java.awt.*;
-import java.io.*;
 
 /** Opens, in a separate thread, files selected from the File/Open Recent submenu.*/
 public class RecentOpener implements Runnable {
-	private String path;
+	private final String path;
 
 	RecentOpener(String path) {
 		this.path = path;

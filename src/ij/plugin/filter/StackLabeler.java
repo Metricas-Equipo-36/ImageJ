@@ -91,7 +91,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		gd.addNumericField("Y location:", y, 0);
 		gd.addNumericField("Font size:", fontSize, 0);
 		gd.addStringField("Text:", text, 10);
-        addRange(gd, "Range:", 1, defaultLastFrame);
+        addRange(gd, defaultLastFrame);
 		gd.setInsets(10,20,0);
         gd.addCheckbox(" Use overlay", useOverlay);
         gd.addCheckbox(" Use_text tool font", useTextToolFont);
@@ -107,21 +107,21 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
         	return flags;
     }
 
-	void addRange(GenericDialog gd, String label, int start, int end) {
-		gd.addStringField(label, start+"-"+end);
+	void addRange(GenericDialog gd, int end) {
+		gd.addStringField("Range:", 1 +"-"+end);
 	}
 	
-	double[] getRange(GenericDialog gd, int start, int end) {
+	double[] getRange(GenericDialog gd, int end) {
 		String[] range = Tools.split(gd.getNextString(), " -");
 		double d1 = Tools.parseDouble(range[0]);
 		double d2 = range.length==2?Tools.parseDouble(range[1]):Double.NaN;
 		double[] result = new double[2];
 		result[0] = Double.isNaN(d1)?1:(int)d1;
 		result[1] = Double.isNaN(d2)?end:(int)d2;
-		if (result[0]<start) result[0] = start;
+		if (result[0]< 1) result[0] = 1;
 		if (result[1]>end) result[1] = end;
 		if (result[0]>result[1]) {
-			result[0] = start;
+			result[0] = 1;
 			result[1] = end;
 		}
 		return result;
@@ -136,7 +136,7 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 		y = (int)gd.getNextNumber();
 		fontSize = (int)gd.getNextNumber();
 		text = gd.getNextString();
-		double[] range = getRange(gd, 1, defaultLastFrame);
+		double[] range = getRange(gd, defaultLastFrame);
 		useOverlay = gd.getNextBoolean();
 		useTextToolFont = gd.getNextBoolean();
 		if (virtualStack) useOverlay = true;
@@ -295,10 +295,10 @@ public class StackLabeler implements ExtendedPlugInFilter, DialogListener {
 	}
 	
 	String  zeroFill(int n) {
-		String str = ""+n;
+		StringBuilder str = new StringBuilder("" + n);
 		while (str.length()<fieldWidth)
-			str = "0" + str;
-		return str;
+			str.insert(0, "0");
+		return str.toString();
 	}
 		
 	public void setNPasses (int nPasses) {}

@@ -1,8 +1,6 @@
 package ij.plugin.filter;
 import ij.*;
-import ij.gui.*;
 import ij.process.*;
-import java.awt.*;
 
 /** Implements the commands in the Process/Shadows submenu. */
 public class Shadows implements PlugInFilter {
@@ -36,8 +34,8 @@ public class Shadows implements PlugInFilter {
 				if (IJ.escapePressed()) {
 					IJ.beep();
 					break;
-				};
-			}
+				}
+            }
 		}
 		else if (arg.equals("north")) north(ip);
 		else if (arg.equals("northeast")) northeast(ip);

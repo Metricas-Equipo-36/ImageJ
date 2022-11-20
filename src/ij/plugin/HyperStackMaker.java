@@ -7,9 +7,9 @@ import java.awt.*;
 
 /** This plugin implements the File/New/Hyperstack command. */
 public class HyperStackMaker implements PlugIn {
-	private static String defaults = "8-bit Color 400 300 3 4 5 1";
-	private static String[] types = {"8-bit", "16-bit", "32-bit", "RGB"};
-	private static String[] modes = {"Composite", "Color", "Grayscale"};
+	private static final String defaults = "8-bit Color 400 300 3 4 5 1";
+	private static final String[] types = {"8-bit", "16-bit", "32-bit", "RGB"};
+	private static final String[] modes = {"Composite", "Color", "Grayscale"};
 	private static String title = "HyperStack";
 	private String type, mode;
 	private int width, height, c, z, t;
@@ -30,7 +30,7 @@ public class HyperStackMaker implements PlugIn {
 		z = (int)Tools.parseDouble(prefs[5], 4);
 		t = (int)Tools.parseDouble(prefs[6], 5);
 		int labelInt = (int)Tools.parseDouble(prefs[7], 1);
-		label = labelInt==1?true:false;
+		label = labelInt == 1;
 		if (!showDialog())
 			return;
 		String type2 = type;
@@ -130,7 +130,7 @@ public class HyperStackMaker implements PlugIn {
 			
 			if (!rgb) {
 				// embed channel, slice, frame and stack index into pixel data
-				yloc += 30;;
+				yloc += 30;
 				int size = 20;
 				ip.setValue(channel); ip.setRoi(size,yloc,size,size); ip.fill();
 				ip.setColor(Color.white); ip.drawRect(size,yloc,size,size);

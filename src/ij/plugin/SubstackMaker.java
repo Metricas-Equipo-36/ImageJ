@@ -3,8 +3,9 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.Recorder;
-import ij.io.FileInfo;
+
 import java.awt.Color;
+import java.util.Objects;
 
 /**
  * This plugin implements the Image/Stacks/Tools/Make Substack command.
@@ -82,19 +83,19 @@ public class SubstackMaker implements PlugIn {
 			if (idx1>=1) {									// input displayed in range
 				String rngStart = userInput.substring(0, idx1);
 				String rngEnd = userInput.substring(idx1+1);
-				Integer obj = Integer.valueOf(rngStart);
-				int first = obj.intValue();
+				int obj = Integer.parseInt(rngStart);
+				int first = (int) obj;
 				int inc = 1;
 				int idx2 = rngEnd.indexOf("-");
 				if (idx2>=1) {
 					String rngEndAndInc = rngEnd;
 					rngEnd = rngEndAndInc.substring(0, idx2);
 					String rngInc = rngEndAndInc.substring(idx2+1);
-					obj = Integer.valueOf(rngInc);
-					inc = obj.intValue();
+					obj = Integer.parseInt(rngInc);
+					inc = (int) obj;
 				}
-				obj = Integer.valueOf(rngEnd);
-				int last = obj.intValue();
+				obj = Integer.parseInt(rngEnd);
+				int last = (int) obj;
 				imp2 = stackRange(imp, first, last, inc, stackTitle);
 			} else {
 				int count = 1; // count # of slices to extract
@@ -107,13 +108,13 @@ public class SubstackMaker implements PlugIn {
 					int idx2 = userInput.indexOf(",");
 					if (idx2>0) {
 						String num = userInput.substring(0,idx2);
-						Integer obj = Integer.valueOf(num);
-						numList[i] = obj.intValue();
+						int obj = Integer.parseInt(num);
+						numList[i] = (int) obj;
 						userInput = userInput.substring(idx2+1);
 					} else {
 						String num = userInput;
-						Integer obj = Integer.valueOf(num);
-						numList[i] = obj.intValue();
+						int obj = Integer.parseInt(num);
+						numList[i] = (int) obj;
 					}
 				}
 				imp2 = stackList(imp, count, numList, stackTitle);
@@ -185,7 +186,7 @@ public class SubstackMaker implements PlugIn {
 				swin.updateSliceSelector();
 		}
 		ImagePlus impSubstack = imp.createImagePlus();
-		impSubstack.setStack(stackTitle, stack2);
+		impSubstack.setStack(stackTitle, Objects.requireNonNull(stack2));
 		if (virtualStack)
 			impSubstack.setDisplayRange(min, max);
 		return impSubstack;
@@ -223,7 +224,7 @@ public class SubstackMaker implements PlugIn {
 				swin.updateSliceSelector();
 		}
 		ImagePlus substack = imp.createImagePlus();
-		substack.setStack(title, stack2);
+		substack.setStack(title, Objects.requireNonNull(stack2));
 		substack.setCalibration(imp.getCalibration());
 		if (virtualStack)
 			substack.setDisplayRange(min, max);

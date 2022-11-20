@@ -1,15 +1,14 @@
 package ij.plugin.filter;
 
 import java.awt.*;
-import java.awt.image.*;
-import java.util.Vector;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.io.*;
 import ij.*;
 import ij.process.*;
 import ij.io.*;
 import ij.gui.*;
 import ij.measure.*;
-import java.awt.geom.*;
 
 
 /** Saves the XY coordinates of the current ROI boundary. */
@@ -36,7 +35,7 @@ public class XYWriter implements PlugInFilter {
 		String directory = sd.getDirectory();
 		PrintWriter pw = null;
 		try {
-			pw = new PrintWriter(new BufferedOutputStream(new FileOutputStream(directory+name)));
+			pw = new PrintWriter(new BufferedOutputStream(Files.newOutputStream(Paths.get(directory + name))));
 		}
 		catch (IOException e) {
 			IJ.error("XYWriter", "Unable to save coordinates:\n   "+e.getMessage());

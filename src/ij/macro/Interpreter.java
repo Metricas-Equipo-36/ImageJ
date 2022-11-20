@@ -2,7 +2,6 @@ package ij.macro;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
-import ij.plugin.Macro_Runner;
 import ij.plugin.frame.*;
 import ij.util.Tools;
 import ij.text.*;
@@ -10,7 +9,6 @@ import ij.measure.ResultsTable;
 import java.awt.*;
 import java.util.*;
 import java.awt.event.KeyEvent;
-import java.io.PrintWriter;
 
 
 /** This is the recursive descent parser/interpreter for the ImageJ macro language. */
@@ -137,8 +135,7 @@ public class Interpreter implements MacroConstants {
 			return;
 		Symbol[] table1 = pgm.getSymbolTable();
 		Symbol[] table2 = new Symbol[pgm.stLoc+1];
-		for (int i=0; i<=pgm.stLoc; i++)
-			table2[i] = table1[i];
+		System.arraycopy(table1, 0, table2, 0, pgm.stLoc + 1);
 		Program.systemTable = table2;
 	}
 	
@@ -402,7 +399,7 @@ public class Interpreter implements MacroConstants {
 		try {
 			doBlock();
 		} catch (ReturnException e) {
-			value = new Variable(0, e.value, e.str, e.array);
+			value = new Variable(e.value, e.str, e.array);
 			if (value.getArray()!=null && e.arraySize!=0)
 				value.setArraySize(e.arraySize);
 		}
@@ -457,15 +454,15 @@ public class Interpreter implements MacroConstants {
 						} else
 							str = v.getString();
 					}
-					args[count] = new Variable(0, value, str, array);
+					args[count] = new Variable(value, str, array);
 					if (array!=null) args[count].setArraySize(arraySize);
 				} else if (next==WORD && nextPlus=='[' ) {
 					int savePC = pc;
 					getToken();
 					Variable v = lookupVariable();
-					v = getArrayElement(v);
+					v = getArrayElement(Objects.requireNonNull(v));
 					if (v.getString()!=null)
-						args[count] = new Variable(0, 0.0, v.getString(), null);
+						args[count] = new Variable(0.0, v.getString(), null);
 					else {
 						pc = savePC;
 						args[count] = new Variable(0, getExpression(), null);
@@ -473,7 +470,7 @@ public class Interpreter implements MacroConstants {
 				} else if (next==WORD && nextPlus=='.' ) { // s.length, s.substring(), etc.
 					boolean stringFunction = (pgm.code[pc+3]&0xff)==136;
 					if (stringFunction)
-						args[count] = new Variable(0, 0.0, func.getString(), null);
+						args[count] = new Variable(0.0, func.getString(), null);
 					else
 						args[count] = new Variable(0, getExpression(), null);
 				} else if (nextPlus=='+' && next==WORD) {
@@ -489,7 +486,7 @@ public class Interpreter implements MacroConstants {
 				} else if (next==ARRAY_FUNCTION) {
 					getToken();
 					Variable[] array = func.getArrayFunction(pgm.table[tokenAddress].type);
-					args[count] = new Variable(0, 0, null, array);
+					args[count] = new Variable(0, null, array);
 				} else
 					args[count] = new Variable(0, getExpression(), null);
 				count++;
@@ -562,7 +559,7 @@ public class Interpreter implements MacroConstants {
 					int savePC = pc;
 					getToken();
 					Variable v = lookupVariable();
-					v = getArrayElement(v);
+					v = getArrayElement(Objects.requireNonNull(v));
 					pc = savePC;
 					if (v.getString()!=null)
 						str = getString();
@@ -920,7 +917,7 @@ public class Interpreter implements MacroConstants {
 		putTokenBack();
 		getToken();		
 		Variable v = lookupLocalVariable(tokenAddress);
-		if (v==null) v = push(tokenAddress, 0.0, null, this);
+		if (v==null) v = push(tokenAddress, this);
 		getToken();
 		if (token!='=') error("'=' expected");
 		v.setValue(getExpression());
@@ -942,12 +939,12 @@ public class Interpreter implements MacroConstants {
 			{error("'=', '+=', '-=', '*=' or '/=' expected"); return;}
 		if (op!='=' && (expressionType==Variable.STRING||expressionType==Variable.ARRAY))
 			{error("'=' expected"); return;}
-		Variable[] array = v.getArray();
+		Variable[] array = Objects.requireNonNull(v).getArray();
 		if (array==null)
 			error("Array expected");
 		if (index<0)
 			error("Negative index");
-		if (index>=array.length) {  // expand array
+		if (index>= Objects.requireNonNull(array).length) {  // expand array
 			if (!func.expandableArrays)
 				error("Index ("+index+") out of range");
 			Variable[] array2 = new Variable[index+array.length/2+1];
@@ -989,7 +986,7 @@ public class Interpreter implements MacroConstants {
 					if (v2==null)
 						error("No return value");
 					if (done) return;
-					int type = v2.getType();
+					int type = Objects.requireNonNull(v2).getType();
 					if (type==Variable.VALUE)
 						array[index].setValue(v2.getValue());
 					else
@@ -1024,7 +1021,7 @@ public class Interpreter implements MacroConstants {
 			getToken();		
 			Variable v1 = lookupLocalVariable(tokenAddress);
 			if (v1==null)
-				v1 = push(tokenAddress, 0.0, null, this);
+				v1 = push(tokenAddress, this);
 			getToken();
 			if (token!='=')
 				error("'=' expected");
@@ -1033,7 +1030,7 @@ public class Interpreter implements MacroConstants {
 			if (v2==null)
 				error("No return value");
 			if (done) return;
-			int type = v2.getType();
+			int type = Objects.requireNonNull(v2).getType();
 			if (type==Variable.VALUE)
 				v1.setValue(v2.getValue());
 			else if (type==Variable.ARRAY) {
@@ -1066,15 +1063,15 @@ public class Interpreter implements MacroConstants {
 		Variable v = lookupLocalVariable(tokenAddress);
 		if (v==null) {
 			if (nextToken()=='=')
-				v = push(tokenAddress, 0.0, null, this);
+				v = push(tokenAddress, this);
 			else
 				error("Undefined identifier");
 		}
 		getToken();
 		if (token=='=')
-			v.setString(getString());
+			Objects.requireNonNull(v).setString(getString());
 		else if (token==PLUS_EQUAL)
-			v.setString(v.getString()+getString());
+			Objects.requireNonNull(v).setString(v.getString()+getString());
 		else
 			error("'=' or '+=' expected");
 	}
@@ -1083,7 +1080,7 @@ public class Interpreter implements MacroConstants {
 		Variable v = lookupLocalVariable(tokenAddress);
 		if (v==null) {
 			if (nextToken()=='=')
-				v = push(tokenAddress, 0.0, null, this);
+				v = push(tokenAddress, this);
 			else
 				error("Undefined identifier");
 		}
@@ -1094,17 +1091,17 @@ public class Interpreter implements MacroConstants {
 		}
 		getToken();
 		if (token==ARRAY_FUNCTION)
-			v.setArray(func.getArrayFunction(pgm.table[tokenAddress].type));
+			Objects.requireNonNull(v).setArray(func.getArrayFunction(pgm.table[tokenAddress].type));
 		else if (token==WORD) {
 			Variable v2 = lookupVariable();
-			v.setArray(v2.getArray());
+			Objects.requireNonNull(v).setArray(Objects.requireNonNull(v2).getArray());
 			v.setArraySize(v2.getArraySize());
 		} else if (token==VARIABLE_FUNCTION) {
 			Variable v2 = func.getVariableFunction(pgm.table[tokenAddress].type);
 			Variable[] array = v2.getArray();
 			if (array==null)
 				error("Array expected");			
-			v.setArray(array);
+			Objects.requireNonNull(v).setArray(array);
 		} else
 			error("Array expected");
 	}
@@ -1135,7 +1132,7 @@ public class Interpreter implements MacroConstants {
 		double value = getLogicalExpression();
 		checkBoolean(value);
 		getRightParen();
-		return value==0.0?false:true;
+		return value != 0.0;
 	}
 
 	final double getLogicalExpression() {
@@ -1214,9 +1211,7 @@ public class Interpreter implements MacroConstants {
 			return false;
 		if (pgm.code[loc+1]=='.' && (pgm.code[loc+2]&0xff)!=STRING_FUNCTION)
 			return true;
-		if (pgm.code[loc+1]=='(' && pgm.code[loc+2]==')' && pgm.code[loc+3]=='.'  && (pgm.code[loc+4]&0xff)!=STRING_FUNCTION)
-			return true;
-		return false;
+		return pgm.code[loc + 1] == '(' && pgm.code[loc + 2] == ')' && pgm.code[loc + 3] == '.' && (pgm.code[loc + 4] & 0xff) != STRING_FUNCTION;
 	}
 
 	// Returns true if the token at the specified location is a string
@@ -1294,7 +1289,7 @@ public class Interpreter implements MacroConstants {
 				}
 			}
 			if (v==null)
-				v = push(saveAddress, 0.0, null, this);
+				v = push(saveAddress, this);
 			v.setValue(value);
 			return value;
 		} else
@@ -1314,7 +1309,7 @@ public class Interpreter implements MacroConstants {
 			else {
 				Variable v = lookupVariable(tokenAddress);
 				if (v==null)
-					push(tokenAddress, 0.0, null, this);
+					push(tokenAddress, this);
 			}
 			getToken();
 			if (token==',')
@@ -1381,16 +1376,14 @@ public class Interpreter implements MacroConstants {
 			TextPanel panel = null;
 			if (showVariables && f!=null && (f instanceof TextWindow)) { //clear previous content
 				TextWindow debugWindow = (TextWindow) f;
-				if (debugWindow != null) {
-					panel = debugWindow.getTextPanel();
-					panel.clear();
-				}	
+				panel = debugWindow.getTextPanel();
+				panel.clear();
 			}
-			String calledFrom = "";
+			StringBuilder calledFrom = new StringBuilder();
 			if (callDepth > 0 && callStack != null) {
 				for (int jj = callDepth - 1; jj >= 0; jj--) {
 					int theline = callStack[jj];
-					calledFrom += "\t\t(called from line " + theline +")\n";
+					calledFrom.append("\t\t(called from line ").append(theline).append(")\n");
 				}
 			}
 			showError("Macro Error", message+" in line "+lineNumber +"\n" + calledFrom +" \n"+line, variables);
@@ -1467,7 +1460,7 @@ public class Interpreter implements MacroConstants {
 		for (int jj = 0; jj < len; jj++) {
 			copyOfNew[jj] = newVars[jj];
 			String marker = "\t*\t";//changed
-			if (prevVars != null && jj < prevVars.length && jj < len && prevVars[jj].equals(newVars[jj]))
+			if (prevVars != null && jj < prevVars.length && prevVars[jj].equals(newVars[jj]))
 				marker = "\t\t";//unchanged
 			hilitedVars[jj] = newVars[jj].replaceFirst("\t", marker);
 		}
@@ -1482,16 +1475,16 @@ public class Interpreter implements MacroConstants {
 			pc--;   //go to beginning of line
 		if (lineNumber<=1)
 			pc = -1;
-		String line = "";
+		StringBuilder line = new StringBuilder();
 		getToken();
 		while (!done && lineNumber==pgm.lineNumbers[pc]) {
 			String str = pgm.decodeToken(token, tokenAddress);
 			if (pc==savePC)
 				str = "<" + str + ">";
-			line += str + " ";
+			line.append(str).append(" ");
 			getToken();
 		}
-		return line;
+		return line.toString();
 	}
 
 	final String getString() {
@@ -1539,7 +1532,7 @@ public class Interpreter implements MacroConstants {
 				v = runUserFunction();
 				if (v==null)
 					error("No return value");
-				str = v.getString();
+				str = Objects.requireNonNull(v).getString();
 				if (str==null) {
 					double value = v.getValue();
 					if ((int)value==value)
@@ -1649,7 +1642,7 @@ public class Interpreter implements MacroConstants {
 				v = func.getVariableFunction(pgm.table[tokenAddress].type);
 				if (v==null)
 					error("No return value");
-				if (v.getString()!=null) {
+				if (Objects.requireNonNull(v).getString()!=null) {
 						error("Numeric return value expected");
 				} else
 					value = v.getValue();
@@ -1661,7 +1654,7 @@ public class Interpreter implements MacroConstants {
 				if (done)
 					value = 0;
 				else {
-					if (v.getString()!=null)
+					if (Objects.requireNonNull(v).getString()!=null)
 						error("Numeric return value expected");
 					else
 						value = v.getValue();
@@ -1768,8 +1761,8 @@ public class Interpreter implements MacroConstants {
 		Variable[] array = v.getArray();
 		if (array==null)
 			error("Array expected");
-		if (index<0 || index>=array.length) {
-			if (array.length==0)
+		if (index<0 || index>= Objects.requireNonNull(array).length) {
+			if (Objects.requireNonNull(array).length==0)
 				error("Empty array");
 			else
 				error("Index ("+index+") out of 0-"+(array.length-1)+" range");
@@ -1815,7 +1808,7 @@ public class Interpreter implements MacroConstants {
 				putTokenBack();
 				break;
 			}
-		};
+		}
 		return value;
 	}
 
@@ -1853,7 +1846,7 @@ public class Interpreter implements MacroConstants {
 		return v;
 	}
 
-	Variable push(Variable var, Interpreter interp) {
+	void push(Variable var, Interpreter interp) {
 		if (stack==null)
 			stack = new Variable[STACK_SIZE];
 		if (topOfStack>=(STACK_SIZE-2))
@@ -1861,7 +1854,6 @@ public class Interpreter implements MacroConstants {
 		else
 			topOfStack++;
 		stack[topOfStack] = var;
-		return var;
 	}
 
 	void pushGlobals() {
@@ -1877,8 +1869,8 @@ public class Interpreter implements MacroConstants {
 	}
 
 	/** Creates a Variable and pushes it onto the stack. */
-	Variable push(int symTabLoc, double value, String str, Interpreter interp) {
-		Variable var = new Variable(symTabLoc, value, str);
+	Variable push(int symTabLoc, Interpreter interp) {
+		Variable var = new Variable(symTabLoc, 0.0, null);
 		if (stack==null)
 			stack = new Variable[STACK_SIZE];
 		if (topOfStack>=(STACK_SIZE-2))
@@ -1902,7 +1894,7 @@ public class Interpreter implements MacroConstants {
 		Variable v = null;
 		if (stack==null) {
 			undefined();
-			return v;
+			return null;
 		}
 		boolean found = false;
 		for (int i=topOfStack; i>=0; i--) {
@@ -1935,8 +1927,8 @@ public class Interpreter implements MacroConstants {
 					Variable[] array = v.getArray();
 					if (array==null)
 						error("Array expected");
-					if (index<0 || index>=array.length)
-						error("Index ("+index+") out of 0-"+(array.length-1)+" range");
+					if (index<0 || index>= Objects.requireNonNull(array).length)
+						error("Index ("+index+") out of 0-"+(Objects.requireNonNull(array).length-1)+" range");
 					str = array[index].getString();
 					int next2 = nextToken();			
 					if (str!=null) {
@@ -2184,7 +2176,7 @@ public class Interpreter implements MacroConstants {
 
 	static void setBatchMode(boolean b) {
 		batchMode = b;
-		if (b==false)
+		if (!b)
 			imageTable = imageActivations = null;
 	}
 
@@ -2456,7 +2448,7 @@ public class Interpreter implements MacroConstants {
 				String title = arrName + "[" + elements.length + "]";
 				arrayWindow.setTitle(title);
 				arrayWindow.rename(title);
-				String newText = "";
+				StringBuilder newText = new StringBuilder();
 				String valueStr = "";
 				for (int jj=0; jj<elements.length; jj++) {
 					Variable element = elements[jj];
@@ -2479,9 +2471,9 @@ public class Interpreter implements MacroConstants {
 									flag ="*";
 						}
 					String ss = ("" + jj + "\t" + flag +"\t" + valueStr) + "\n";
-					newText += ss;
+					newText.append(ss);
 				}
-				txtPanel.append(newText);
+				txtPanel.append(newText.toString());
 				txtPanel.scrollToTop();
 				if (debugger!=null && (debugger instanceof Window))
 					((Window)debugger).toFront();

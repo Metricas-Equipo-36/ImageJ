@@ -3,7 +3,6 @@ import ij.*;
 import ij.plugin.frame.RoiManager;
 import java.awt.*;
 import java.awt.event.*;
-import java.lang.reflect.*;
 
 
 /**
@@ -14,9 +13,9 @@ import java.lang.reflect.*;
 * <code>new WaitForUserDialog("Use brush to draw on overlay").show();</code>
 */
 public class WaitForUserDialog extends Dialog implements ActionListener, KeyListener {
-	protected Button button;
+	protected final Button button;
 	protected Button cancelButton;
-	protected MultiLineLabel label;
+	protected final MultiLineLabel label;
 	static protected int xloc=-1, yloc=-1;
 	private boolean escPressed;
 	
@@ -72,7 +71,8 @@ public class WaitForUserDialog extends Dialog implements ActionListener, KeyList
 		super.show();
 		synchronized(this) {  //wait for OK
 			try {wait();}
-			catch(InterruptedException e) {return;}
+			catch(InterruptedException e) {
+            }
 		}
 	}
 	

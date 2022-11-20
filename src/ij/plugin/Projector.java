@@ -6,6 +6,7 @@ import ij.measure.Calibration;
 import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.image.*;
+import java.util.Objects;
 
 /**
 This plugin creates a sequence of projections of a rotating volume (stack of slices) onto a plane using
@@ -61,7 +62,7 @@ public class Projector implements PlugIn {
 	private boolean isRGB;
 	private String label = "";
 	private boolean done;
-	private boolean batchMode = Interpreter.isBatchMode();
+	private final boolean batchMode = Interpreter.isBatchMode();
 	private double progressBase=0.0, progressScale=1.0;
 	private boolean showMicroProgress = true;
 
@@ -132,7 +133,7 @@ public class Projector implements PlugIn {
 		gd.addHelp(IJ.URL+"/docs/menus/image.html#project");
 		gd.showDialog();
 		if (gd.wasCanceled())
-			return false;;
+			return false;
 		projectionMethod = gd.getNextChoiceIndex();
 		axisOfRotation = gd.getNextChoiceIndex();
 		cal.pixelDepth = gd.getNextNumber();
@@ -218,14 +219,14 @@ public class Projector implements PlugIn {
 			finalSlices = 1;
 		}
 		if (imp.getNChannels()>1)
-			buildImp = HyperStackConverter.toHyperStack(buildImp, finalChannels, finalSlices, finalFrames, "xyztc", "composite");
+			buildImp = HyperStackConverter.toHyperStack(Objects.requireNonNull(buildImp), finalChannels, finalSlices, finalFrames, "xyztc", "composite");
 		if (imp.isComposite()) {
 			CompositeImage buildImp2 = new CompositeImage(buildImp, 0);
-			((CompositeImage)buildImp2).copyLuts(imp);
-			((CompositeImage)buildImp2).resetDisplayRanges();
+			buildImp2.copyLuts(imp);
+			buildImp2.resetDisplayRanges();
 			buildImp = buildImp2;
 		}
-		buildImp.setTitle("Projections of "+imp.getShortTitle());
+		Objects.requireNonNull(buildImp).setTitle("Projections of "+imp.getShortTitle());
 		buildImp.show();
 	}
 
@@ -316,7 +317,7 @@ public class Projector implements PlugIn {
 
 		projwidth = 0;
 		projheight = 0;
-		if (minProjSize && axisOfRotation!=zAxis) {
+		if (axisOfRotation != zAxis) {
 			switch (axisOfRotation) {
 				case xAxis:
 					projheight = (int)(Math.sqrt(nSlices*sliceInterval*nSlices*sliceInterval+height*height) + 0.5);

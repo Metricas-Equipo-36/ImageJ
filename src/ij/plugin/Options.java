@@ -6,7 +6,6 @@ import ij.io.*;
 import ij.plugin.filter.*;
 import ij.plugin.frame.*;
 import ij.measure.ResultsTable;
-import java.awt.*;
 
 /** This plugin implements most of the commands
 	in the Edit/Options sub-menu. */
@@ -16,17 +15,23 @@ public class Options implements PlugIn {
 		if (arg.equals("fresh-start"))
 			{freshStart(); return;}
 		if (arg.equals("misc"))
-			{miscOptions(); return;}
+			{miscOptions();
+			}
 		else if (arg.equals("line"))
-			{lineWidth(); return;}
+			{lineWidth();
+			}
 		else if (arg.equals("io"))
-			{io(); return;}
+			{io();
+			}
 		else if (arg.equals("conv"))
-			{conversions(); return;}
+			{conversions();
+			}
 		else if (arg.equals("dicom"))
-			{dicom(); return;}
+			{dicom();
+			}
 		else if (arg.equals("reset"))
-			{reset(); return;}
+			{reset();
+			}
 	}
 				
 	// Miscellaneous Options
@@ -150,7 +155,6 @@ public class Options implements PlugIn {
 		Prefs.dontSaveHeaders = !gd.getNextBoolean();
 		ResultsTable.getResultsTable().saveColumnHeaders(!Prefs.dontSaveHeaders);
 		Prefs.dontSaveRowNumbers = !gd.getNextBoolean();
-		return;
 	}
 
 	// Conversion Options
@@ -171,9 +175,8 @@ public class Options implements PlugIn {
 		Prefs.weightedColor = gd.getNextBoolean();
 		if (!Prefs.weightedColor)
 			ColorProcessor.setWeightingFactors(1d/3d, 1d/3d, 1d/3d);
-		else if (Prefs.weightedColor && !weighted)
+		else if (!weighted)
 			ColorProcessor.setWeightingFactors(0.299, 0.587, 0.114);
-		return;
 	}
 			
 	// replaced by AppearanceOptions class

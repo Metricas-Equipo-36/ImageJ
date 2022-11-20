@@ -8,9 +8,6 @@ import java.util.*;
 import ij.*;
 import ij.process.*;
 import ij.util.*;
-import ij.text.TextWindow;
-import ij.plugin.filter.Analyzer;
-import ij.plugin.filter.PlugInFilterRunner;
 import ij.measure.*;
 import ij.io.SaveDialog;
 
@@ -41,7 +38,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	/** @deprecated */
 	public static final int LINE = Plot.LINE;
 	/** Write first X column when listing or saving. */
-	public static boolean saveXValues = true;
+	public static final boolean saveXValues = true;
 	/** Automatically close window after saving values. To set, use Edit/Options/Plots. */
 	public static boolean autoClose;
 	/** Display the XY coordinates in a separate window. To set, use Edit/Options/Plots. */
@@ -55,7 +52,7 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	/** The height of the plot in pixels. */
 	public static int plotHeight = HEIGHT;
 	/** The plot text size, can be overridden by Plot.setFont, Plot.setFontSize, Plot.setXLabelFont etc. */
-	public static int fontSize = defaultFontSize;
+	public static final int fontSize = defaultFontSize;
 	/** Have axes with no grid lines. If both noGridLines and noTicks are true,
 	 *	only min&max value of the axes are given */
 	public static boolean noGridLines;
@@ -70,21 +67,21 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	private static final int INTERPOLATE = 8;
 	private static final int NO_GRID_LINES = 16;
 	private static final int NO_TICKS = 32;
-	private static String moreButtonLabel = "More "+'\u00bb';
-	private static String dataButtonLabel = "Data "+'\u00bb';
+	private static final String moreButtonLabel = "More "+'\u00bb';
+	private static final String dataButtonLabel = "Data "+'\u00bb';
 
 	boolean wasActivated;			// true after window has been activated once, needed by PlotCanvas
 
 	private Button list, data, more, live;
 	private PopupMenu dataPopupMenu, morePopupMenu;
 	private static final int NUM_MENU_ITEMS = 20; //how many menu items we have in total
-	private MenuItem[] menuItems = new MenuItem[NUM_MENU_ITEMS];
+	private final MenuItem[] menuItems = new MenuItem[NUM_MENU_ITEMS];
 	private Label statusLabel;
 	private String userStatusText;
-	private static String defaultDirectory = null;
-	private static int options;
-	private int defaultDigits = -1;
-	private int markSize = 5;
+	private static final String defaultDirectory = null;
+	private static final int options;
+	private final int defaultDigits = -1;
+	private final int markSize = 5;
 	private static Plot staticPlot;
 	private Plot plot;
 
@@ -96,10 +93,10 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	private Roi[] rangeArrowRois;	// the overlays (arrows etc) for changing the range. Note: #10-15 must correspond to PlotDialog.dialogType!
 	private boolean rangeArrowsVisible;
 	private int activeRangeArrow = -1;
-	private static Color inactiveRangeArrowColor = Color.GRAY;
-	private static Color inactiveRangeRectColor = new Color(0x20404040, true); //transparent gray
-	private static Color activeRangeArrowColor = Color.RED;
-	private static Color activeRangeRectColor = new Color(0x18ff0000, true); //transparent red
+	private static final Color inactiveRangeArrowColor = Color.GRAY;
+	private static final Color inactiveRangeRectColor = new Color(0x20404040, true); //transparent gray
+	private static final Color activeRangeArrowColor = Color.RED;
+	private static final Color activeRangeRectColor = new Color(0x18ff0000, true); //transparent red
 
 	// static initializer
 	static {
@@ -333,12 +330,28 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 	}
 
 	/** Names for popupMenu items. Update NUM_MENU_ITEMS at the top when adding new ones! */
-	private static int SAVE=0, COPY=1, COPY_ALL=2, LIST_SIMPLE=3, ADD_FROM_TABLE=4, ADD_FROM_PLOT=5, ADD_FIT=6, //data menu
-			SET_RANGE=7, PREV_RANGE=8, RESET_RANGE=9, FIT_RANGE=10,  //the rest is in the more menu
-			ZOOM_SELECTION=11, AXIS_OPTIONS=12, LEGEND=13, STYLE=14, TEMPLATE=15, RESET_PLOT=16,
-			FREEZE=17, HI_RESOLUTION=18, PROFILE_PLOT_OPTIONS=19;
+	private static final int SAVE=0;
+	private static final int COPY=1;
+	private static final int COPY_ALL=2;
+	private static final int LIST_SIMPLE=3;
+	private static final int ADD_FROM_TABLE=4;
+	private static final int ADD_FROM_PLOT=5;
+	private static final int ADD_FIT=6; //data menu
+			private static final int SET_RANGE=7;
+	private static final int PREV_RANGE=8;
+	private static final int RESET_RANGE=9;
+	private static final int FIT_RANGE=10;  //the rest is in the more menu
+			private static final int ZOOM_SELECTION=11;
+	private static final int AXIS_OPTIONS=12;
+	private static final int LEGEND=13;
+	private static final int STYLE=14;
+	private static final int TEMPLATE=15;
+	private static final int RESET_PLOT=16;
+	private static final int FREEZE=17;
+	private static final int HI_RESOLUTION=18;
+	private static final int PROFILE_PLOT_OPTIONS=19;
 	//the following commands are disabled when the plot is frozen
-	private static int[] DISABLED_WHEN_FROZEN = new int[]{ADD_FROM_TABLE, ADD_FROM_PLOT, ADD_FIT,
+	private static final int[] DISABLED_WHEN_FROZEN = new int[]{ADD_FROM_TABLE, ADD_FROM_PLOT, ADD_FIT,
 			SET_RANGE, PREV_RANGE, RESET_RANGE, FIT_RANGE, ZOOM_SELECTION, AXIS_OPTIONS, LEGEND, STYLE, RESET_PLOT};
 
 	/** Prepares and returns the popupMenu of the Data>> button */
@@ -501,11 +514,9 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 				statusText = "Reset Range";
 			else if (activeRangeArrow == 9) //it's the 'F' icon
 				statusText = "Full Range (Fit All)";
-			else if (activeRangeArrow >= 10 &&
-					activeRangeArrow < 14)  //space between arrow-pairs for single number
+			else if (activeRangeArrow < 14)  //space between arrow-pairs for single number
 				statusText = "Set limit...";
-			else if (activeRangeArrow >= 14)
-				statusText = "Axis Range & Options...";
+			else statusText = "Axis Range & Options...";
 			boolean repaint = false;
 			if (activeRangeArrow >= 0 && !rangeArrowRois[activeRangeArrow].contains(x, y)) {
 				rangeArrowRois[activeRangeArrow].setFillColor(
@@ -717,7 +728,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		if (xValues == null) return;
 		Clipboard systemClipboard = null;
 		try {systemClipboard = getToolkit().getSystemClipboard();}
-		catch (Exception e) {systemClipboard = null; }
+		catch (Exception e) {
+		}
 		if (systemClipboard==null)
 			{IJ.error("Unable to copy to Clipboard."); return;}
 		IJ.showStatus("Copying plot values...");
@@ -735,8 +747,8 @@ public class PlotWindow extends ImageWindow implements ActionListener, ItemListe
 		} else {
 			int xdigits = 0;
 			if (saveXValues)
-				xdigits = plot.getPrecision(xValues);
-			int ydigits = plot.getPrecision(yValues);
+				xdigits = Plot.getPrecision(xValues);
+			int ydigits = Plot.getPrecision(yValues);
 			for (int i=0; i<Math.min(xValues.length, yValues.length); i++) {
 				if (saveXValues)
 					pw.println(IJ.d2s(xValues[i],xdigits)+"\t"+IJ.d2s(yValues[i],ydigits));

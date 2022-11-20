@@ -72,7 +72,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
     /** Ask the user for the parameters
      */
     public int showDialog(ImagePlus imp, String command, PlugInFilterRunner pfr) {
-        calledAsPlugin = true;;
+        calledAsPlugin = true;
         String options = Macro.getOptions();
         boolean oldMacro = false;
         nChannels = imp.getProcessor().getNChannels();
@@ -189,7 +189,6 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
         }
         if (hasRoi)
             resetOutOfRoi(ip, (int)Math.ceil(5*sigmaY)); // reset out-of-Rectangle pixels above and below roi
-        return;
     }
     
     /** Gaussian Filtering of a FloatProcessor. This method does NOT include
@@ -208,7 +207,6 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
         if (Thread.currentThread().isInterrupted()) return; // interruption for new parameters during preview?
         if (sigmaY > 0)
             blur1Direction(ip, sigmaY, accuracy, false, 0);
-        return;
     }
 
     /** Blur an image in one direction (x or y) by a Gaussian, using multiple threads on multiprocessor machines
@@ -283,7 +281,7 @@ public class GaussianBlur implements ExtendedPlugInFilter, DialogListener {
             final float[] cache2 = doDownscaling ? new float[newLength] : null;  //holds data after convolution
             
             callables[t] = new Callable() {
-                final public Void call() { /*try{*/
+                public Void call() { /*try{*/
                     while (!Thread.currentThread().isInterrupted()) {
                         int line = nextLine.getAndIncrement();
                         if (line >= lineTo) break;

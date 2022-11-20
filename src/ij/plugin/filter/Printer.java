@@ -4,7 +4,6 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.Calibration;
 import java.awt.*;
-import java.util.Properties;
 import java.awt.print.*;
 
 /** This plugin implements the File/Page Setup and File/Print commands. */
@@ -17,7 +16,7 @@ public class Printer implements PlugInFilter, Printable {
 	private static boolean printSelection;
 	private static boolean rotate;
 	private static boolean actualSize;
-	private static int fontSize = 12;
+	private static final int fontSize = 12;
 
 	public int setup(String arg, ImagePlus imp) {
 		if (arg.equals("setup"))

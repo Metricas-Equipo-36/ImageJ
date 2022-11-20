@@ -5,7 +5,6 @@ import ij.process.*;
 import ij.gui.*;
 import java.awt.*;
 import ij.measure.*;
-import ij.plugin.filter.*;
 import ij.plugin.frame.Recorder;
 import java.awt.event.*;
 import java.util.*;
@@ -18,7 +17,7 @@ import java.awt.image.ColorModel;
  *	@author Jon Jackson j.jackson # ucl.ac.uk
  */
 public class Concatenator implements PlugIn, ItemListener{
-	public String pluginName =	"Concatenator";
+	public final String pluginName =	"Concatenator";
 	public int maxEntries = 18;	 // limit number of entries to fit on screen
 	private static boolean all_option = false;
 	private boolean keep = false;
@@ -43,7 +42,7 @@ public class Concatenator implements PlugIn, ItemListener{
 	/** Optional string argument sets the name dialog boxes if called from another plugin. */
 	public void run(String arg) {
 		macro = !arg.equals("");
-		if (!showDialog())
+		if (showDialog())
 			return;
 		newImp = concatenate(images, keep);
 		if (newImp!=null)
@@ -53,7 +52,7 @@ public class Concatenator implements PlugIn, ItemListener{
 	/** Displays a dialog requiring user to choose images and
 		returns ImagePlus of concatenated images. */
 	public ImagePlus run() {
-		if (!showDialog())
+		if (showDialog())
 			return null;
 		newImp = createHypervol();
 		return newImp;
@@ -122,12 +121,12 @@ public class Concatenator implements PlugIn, ItemListener{
 		else
 			newImp = createHypervol();
 		if (Recorder.scriptMode()) {
-			String args = "imp1";
+			StringBuilder args = new StringBuilder("imp1");
 			for (int i=1; i<images.length; i++)
-				args += ", imp"+(i+1);
+				args.append(", imp").append(i + 1);
 			Recorder.recordCall("imp"+(images.length+1)+" = Concatenator.run("+args+");");
 		}
-		if (imp0!=null && newImp!=null)
+		if (newImp != null)
 			newImp.setProperty("Info", imp0.getProperty("Info"));
 		return newImp;
 	}
@@ -339,10 +338,10 @@ public class Concatenator implements PlugIn, ItemListener{
 		int[] wList = WindowManager.getIDList();
 		if (wList==null) {
 			IJ.error("No windows are open.");
-			return false;
+			return true;
 		} else if (wList.length < 2) {
 			IJ.error("Two or more windows must be open");
-			return false;
+			return true;
 		}
 		int nImages = wList.length;
 		
@@ -381,7 +380,7 @@ public class Concatenator implements PlugIn, ItemListener{
 		gd.showDialog();
 		
 		if (gd.wasCanceled())
-			return false;
+			return true;
 		all_windows = gd.getNextBoolean();
 		all_option = all_windows;
 		gd.setSmartRecording(true);
@@ -411,14 +410,14 @@ public class Concatenator implements PlugIn, ItemListener{
 		}
 		if (count<2) {
 			IJ.error(pluginName, "Please select at least 2 images");
-			return false;
+			return true;
 		}
 		
 		imageTitles = new String[count];
 		images = new ImagePlus[count];
 		System.arraycopy(tmpStrArr, 0, imageTitles, 0, count);
 		System.arraycopy(tmpImpArr, 0, images, 0, count);
-		return true;
+		return false;
 	}
 	
 	// test if this imageplus appears again in the list

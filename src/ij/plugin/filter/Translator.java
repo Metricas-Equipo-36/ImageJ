@@ -3,19 +3,18 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import java.awt.*;
-import java.awt.geom.*;
 
 
 /** This plugin implements the Image/Translate command. */
 public class Translator implements ExtendedPlugInFilter, DialogListener {
-	private int flags = DOES_ALL|PARALLELIZE_STACKS;
+	private final int flags = DOES_ALL|PARALLELIZE_STACKS;
 	private static double xOffset = 15;
 	private static double yOffset = 15;
 	private ImagePlus imp;
 	private GenericDialog gd;
 	private PlugInFilterRunner pfr;
 	private static int interpolationMethod = ImageProcessor.NONE;
-	private String[] methods = ImageProcessor.getInterpolationMethods();
+	private final String[] methods = ImageProcessor.getInterpolationMethods();
 	private boolean previewing;
 	private Overlay origOverlay;
 	private boolean overlayOnly;

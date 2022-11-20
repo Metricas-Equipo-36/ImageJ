@@ -54,7 +54,7 @@ public class ProfilePlot {
 		if (roiType==Roi.LINE)
 			profile = getStraightLineProfile(roi, cal, ip);
 		else if (roiType==Roi.POLYLINE || roiType==Roi.FREELINE) {
-			int lineWidth = (int)Math.round(roi.getStrokeWidth());
+			int lineWidth = Math.round(roi.getStrokeWidth());
 			if (lineWidth<=1)
 				profile = getIrregularProfile(roi, ip, cal);
 			else
@@ -175,7 +175,7 @@ public class ProfilePlot {
 				dx = cal.pixelWidth*dx;
 				dy = cal.pixelHeight*dy;
 				double calibratedLength = Math.sqrt(dx*dx + dy*dy);
-				xInc = calibratedLength * 1.0/pixelLength;
+				xInc = calibratedLength /pixelLength;
 			}
 			return values;
 	}

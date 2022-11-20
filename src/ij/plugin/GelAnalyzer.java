@@ -3,12 +3,10 @@ import ij.*;
 import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
-import ij.plugin.filter.Analyzer;
 
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
-import java.util.*;
 
 /** This plugin generates gel profile plots that can be analyzed using
 the wand tool. It is similar to the "Gel Plotting Macros" in NIH Image. */
@@ -22,14 +20,14 @@ public class GelAnalyzer implements PlugIn {
 	static int nLanes, saveNLanes;
 	static Rectangle firstRect;
 	static final int MAX_LANES = 100;
-	static int[] x = new int[MAX_LANES+1];
+	static final int[] x = new int[MAX_LANES+1];
 	static PlotsCanvas plotsCanvas;
 	static ImageProcessor ipLanes;
 	static ImagePlus gel;
 	static int plotHeight;
 	static int options = (int)Prefs.get(OPTIONS, PERCENT+INVERT);
 	static boolean uncalibratedOD = (options&OD)!=0;
-	static boolean labelWithPercentages = (options&PERCENT)!=0;;
+	static boolean labelWithPercentages = (options&PERCENT)!=0;
 	static boolean outlineLanes;
 	static boolean invertPeaks = (options&INVERT)!=0;
 	static double verticalScaleFactor = Prefs.get(VSCALE, 1.0);
@@ -135,7 +133,6 @@ public class GelAnalyzer implements PlugIn {
 				selectNextLane(rect);
 			}
 			plotLanes(gel, false);
-			return;
 		}
 
 	}
@@ -508,10 +505,10 @@ class PlotsCanvas extends ImageCanvas {
 
 	public static final int MAX_PEAKS = 200;
 
-	double[] actual = {428566.00,351368.00,233977.00,99413.00,60057.00,31382.00,
+	final double[] actual = {428566.00,351368.00,233977.00,99413.00,60057.00,31382.00,
 					   14531.00,7843.00,2146.00,752.00,367.00};
-	double[] measured = new double[MAX_PEAKS];
-	Rectangle[] rect = new Rectangle[MAX_PEAKS];
+	final double[] measured = new double[MAX_PEAKS];
+	final Rectangle[] rect = new Rectangle[MAX_PEAKS];
 	int counter;
 	ResultsTable rt;
 

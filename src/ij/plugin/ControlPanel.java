@@ -2,21 +2,13 @@ package ij.plugin;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
-import java.io.*;
 import java.util.*;
-import java.net.*;
-import java.net.URL;
 import javax.swing.*;
 import javax.swing.tree.*;
 import javax.swing.event.*;
 import ij.*;
 import ij.gui.*;
-import ij.io.*;
-import ij.plugin.*;
-import ij.plugin.filter.*;
-import ij.plugin.frame.PlugInFrame;
 import ij.util.*;
-import ij.text.TextWindow;
 
 /**ControlPanel.
  * This plugin displays a panel with ImageJ commands in a hierarchical tree structure.
@@ -30,14 +22,14 @@ public class ControlPanel implements PlugIn {
 	/** The platform-specific file separator character. */
 	private static final char sep=fileSeparator.charAt(0);
 
-	private Hashtable panels = new Hashtable();
-	private Vector visiblePanels = new Vector();
-	private Vector expandedNodes = new Vector();
-	private String defaultArg = "";
+	private final Hashtable panels = new Hashtable();
+	private final Vector visiblePanels = new Vector();
+	private final Vector expandedNodes = new Vector();
+	private final String defaultArg = "";
 
-	private boolean savePropsUponClose=true;
+	private final boolean savePropsUponClose=true;
 	private boolean propertiesChanged=true;
-	private boolean closeChildPanelOnExpand = true;
+	private final boolean closeChildPanelOnExpand = true;
 	private boolean requireDoubleClick;
 	private boolean quitting = true;
 
@@ -49,7 +41,7 @@ public class ControlPanel implements PlugIn {
 	Hashtable treeCommands = new Hashtable();
 	int argLength;
 
-	private String path=null;
+	private final String path=null;
 	private DefaultMutableTreeNode root;
 
 	MenuItem reloadMI = null;
@@ -74,7 +66,7 @@ public class ControlPanel implements PlugIn {
 		commands = Menus.getCommands();
 		pluginsArray = Menus.getPlugins();
 		root=doRootFromMenus();
-		if (root==null || root.getChildCount()==0 ) return; // do nothing if there's no tree or a root w/o children
+		if (root.getChildCount() == 0) return; // do nothing if there's no tree or a root w/o children
 		loadProperties();
 		restoreVisiblePanels();
 		if (panels.isEmpty())
@@ -122,7 +114,7 @@ public class ControlPanel implements PlugIn {
 				DefaultMutableTreeNode subNode = new DefaultMutableTreeNode(label);
 				recurseSubMenu((Menu)mItem,subNode);
 				node.add(subNode);
-			} else if (mItem instanceof MenuItem) {
+			} else {
 				if (!(label.equals("-"))) {
 					DefaultMutableTreeNode leaf = new DefaultMutableTreeNode(label);
 					node.add(leaf);
@@ -153,7 +145,7 @@ public class ControlPanel implements PlugIn {
 		}
 		String[] labels = new String[labelVector.size()];
 		String[] items = new String[labelVector.size()];
-		labelVector.copyInto((String[])labels); // keys into labels[]
+		labelVector.copyInto(labels); // keys into labels[]
 		StringSorter.sort(labels);
 		for(int i=0; i<labels.length; i++) {
 			items[i] = (String)collection.get(labels[i]); //values into items[]
@@ -173,8 +165,7 @@ public class ControlPanel implements PlugIn {
 		if (items.length==0 || items.length!=labels.length) return;
 		String label=null;
 		for (int i=0; i<items.length; i++) {
-			if(labels!=null && i<labels.length)
-				label = labels[i];
+			label = labels[i];
 			buildTreePath(items[i], label, node);
 		}
 	}
@@ -215,7 +206,7 @@ public class ControlPanel implements PlugIn {
 		// full path of the plugins directory; if so, then remove this prefix
 		String pluginsPath=Menus.getPlugInsPath();
 		if (local.startsWith(pluginsPath))
-			local = local.substring(pluginsPath.length(),local.length());
+			local = local.substring(pluginsPath.length());
 		// 3. convert package/class separators into file separators,
 		// to allow parsing into tree path later
 		local=local.replace('.',delimiter.charAt(0));
@@ -273,7 +264,7 @@ public class ControlPanel implements PlugIn {
 				Enumeration nodes = topNode.children();
 				while(nodes.hasMoreElements()) {
 					node = (DefaultMutableTreeNode)nodes.nextElement();
-					if(((String)node.getUserObject()).equals(token)) {
+					if(node.getUserObject().equals(token)) {
 						hasTokenAsNode = true;
 						topNode = node;
 						break;
@@ -406,7 +397,7 @@ public class ControlPanel implements PlugIn {
 		for (Enumeration e=properties.keys(); e.hasMoreElements();) {
 			String key = (String)e.nextElement();
 			if (key.startsWith(".Control_Panel.")) {
-				key = key.substring(1, key.length());
+				key = key.substring(1);
 				String val = Prefs.get(key, null);
 				if (IJ.debugMode) IJ.log("  "+key+": "+val);
 				if (Character.isDigit(val.charAt(0))) // value starts with digit
@@ -521,8 +512,8 @@ public class ControlPanel implements PlugIn {
 		}
 	}
 
-	void closeAll(boolean die) {
-		quitting = die;
+	void closeAll() {
+		quitting = false;
 		if (!visiblePanels.isEmpty()) {
 			propertiesChanged = true;
 			saveProperties();
@@ -575,33 +566,33 @@ public class ControlPanel implements PlugIn {
 	String pStr2Key(String pathString) {
 		String keyword = pathString;
 		if(keyword.startsWith("["))
-			keyword = keyword.substring(keyword.indexOf("[")+1,keyword.length());
+			keyword = keyword.substring(keyword.indexOf("[")+1);
 		if(keyword.endsWith("]"))
 			keyword = keyword.substring(0,keyword.lastIndexOf("]"));
 		StringTokenizer st = new StringTokenizer(keyword,",");
-		String result = "";
+		StringBuilder result = new StringBuilder();
 		while(st.hasMoreTokens()) {
 			String token  = st.nextToken();
-			if(token.startsWith(" ")) token = token.substring(1,token.length()); // remove leading space
-			result+=token+".";
+			if(token.startsWith(" ")) token = token.substring(1); // remove leading space
+			result.append(token).append(".");
 		}
-		result = result.substring(0,result.length()-1);//remove trailing dot
-		result = result.replace(' ','_');
-		return result;
+		result = new StringBuilder(result.substring(0, result.length() - 1));//remove trailing dot
+		result = new StringBuilder(result.toString().replace(' ', '_'));
+		return result.toString();
 	}
 
 	String key2pStr(String keyword) {
 		//keyword = keyword.replace('_',' '); // restore the spaces from underscores
 		StringTokenizer st = new StringTokenizer(keyword,".");
-		String result = "";
+		StringBuilder result = new StringBuilder();
 		while(st.hasMoreTokens()) {
 			String token = st.nextToken();
-			result += token +", ";
+			result.append(token).append(", ");
 		}
-		result = result.substring(0,result.length()-2); // trim away the ending comma-space
-		result = "["+result+"]";
-		result = result.replace('_', ' ');
-		return result;
+		result = new StringBuilder(result.substring(0, result.length() - 2)); // trim away the ending comma-space
+		result = new StringBuilder("[" + result + "]");
+		result = new StringBuilder(result.toString().replace('_', ' '));
+		return result.toString();
 	}
 
 
@@ -654,7 +645,7 @@ class TreePanel implements
 	private JTree pTree;
 	private JMenuBar pMenuBar;
 	private DefaultMutableTreeNode root;
-	private DefaultMutableTreeNode draggingNode=null;
+	private final DefaultMutableTreeNode draggingNode=null;
 	private DefaultTreeModel pTreeModel;
 	private ActionListener listener;
 	private JFrame pFrame;
@@ -662,7 +653,7 @@ class TreePanel implements
 	private TreePath rootPath;
 
 	// the "up" arrow
-	private static final int _uparrow1_data[] = {
+	private static final int[] _uparrow1_data = {
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
     0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -684,12 +675,12 @@ class TreePanel implements
     0x00,0x00,0x00,0x00
 	};
 
-	private static final int _uparrow1_ctable[] = {
+	private static final int[] _uparrow1_ctable = {
     0x21,0xff000000,0xff303030,0xffaaaaaa,0xffffffff,0xff3c3c3c,0xff252525,0xffb6b6b6,0xff585858,0xffc3c3c3,0xff222222,0xff2b2b2b,0xff2e2e2e,0xffa0a0a0,
     0xff808080
 	};
 
-	private static IndexColorModel iconCM = new IndexColorModel(8,_uparrow1_ctable.length,_uparrow1_ctable,0,true,255,DataBuffer.TYPE_BYTE);
+	private static final IndexColorModel iconCM = new IndexColorModel(8,_uparrow1_ctable.length,_uparrow1_ctable,0,true,255,DataBuffer.TYPE_BYTE);
 	private static final ImageIcon upIcon = new ImageIcon( Toolkit.getDefaultToolkit().createImage(new MemoryImageSource(16,16,iconCM,_uparrow1_data,0,16)));
 
 	public TreePanel (DefaultMutableTreeNode root, ControlPanel pcp, boolean isMainPanel) {
@@ -873,13 +864,10 @@ class TreePanel implements
 				TreePath newPath = new TreePath(localPath);
 				if(pcp.hasExpandedStateProperty(npS) && !pcp.hasPanelShowingProperty(npS))
 				{
-					if(newPath!=null)
+					try
 					{
-						try
-						{
-							pTree.expandPath(newPath);
-						}catch(Throwable t){}
-					}
+						pTree.expandPath(newPath);
+					}catch(Throwable t){}
 				}
 				else if((pcp.hasExpandedStateProperty(npS) || pTree.isExpanded(newPath)) && pcp.hasPanelShowingProperty(npS))
 				{
@@ -924,15 +912,14 @@ class TreePanel implements
 				return;
 			}
 			if(cmd.equals("Reload Plugins From Panel")) {// cmd fired by clicking on tree leaf
-				pcp.closeAll(false);
+				pcp.closeAll();
 				IJ.doCommand("Reload Plugins");
 			}
 			else {
 				if(cmd.equals("Reload Plugins")) // cmd fired from ImageJ menu; don't propagate it further
-					pcp.closeAll(false);
+					pcp.closeAll();
 				else
 					IJ.doCommand(cmd);
-				return;
 			}
 	}
 
@@ -963,7 +950,7 @@ class TreePanel implements
 	public void treeCollapsed (TreeExpansionEvent ev) {
 		String evPathString = ev.getPath().toString();
 		evPathString = evPathString.substring(evPathString.indexOf("[")+1,evPathString.lastIndexOf("]"));
-		evPathString = evPathString.substring(getTitle().length()+2,evPathString.length());
+		evPathString = evPathString.substring(getTitle().length()+2);
 		String rootPath = getRootPath().toString();
 		rootPath = rootPath.substring(rootPath.indexOf("[")+1,rootPath.lastIndexOf("]"));
 		String path = "["+rootPath +", "+evPathString+"]";
@@ -975,7 +962,7 @@ class TreePanel implements
 		//DefaultMutableTreeNode node = (DefaultMutableTreeNode)evPath.getLastPathComponent();
 		String evPathString = ev.getPath().toString();
 		evPathString = pcp.pStr2Key(evPathString);
-		evPathString = evPathString.substring(getTitle().length()+1,evPathString.length());
+		evPathString = evPathString.substring(getTitle().length()+1);
 		String rootPath = getRootPath().toString();
 		rootPath = pcp.pStr2Key(rootPath);
 		//String path = rootPath+"."+evPathString;

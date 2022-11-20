@@ -2,8 +2,6 @@ package ij.gui;
 import ij.*;
 import java.awt.event.*;
 import java.awt.EventQueue;
-import java.awt.GraphicsEnvironment;
-import java.awt.Frame;
 
 /** This is an extension of GenericDialog that is non-modal.
  *	@author Johannes Schindelin
@@ -80,17 +78,6 @@ public class NonBlockingGenericDialog extends GenericDialog {
 				win.removeWindowListener(windowListener);
 		}
 	}
-
-	/** Obsolete, replaced by GUI.newNonBlockingDialog(String,ImagePlus). */
-	public static GenericDialog newDialog(String title, ImagePlus imp) {
-		return GUI.newNonBlockingDialog(title, imp);
-	}
-
-	/** Obsolete, replaced by GUI.newNonBlockingDialog(String). */
-	public static GenericDialog newDialog(String title) {
-		return GUI.newNonBlockingDialog(title);
-	}
-
 	/** Put the dialog into the foreground when the image we work on gets into the foreground */
 	@Override
 	public void windowActivated(WindowEvent e) {

@@ -4,9 +4,10 @@ import java.awt.*;
 /** This class does bit blitting of 16-bit images. */
 public class ShortBlitter implements Blitter {
 
-	private ShortProcessor ip;
-	private int width, height;
-	private short[] pixels;
+	private final ShortProcessor ip;
+	private final int width;
+	private final int height;
+	private final short[] pixels;
 	
 	public void setTransparentColor(Color c) {
 	}
@@ -60,8 +61,7 @@ public class ShortBlitter implements Blitter {
 				case ADD:
 					for (int i=r1.width; --i>=0;) {
 						dst = (srcPixels[srcIndex++]&0xffff)+(pixels[dstIndex]&0xffff);
-						if (dst<0) dst = 0;
-						if (dst>65535) dst = 65535;
+                        if (dst>65535) dst = 65535;
 						pixels[dstIndex++] = (short)dst;
 					}
 					break;
@@ -75,16 +75,14 @@ public class ShortBlitter implements Blitter {
 					for (int i=r1.width; --i>=0;) {
 						dst = (pixels[dstIndex]&0xffff)-(srcPixels[srcIndex++]&0xffff);
 						if (dst<0) dst = -dst;
-						if (dst>65535) dst = 65535;
-						pixels[dstIndex++] = (short)dst;
+                        pixels[dstIndex++] = (short)dst;
 					}
 					break;
 				case SUBTRACT:
 					for (int i=r1.width; --i>=0;) {
 						dst = (pixels[dstIndex]&0xffff)-(srcPixels[srcIndex++]&0xffff);
 						if (dst<0) dst = 0;
-						if (dst>65535) dst = 65535;
-						pixels[dstIndex++] = (short)dst;
+                        pixels[dstIndex++] = (short)dst;
 					}
 					break;
 				case MULTIPLY:

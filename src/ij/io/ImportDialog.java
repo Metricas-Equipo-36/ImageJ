@@ -1,7 +1,5 @@
 package ij.io;
 
-import java.awt.*;
-import java.awt.image.*;
 import java.io.*;
 import java.util.*;
 import ij.*;
@@ -48,10 +46,10 @@ public class ImportDialog {
     private boolean intelByteOrder = sIntelByteOrder;
     private boolean virtual = sVirtual;
 
-	private static int options;
+	private static final int options;
     private static FileInfo lastFileInfo;
     private boolean openAll;
-    private static String[] types = {"8-bit", "16-bit Signed", "16-bit Unsigned",
+    private static final String[] types = {"8-bit", "16-bit Signed", "16-bit Unsigned",
 		"32-bit Signed", "32-bit Unsigned", "32-bit Real", "64-bit Real", "24-bit RGB", 
 		"24-bit RGB Planar", "24-bit BGR", "24-bit Integer", "32-bit ARGB", "32-bit ABGR", "1-bit Bitmap"};
     	
@@ -237,7 +235,7 @@ public class ImportDialog {
 			return null;
 		String imageType = types[choiceSelection];
 		FileInfo fi = new FileInfo();
-		fi.fileFormat = fi.RAW;
+		fi.fileFormat = FileInfo.RAW;
 		fi.fileName = fileName;
 		directory = IJ.addSeparator(directory);
 		fi.directory = directory;

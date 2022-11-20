@@ -8,7 +8,6 @@ import ij.util.Tools;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Vector;
 
 /**
 This plugin implements the Analyze/Distribution command.
@@ -156,8 +155,8 @@ public class Distribution implements PlugIn, TextListener {
 		sdev = (float) Math.sqrt(var);
 
 		if(var> 0){
-			skew = (float)skew / (nc * (float) Math.pow(sdev,3));
-			kurt = (float)kurt / (nc * (float) Math.pow(var, 2)) - 3;
+			skew = skew / (nc * (float) Math.pow(sdev,3));
+			kurt = kurt / (nc * (float) Math.pow(var, 2)) - 3;
 		}
 		pars[1]=(float) nc;
 		pars[2]=totl;

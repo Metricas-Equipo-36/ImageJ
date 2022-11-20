@@ -3,12 +3,7 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
-import ij.plugin.ContrastEnhancer;
-import ij.measure.Calibration;
-import ij.util.Tools;
 import ij.plugin.frame.Recorder;
-import java.awt.*;
-import java.util.*;
 
 /** 
 This class implements the FFT, Inverse FFT and Redisplay Power Spectrum commands 
@@ -43,7 +38,7 @@ public class FFT implements PlugIn, Measurements {
 	private int originalWidth;
 	private int originalHeight;
 	private int stackSize = 1;
-	private int slice = 1;
+	private final int slice = 1;
 	private boolean showOutput = true;
 	
 		
@@ -235,7 +230,7 @@ public class FFT implements PlugIn, Measurements {
 			ip2.setColorModel(fht.originalColorModel);
 		String title = imp.getTitle();
 		if (title.startsWith("FFT of "))
-			title = title.substring(7, title.length());
+			title = title.substring(7);
 		ImagePlus imp2 = new ImagePlus("Inverse FFT of "+title, ip2);
 		imp2.setCalibration(imp.getCalibration());
 		if (showOutput)
@@ -420,7 +415,7 @@ public class FFT implements PlugIn, Measurements {
 	// Requires a quadratic 8-bit image.
 	static void smooth(ImageProcessor ip) {
 		byte[] pixels = (byte[])ip.getPixels();
-		byte[] pixels2 = (byte[])pixels.clone();
+		byte[] pixels2 = pixels.clone();
 		int n = ip.getWidth();
 		int[] iMinus = new int[n];	//table of previous index modulo n
 		int[] iPlus = new int[n];	//table of next index modulo n

@@ -7,7 +7,6 @@ import ij.measure.ResultsTable;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
-import java.util.ArrayList;
 
 /** Displays the active image's look-up table. */
 public class LutViewer implements PlugInFilter {
@@ -114,7 +113,7 @@ public class LutViewer implements PlugInFilter {
 class LutWindow extends ImageWindow implements ActionListener {
 
 	private Button button;
-	private ImageProcessor ip;
+	private final ImageProcessor ip;
 
 	LutWindow(ImagePlus imp, ImageCanvas ic, ImageProcessor ip) {
 		super(imp, ic);

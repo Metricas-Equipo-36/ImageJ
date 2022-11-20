@@ -1,10 +1,9 @@
 package ij.process;
-import java.awt.*;
 
 /** This class processes binary images. */
 public class BinaryProcessor extends ByteProcessor {
 
-	private ByteProcessor parent;
+	private final ByteProcessor parent;
 	private int foreground;
 	
 	/** Creates a BinaryProcessor from a ByteProcessor. The ByteProcessor
@@ -18,7 +17,7 @@ public class BinaryProcessor extends ByteProcessor {
 
 	static final int OUTLINE=0;
 	
-	void process(int type, int count) {
+	void process() {
 		int p1, p2, p3, p4, p5, p6, p7, p8, p9;
 		int bgColor = 255;
 		if (parent.isInvertedLut())
@@ -44,15 +43,13 @@ public class BinaryProcessor extends ByteProcessor {
 				p7 = p8; p8 = p9;
 				p9 = pixels2[offset+rowOffset+1]&0xff;
 
-				switch (type) {
-					case OUTLINE:
-						v = p5;
-						if (v!=bgColor) {
-							if (!(p1==bgColor || p2==bgColor || p3==bgColor || p4==bgColor
-								|| p6==bgColor || p7==bgColor || p8==bgColor || p9==bgColor))
-									v = bgColor;
-						}
-						break;
+				if (BinaryProcessor.OUTLINE == OUTLINE) {
+					v = p5;
+					if (v != bgColor) {
+						if (!(p1 == bgColor || p2 == bgColor || p3 == bgColor || p4 == bgColor
+								|| p6 == bgColor || p7 == bgColor || p8 == bgColor || p9 == bgColor))
+							v = bgColor;
+					}
 				}
 				
 				pixels[offset++] = (byte)v;
@@ -62,7 +59,7 @@ public class BinaryProcessor extends ByteProcessor {
 
 	// 2012/09/16: 3,0 1->0
 	// 2012/09/16: 24,0 2->0
-	private static int[] table  =
+	private static final int[] table  =
 		//0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1
 		 {0,0,0,0,0,0,1,3,0,0,3,1,1,0,1,3,0,0,0,0,0,0,0,0,0,0,2,0,3,0,3,3,
 		  0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,3,0,2,2,
@@ -75,7 +72,7 @@ public class BinaryProcessor extends ByteProcessor {
 		  
 	// 2013/12/02: 16,6 2->0
 	// 2013/12/02: 24,5 0->2
-	private static int[] table2  =
+	private static final int[] table2  =
 		  //0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1
 		 {0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,2,2,0,0,0,0,
 		  0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,2,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,
@@ -250,7 +247,7 @@ public class BinaryProcessor extends ByteProcessor {
 	}
 	
 	public void outline() {
-		process(OUTLINE, 0);
+		process();
 	}
 	
 }

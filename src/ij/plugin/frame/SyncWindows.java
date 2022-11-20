@@ -115,7 +115,7 @@ public class SyncWindows extends PlugInFrame implements
 
 	public static void setC(ImageWindow source, int channel) {
 		SyncWindows syncWindows = instance;
-		if (syncWindows==null || !syncWindows.synced(source))
+		if (syncWindows==null || syncWindows.synced(source))
 			return;
 		DisplayChangeEvent event=new DisplayChangeEvent(source, DisplayChangeEvent.CHANNEL, channel);
 		syncWindows.displayChanged(event);
@@ -123,7 +123,7 @@ public class SyncWindows extends PlugInFrame implements
 
 	public static void setZ(ImageWindow source, int slice) {
 		SyncWindows syncWindows = instance;
-		if (syncWindows==null || !syncWindows.synced(source))
+		if (syncWindows==null || syncWindows.synced(source))
 			return;
 		DisplayChangeEvent event=new DisplayChangeEvent(source, DisplayChangeEvent.Z, slice);
 		syncWindows.displayChanged(event);
@@ -131,7 +131,7 @@ public class SyncWindows extends PlugInFrame implements
 
 	public static void setT(ImageWindow source, int frame) {
 		SyncWindows syncWindows = instance;
-		if (syncWindows==null || !syncWindows.synced(source))
+		if (syncWindows==null || syncWindows.synced(source))
 			return;
 		DisplayChangeEvent event = new DisplayChangeEvent(source, DisplayChangeEvent.T, frame);
 		syncWindows.displayChanged(event);
@@ -139,11 +139,11 @@ public class SyncWindows extends PlugInFrame implements
 
 	private boolean synced(ImageWindow source) {
 		if (source==null || vwins==null)
-			return false;
+			return true;
 		ImagePlus imp = source.getImagePlus();
 		if (imp==null)
-			return false;
-		return vwins.contains(Integer.valueOf(imp.getID()));
+			return true;
+		return !vwins.contains(Integer.valueOf(imp.getID()));
 	}
 
 	// --------------------------------------------------
@@ -685,14 +685,14 @@ public class SyncWindows extends PlugInFrame implements
 			wList.addItemListener(this);
 			wList.addActionListener(this);
 			//wList.addKeyListener(ijInstance); //would cause ImageJ to zoom when up/down arrows are pressed
-			return (Component)wList;
+			return wList;
 		}
 		else {
 			Label label = new Label("No windows to select.");
 			wList = null;
 			vListMap = null;
 			vwins = null;
-			return (Component)label;
+			return label;
 		}
 	}
 
@@ -936,7 +936,7 @@ public class SyncWindows extends PlugInFrame implements
 
 		ImagePlus imp;
 		imp = WindowManager.getImage(((Integer)vwins.elementAt(n)).intValue());
-		if (imp.isLocked()) return null;	//must not touch locked windows
+		if (Objects.requireNonNull(imp).isLocked()) return null;	//must not touch locked windows
 		return imp;
 	}
 
@@ -947,7 +947,7 @@ public class SyncWindows extends PlugInFrame implements
 
 		ImagePlus imp;
 		imp = WindowManager.getImage(((Integer)vwins.elementAt(n)).intValue());
-		String title = imp.getTitle();
+		String title = Objects.requireNonNull(imp).getTitle();
 		if (title.length()>=4 && (title.substring(title.length()-4)).equalsIgnoreCase(".tif")) {
 			title = title.substring(0, title.length()-4);
 		} else if (title.length()>=5 && (title.substring(title.length()-5)).equalsIgnoreCase(".tiff")) {
@@ -1067,7 +1067,7 @@ public class SyncWindows extends PlugInFrame implements
  *	So far only OpenStackWindow used by SyncWindows is such an Object.
  *	*/
 interface DisplayChangeListener extends java.util.EventListener {
-	public void displayChanged(DisplayChangeEvent e);
+	void displayChanged(DisplayChangeEvent e);
 }
 
 

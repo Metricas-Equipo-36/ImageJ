@@ -3,8 +3,8 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import java.awt.*;
-import java.awt.image.*;
-import ij.plugin.frame.ContrastAdjuster;
+import java.util.Objects;
+
 import ij.macro.Interpreter;
 import ij.plugin.frame.Recorder;
 
@@ -30,7 +30,7 @@ public class CompositeConverter implements PlugIn {
 			int slice = imp.getCurrentSlice();
 			ImagePlus imp2 = makeComposite(imp);
 			if (loc!=null) ImageWindow.setNextLocation(loc);
-			imp2.show();
+			Objects.requireNonNull(imp2).show();
 			imp.changes = false;
 			if (z*t==1) {
 				imp.hide();

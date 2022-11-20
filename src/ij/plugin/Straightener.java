@@ -22,7 +22,7 @@ public class Straightener implements PlugIn {
 			return;
 		}
 		if (!imp.lock()) return;
-		int width = (int)Math.round(roi.getStrokeWidth());
+		int width = Math.round(roi.getStrokeWidth());
 		int originalWidth = width;
 		boolean isMacro = IJ.macroRunning() && Macro.getOptions()!=null;
 		int stackSize = imp.getStackSize();
@@ -57,9 +57,7 @@ public class Straightener implements PlugIn {
 			imp2 = new ImagePlus(newTitle, ip2);
 		}
 		imp.unlock();
-		if (imp2==null)
-			return;
-		Calibration cal = imp.getCalibration();
+        Calibration cal = imp.getCalibration();
 		if (cal.pixelWidth==cal.pixelHeight)
 			imp2.setCalibration(cal);
 		imp2.show();
@@ -107,9 +105,7 @@ public class Straightener implements PlugIn {
 		} else if (!(tempRoi instanceof PolygonRoi))
 			return null;
 		PolygonRoi roi = (PolygonRoi)tempRoi;
-		if (roi==null)
-			return null;
-		if (roi.getState()==Roi.CONSTRUCTING)
+        if (roi.getState()==Roi.CONSTRUCTING)
 			roi.exitConstructingMode();
 		if (roi.isSplineFit())
 			roi.removeSplineFit();
@@ -153,7 +149,7 @@ public class Straightener implements PlugIn {
 			int j = 0;
 			int n2 = width;
 			do {
-				ip2.putPixelValue(i, j++, ip.getInterpolatedValue(x, y));;
+				ip2.putPixelValue(i, j++, ip.getInterpolatedValue(x, y));
 				//ip.drawDot((int)x, (int)y);
 				x += dy;
 				y += dx;

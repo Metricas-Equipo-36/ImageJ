@@ -6,10 +6,10 @@ import ij.ImagePlus;
 public interface PlotMaker {
 
    /** Returns a profile plot. */
-   public Plot getPlot();
+   Plot getPlot();
    
    /** Returns the ImagePlus used to generate the profile plots. */
-   public ImagePlus getSourceImage();
+   ImagePlus getSourceImage();
 
 }
 

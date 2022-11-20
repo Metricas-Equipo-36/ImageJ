@@ -2,7 +2,6 @@ package ij.plugin.filter;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.measure.*;
 import ij.util.Tools;
 import java.awt.*;
 
@@ -146,11 +145,11 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
 
     /** Depracated. For compatibility with previous ImageJ versions */
     public void subtractRGBBackround(ColorProcessor ip, int ballRadius) {
-        rollingBallBrightnessBackground(ip, (double)ballRadius, false, lightBackground, false, true, true);
+        rollingBallBrightnessBackground(ip, ballRadius, false, lightBackground, false, true, true);
     }
     /** Depracated. For compatibility with previous ImageJ versions */
     public void subtractBackround(ImageProcessor ip, int ballRadius) {
-        rollingBallBackground(ip, (double)ballRadius, false, lightBackground, false, true, true);
+        rollingBallBackground(ip, ballRadius, false, lightBackground, false, true, true);
     }
 
     /** Create or subtract a background, based on the brightness of an RGB image (keeping
@@ -248,7 +247,7 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
             		int shift = 16 - 8*channelNumber;
 
             		int byteMask = 255<<shift;
-            		int resetMask = 0xffffffff^(255<<shift);
+            		int resetMask = ~(255 << shift);
 
                     for (int p=0; p<bgPixels.length; p++) {
                         int pxl = pixels[p];
@@ -357,7 +356,6 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
                 pointInc = width - 1;
             break;
             case DIAGONAL_2B:       //lines parallel to x=-y, starting at x=width-1, y=variable
-                startLine = 0;
                 nLines = height-2;
                 lineInc = width;
                 pointInc = width - 1;
@@ -489,27 +487,27 @@ public class BackgroundSubtracter implements ExtendedPlugInFilter, DialogListene
         float[] pixels = (float[])fp.getPixels();
         float[] corners = new float[4];         //(0,0); (xmax,0); (ymax,0); (xmax,ymax)
         float[] correctedEdges = new float[2];
-        correctedEdges = lineSlideParabola(pixels, 0, 1, width, coeff2, cache, nextPoint, correctedEdges);
+        lineSlideParabola(pixels, 0, 1, width, coeff2, cache, nextPoint, correctedEdges);
         corners[0] = correctedEdges[0];
         corners[1] = correctedEdges[1];
-        correctedEdges = lineSlideParabola(pixels, (height-1)*width, 1, width, coeff2, cache, nextPoint, correctedEdges);
+        lineSlideParabola(pixels, (height - 1) * width, 1, width, coeff2, cache, nextPoint, correctedEdges);
         corners[2] = correctedEdges[0];
         corners[3] = correctedEdges[1];
-        correctedEdges = lineSlideParabola(pixels, 0, width, height, coeff2, cache, nextPoint, correctedEdges);
+        lineSlideParabola(pixels, 0, width, height, coeff2, cache, nextPoint, correctedEdges);
         corners[0] += correctedEdges[0];
         corners[2] += correctedEdges[1];
-        correctedEdges = lineSlideParabola(pixels, width-1, width, height, coeff2, cache, nextPoint, correctedEdges);
+        lineSlideParabola(pixels, width - 1, width, height, coeff2, cache, nextPoint, correctedEdges);
         corners[1] += correctedEdges[0];
         corners[3] += correctedEdges[1];
         int diagLength = Math.min(width,height);        //length of a 45-degree line from a corner
         float coeff2diag = 2 * coeff2;
-        correctedEdges = lineSlideParabola(pixels, 0, 1+width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
+        lineSlideParabola(pixels, 0, 1 + width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
         corners[0] += correctedEdges[0];
-        correctedEdges = lineSlideParabola(pixels, width-1, -1+width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
+        lineSlideParabola(pixels, width - 1, -1 + width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
         corners[1] += correctedEdges[0];
-        correctedEdges = lineSlideParabola(pixels, (height-1)*width, 1-width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
+        lineSlideParabola(pixels, (height - 1) * width, 1 - width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
         corners[2] += correctedEdges[0];
-        correctedEdges = lineSlideParabola(pixels, width*height-1, -1-width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
+        lineSlideParabola(pixels, width * height - 1, -1 - width, diagLength, coeff2diag, cache, nextPoint, correctedEdges);
         corners[3] += correctedEdges[0];
         if (pixels[0] > corners[0]/3) pixels[0] = corners[0]/3;
         if (pixels[width-1] > corners[1]/3) pixels[width-1] = corners[1]/3;
@@ -805,8 +803,7 @@ class RollingBall {
         int xval, yval;     // x,y-values on patch relative to center of rolling ball
         double smallballradius; // radius of rolling ball (downscaled in x,y and z when image is shrunk)
         int halfWidth;      // distance in x or y from center of patch to any edge (patch "radius")
-        
-        this.shrinkFactor = shrinkFactor;
+
         smallballradius = ballradius/shrinkFactor;
         if (smallballradius<1)
             smallballradius = 1;

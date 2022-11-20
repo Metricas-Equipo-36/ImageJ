@@ -2,9 +2,8 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.measure.Calibration;
+
 import java.awt.*;
-import java.util.Vector;
 
 /** Implements the Image/HyperStacks/Reduce Dimensionality command. */
 public class HyperStackReducer implements PlugIn, DialogListener {
@@ -51,7 +50,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 			imp2.setOpenAsHyperStack(true);
 		} else
 			imp2 = imp.createHyperStack(title2, channels2, slices2, frames2, imp.getBitDepth());
-		imp2.setProperty("Info", (String)imp.getProperty("Info"));		
+		imp2.setProperty("Info", imp.getProperty("Info"));
 		imp2.setProperties(imp.getPropertiesAsArray());
 		reduce(imp2);
 		if (channels2>1 && channels2==imp.getNChannels() && imp.isComposite()) {
@@ -166,10 +165,7 @@ public class HyperStackReducer implements PlugIn, DialogListener {
 		gd.addCheckbox("Keep source", keep);
 		gd.addDialogListener(this);
 		gd.showDialog();
-		if (gd.wasCanceled())
-			return false;
-		else
-			return true;
+		return !gd.wasCanceled();
 	}
 
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {

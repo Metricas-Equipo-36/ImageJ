@@ -2,7 +2,6 @@ package ij.gui;
 
 import ij.macro.Interpreter;
 import java.awt.*;
-import java.awt.image.*;
 
 /**
  * This is the progress bar that is displayed in the lower right hand corner of
@@ -20,11 +19,11 @@ public class ProgressBar extends Canvas {
     private boolean showBar;
     private boolean batchMode;
 
-    private Color barColor = Color.gray;
-    private Color fillColor = new Color(204, 204, 255);
-    private Color backgroundColor = ij.ImageJ.backgroundColor;
-    private Color frameBrighter = backgroundColor.brighter();
-    private Color frameDarker = backgroundColor.darker();
+    private final Color barColor = Color.gray;
+    private final Color fillColor = new Color(204, 204, 255);
+    private final Color backgroundColor = ij.ImageJ.backgroundColor;
+    private final Color frameBrighter = backgroundColor.brighter();
+    private final Color frameDarker = backgroundColor.darker();
     private boolean dualDisplay = false;
     private double slowX = 0.0;//box
     private double fastX = 0.0;//dot
@@ -75,9 +74,7 @@ public class ProgressBar extends Canvas {
      * @param showInBatchMode show progress bar in batch mode macros?
      */
     public void show(double progress, boolean showInBatchMode) {
-        boolean finished = false;
-        if (progress<=-1)
-            finished = true;
+        boolean finished = progress <= -1;
         if (!dualDisplay && progress >= 1)
             finished = true;
         if (!finished) {

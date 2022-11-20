@@ -1,14 +1,9 @@
 package ij.macro;
 import ij.*;
-import ij.plugin.*;
 import ij.plugin.frame.*;
 import ij.gui.GUI;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Hashtable;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Set;
 
 /** This class implements the text editor's Macros/Find Functions command.
 	It was written by jerome.mutterer at ibmp.fr, and is based on Mark Longair's CommandFinder plugin.
@@ -122,7 +117,7 @@ public class FunctionFinder implements TextListener,  WindowListener, KeyListene
 			int start = ta.getSelectionStart( );
 			int end = ta.getSelectionEnd( );
 			try {
-				ta.replaceRange(arg.substring(0,arg.length()), start, end);
+				ta.replaceRange(arg, start, end);
 			} catch (Exception e) { }
 			if (IJ.isMacOSX())
 				ta.setCaretPosition(start+arg.length());

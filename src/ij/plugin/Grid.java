@@ -1,6 +1,5 @@
 package ij.plugin;
 import ij.*;
-import ij.process.*;
 import ij.gui.*;
 import ij.measure.*;
 import ij.util.Tools;
@@ -12,11 +11,11 @@ import java.util.*;
 public class Grid implements PlugIn, DialogListener {
 	private static final String OPTIONS = "grid.options";
 	private static final String GRID = "|GRID|";
-	private static double crossSize = 0.1;
-	private static String[] colors = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White"};
+	private static final double crossSize = 0.1;
+	private static final String[] colors = {"Red","Green","Blue","Magenta","Cyan","Yellow","Orange","Black","White"};
 	private final static int LINES=0, HLINES=1, CROSSES=2, POINTS=3, CIRCLES=4, NONE=4;
-	private static String[] types = {"Lines","Horizontal Lines", "Crosses", "Points", "Circles", "None"};
-	private Random random = new Random(System.currentTimeMillis());
+	private static final String[] types = {"Lines","Horizontal Lines", "Crosses", "Points", "Circles", "None"};
+	private final Random random = new Random(System.currentTimeMillis());
 	private ImagePlus imp;
 	private double tileWidth, tileHeight;
 	private int xstart, ystart;

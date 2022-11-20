@@ -1,6 +1,5 @@
 package ij.gui;
 import java.awt.*;
-import java.util.Vector;
 import java.awt.geom.Rectangle2D;
 import java.util.*;
 import ij.*;
@@ -88,7 +87,7 @@ public class Overlay implements Iterable<Roi> {
     /** Returns the ROI with the specified index or null if the index is invalid. */
     public Roi get(int index) {
     	try {
-    		return (Roi)list.get(index);
+    		return list.get(index);
     	} catch(Exception e) {
     		return null;
     	}
@@ -146,7 +145,7 @@ public class Overlay implements Iterable<Roi> {
     /** Returns on array containing the ROIs in this Overlay. */
     public Roi[] toArray() {
     	Roi[] array = new Roi[list.size()];
-    	return (Roi[])list.toArray(array);
+    	return list.toArray(array);
     }
     
     /** Returns on array containing the ROIs with the specified indexes. */
@@ -156,7 +155,7 @@ public class Overlay implements Iterable<Roi> {
 			if (indexes[i]>=0 && indexes[i]<size())
 				rois.add(get(indexes[i]));
 		}
-		return (Roi[])rois.toArray(new Roi[rois.size()]);
+		return (Roi[])rois.toArray(new Roi[0]);
 	}
 
     /** Sets the stroke color of all the ROIs in this overlay. */
@@ -242,8 +241,8 @@ public class Overlay implements Iterable<Roi> {
 			if (bounds.intersects(roiBounds))
 				overlay2.add((Roi)roi.clone());
 		}
-		int dx = bounds.x>0?bounds.x:0;
-		int dy = bounds.y>0?bounds.y:0;
+		int dx = Math.max(bounds.x, 0);
+		int dy = Math.max(bounds.y, 0);
 		if (dx>0 || dy>0)
 			overlay2.translate(-dx, -dy);
 		return overlay2;
@@ -298,26 +297,6 @@ public class Overlay implements Iterable<Roi> {
 		}
 	}
 
-    /** Returns the bounds of this overlay. */
-    /*
-    public Rectangle getBounds() {
-    	if (size()==0)
-    		return new Rectangle(0,0,0,0);
-    	int xmin = Integer.MAX_VALUE;
-    	int xmax = -Integer.MAX_VALUE;
-    	int ymin = Integer.MAX_VALUE;
-    	int ymax = -Integer.MAX_VALUE;
-		Roi[] rois = toArray();
-		for (int i=0; i<rois.length; i++) {
-			Rectangle r = rois[i].getBounds();
-			if (r.x<xmin) xmin = r.x;
-			if (r.y<ymin) ymin = r.y;
-			if (r.x+r.width>xmax) xmax = r.x+r.width;
-			if (r.y+r.height>ymax) ymax = r.y+r.height;
-		}
-		return new Rectangle(xmin, ymin, xmax-xmin, ymax-ymin);
-	}
-	*/
 	
 	/* Returns the Roi that results from XORing all the ROIs
 	 * in this overlay that have an index in the array ‘indexes’.
@@ -556,10 +535,7 @@ public class Overlay implements Iterable<Roi> {
 			/** Returns 'true' if next element exists. */ 
 			@Override
 			public boolean hasNext() {
-				if (index+1<overlay.size()) 
-					return true;
-				else 
-					return false;
+				return index + 1 < overlay.size();
 			}
 
 			/** Returns current ROI and updates pointer. */

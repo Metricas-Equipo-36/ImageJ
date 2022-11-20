@@ -4,7 +4,7 @@ import ij.gui.*;
 import ij.macro.*;
 import ij.util.Tools;
 import ij.util.IJMath;
-import java.util.Arrays;
+
 import java.util.Hashtable;
 import java.awt.Color;
 
@@ -149,7 +149,7 @@ public class CurveFitter implements UserFunction{
 	private double[] finalParams;	// parameters obtained by fit
 	private boolean linearRegressionUsed;	// whether linear regression alone was used instead of the minimizer
 	private boolean restrictPower;	// power via linear regression fit: (0,0) requires positive power
-	private Minimizer minimizer = new Minimizer();
+	private final Minimizer minimizer = new Minimizer();
 	private int minimizerStatus = Minimizer.INITIALIZATION_FAILURE; // status of the minimizer after minimizing
 	private String errorString;		// in case of error before invoking the minimizer
 	private static String[] sortedFitList; // names like fitList, but in more logical sequence
@@ -647,33 +647,29 @@ public class CurveFitter implements UserFunction{
 	 *	better explains the problem in some cases of initialization failure (data not
 	 *	compatible with the fit function chosen) */
 	public String getStatusString() {
-		return errorString != null ? errorString : minimizer.STATUS_STRING[getStatus()];
+		return errorString != null ? errorString : Minimizer.STATUS_STRING[getStatus()];
 	}
 
 	/** Get a string with detailed description of the curve fitting results (several lines,
 	 *	including the fit parameters).
 	 */
 	public String getResultString() {
-		String resultS =  "\nFormula: " + getFormula()
-				+ "\nMacro code: "+getMacroCode()
-				+ "\nStatus: "+getStatusString();
+		StringBuilder resultS = new StringBuilder("\nFormula: " + getFormula()
+				+ "\nMacro code: " + getMacroCode()
+				+ "\nStatus: " + getStatusString());
 		if (getStatus()==Minimizer.INITIALIZATION_FAILURE)
-			return resultS;
-		if (!linearRegressionUsed) resultS += "\nNumber of completed minimizations: " + minimizer.getCompletedMinimizations();
-		resultS += "\nNumber of iterations: " + getIterations();
-		if (!linearRegressionUsed) resultS += " (max: " + minimizer.getMaxIterations() + ")";
-		resultS += "\nTime: "+time+" ms" +
-				"\nSum of residuals squared: " + IJ.d2s(getSumResidualsSqr(),5,9) +
-				"\nStandard deviation: " + IJ.d2s(getSD(),5,9) +
-				"\nR^2: " + IJ.d2s(getRSquared(),5) +
-				"\nParameters:";
+			return resultS.toString();
+		if (!linearRegressionUsed) resultS.append("\nNumber of completed minimizations: ").append(minimizer.getCompletedMinimizations());
+		resultS.append("\nNumber of iterations: ").append(getIterations());
+		if (!linearRegressionUsed) resultS.append(" (max: ").append(minimizer.getMaxIterations()).append(")");
+		resultS.append("\nTime: ").append(time).append(" ms").append("\nSum of residuals squared: ").append(IJ.d2s(getSumResidualsSqr(), 5, 9)).append("\nStandard deviation: ").append(IJ.d2s(getSD(), 5, 9)).append("\nR^2: ").append(IJ.d2s(getRSquared(), 5)).append("\nParameters:");
 		char pChar = 'a';
 		double[] pVal = getParams();
 		for (int i = 0; i < numParams; i++) {
-			resultS += "\n	" + pChar + " = " + IJ.d2s(pVal[i],5,9);
+			resultS.append("\n	").append(pChar).append(" = ").append(IJ.d2s(pVal[i], 5, 9));
 			pChar++;
 		}
-		return resultS;
+		return resultS.toString();
 	}
 
 	/** Set maximum number of simplex restarts to do. See Minimizer.setMaxRestarts for details. */
@@ -798,7 +794,7 @@ public class CurveFitter implements UserFunction{
 				h.put(fitList[i], Integer.valueOf(i));
 			namesTable = h;
 		}
-		Integer i = (Integer)namesTable.get(fitName);
+		Integer i = namesTable.get(fitName);
 		return i!=null? i.intValue() : -1;
 	}
 
@@ -1450,10 +1446,10 @@ public class CurveFitter implements UserFunction{
         int n = getNumParams();
         char pChar = 'a';
         for (int i = 0; i < n; i++) {
-			legend.append(pChar+" = "+IJ.d2s(p[i],5,9)+'\n');
+			legend.append(pChar).append(" = ").append(IJ.d2s(p[i], 5, 9)).append('\n');
 			pChar++;
         }
-		legend.append("R^2 = "+IJ.d2s(getRSquared(),4)); legend.append('\n');
+		legend.append("R^2 = ").append(IJ.d2s(getRSquared(), 4)); legend.append('\n');
 		plot.addLabel(0.02, 0.1, legend.toString());
 		plot.setColor(Color.BLUE);
 		return plot;

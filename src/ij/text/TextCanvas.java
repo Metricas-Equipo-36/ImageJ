@@ -1,11 +1,10 @@
 package ij.text;
 import ij.util.Java2;
 import java.awt.*;
-import java.awt.event.*;
 
 class TextCanvas extends Canvas {
 
-	TextPanel tp;
+	final TextPanel tp;
 	Font fFont;
 	FontMetrics fMetrics;
 	Graphics gImage;
@@ -129,7 +128,7 @@ class TextCanvas extends Canvas {
 			return null;
 		if (row>=tp.vData.size())
 			return null;
-		char[] chars = row<tp.vData.size()?(char[])(tp.vData.elementAt(row)):null;
+		char[] chars = (char[]) tp.vData.elementAt(row);
 		if (chars==null || chars.length==0)
 			return null;
 		
@@ -146,8 +145,8 @@ class TextCanvas extends Canvas {
 	    	start++;
 	    	if (start>=length)
 	    		return null;
-	    };
-	    if (start<0 || start>=chars.length) {
+	    }
+        if (start<0) {
 			System.out.println("start="+start+", chars.length="+chars.length);	    	
 	    	return null;
 	    }

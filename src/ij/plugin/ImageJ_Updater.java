@@ -1,11 +1,10 @@
 package ij.plugin;
 import ij.*;
 import ij.gui.*;
-import ij.util.Tools;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
-import java.lang.reflect.*;
 
 
 /** This plugin implements the Help/Update ImageJ command. */
@@ -37,7 +36,7 @@ public class ImageJ_Updater implements PlugIn {
 		if (!file.canWrite()) {
 			String path = file.getPath();
 			String msg = "No write access: "+path;
-			if (IJ.isMacOSX() && path!=null && path.startsWith("/private/var/folders/")) {
+			if (IJ.isMacOSX() && path.startsWith("/private/var/folders/")) {
 				msg = "ImageJ is in a read-only folder due to Path Randomization.\n"
 				+ "To work around this problem, drag ImageJ.app to another\n"
 				+ "folder and then (optionally) drag it back.";
@@ -45,7 +44,7 @@ public class ImageJ_Updater implements PlugIn {
 			error(msg);
 			return;
 		}
-		String[] list = openUrlAsList(URL+"/jars/list.txt");
+		String[] list = openUrlAsList();
 		if (list==null || list.length==0) {
 			error("Error opening "+URL+"/jars/list.txt");
 			return;
@@ -58,7 +57,7 @@ public class ImageJ_Updater implements PlugIn {
 		for (int i=1; i<count-2; i++) {
 			String version = list[i];
 			versions[i] = version.substring(0,version.length()-1); // remove letter
-			urls[i] = URL+"/jars/ij"+version.substring(1,2)+version.substring(3,6)+".jar";
+			urls[i] = URL+"/jars/ij"+version.charAt(1)+version.substring(3,6)+".jar";
 		}
 		versions[count-2] = "daily build";
 		urls[count-2] = URL+"/download/daily-build/ij.jar";
@@ -109,7 +108,7 @@ public class ImageJ_Updater implements PlugIn {
 			int count = 0;
 			String line;
 			while ((line=br.readLine())!=null && count++<maxLines)
-				sb.append (line + "\n");
+				sb.append(line).append("\n");
 			in.close ();
 		} catch (IOException e) {sb = null;}
 			return sb!=null?new String(sb):null;
@@ -155,11 +154,11 @@ public class ImageJ_Updater implements PlugIn {
 		}
 	}
 
-	String[] openUrlAsList(String address) {
+	String[] openUrlAsList() {
 		IJ.showStatus("Connecting to "+IJ.URL);
 		Vector v = new Vector();
 		try {
-			URL url = new URL(address);
+			URL url = new URL("http://wsr.imagej.net/jars/list.txt");
 			InputStream in = url.openStream();
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
 			String line;
@@ -171,7 +170,7 @@ public class ImageJ_Updater implements PlugIn {
 			br.close();
 		} catch(Exception e) { }
 		String[] lines = new String[v.size()];
-		v.copyInto((String[])lines);
+		v.copyInto(lines);
 		IJ.showStatus("");
 		return lines;
 	}

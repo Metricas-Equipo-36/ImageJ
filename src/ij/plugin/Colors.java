@@ -1,10 +1,7 @@
 package ij.plugin;
 import ij.*;
 import ij.gui.*;
-import ij.process.*;
-import ij.io.*;
-import ij.plugin.filter.*;
-import ij.util.Tools;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
@@ -269,8 +266,7 @@ public class Colors implements PlugIn, ItemListener {
 			if (arg!=null && arg.length()>0 && (!Character.isLetter(arg.charAt(0))||arg.equals("None")))
 				names.add(arg);
 		}
-		for (String arg: colors2)
-			names.add(arg);
-		return (String[])names.toArray(new String[names.size()]);
+		Collections.addAll(names, colors2);
+		return (String[])names.toArray(new String[0]);
 	}
 }

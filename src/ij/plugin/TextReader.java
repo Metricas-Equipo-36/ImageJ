@@ -1,6 +1,4 @@
 package ij.plugin;
-import java.awt.*;
-import java.awt.image.*;
 import java.io.*;
 import ij.*;
 import ij.io.*;
@@ -13,7 +11,7 @@ import ij.plugin.frame.Recorder;
 	Modified to accept commas as delimiters on 4/22/08 by 
 	Jay Unruh, Stowers Institute for Medical Research. */
 public class TextReader implements PlugIn {
-    int words = 0, chars = 0, lines = 0, width=1;;
+    int words = 0, chars = 0, lines = 0, width=1;
     String directory, name, path;
     boolean hideErrorMessages;
     String firstTok;

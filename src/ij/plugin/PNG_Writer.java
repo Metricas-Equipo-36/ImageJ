@@ -2,7 +2,7 @@ package ij.plugin;
 import ij.*;
 import ij.io.*;
 import ij.process.*;
-import java.awt.*;
+
 import java.io.*;
 import java.awt.image.*;
 import javax.imageio.ImageIO;
@@ -53,7 +53,7 @@ public class PNG_Writer implements PlugIn {
 			writeFourChannelsWithAlpha(imp, path);
 		else if (transparentIndex>=0 && transparentIndex<=255 && imp.getBitDepth()==8)
 			writeImageWithTransparency(imp, path, transparentIndex);
-		else if (imp.getOverlay()!=null && !imp.getHideOverlay() && !imp.tempOverlay())
+		else if (imp.getOverlay()!=null && !imp.getHideOverlay() && imp.tempOverlay())
 			ImageIO.write(imp.flatten().getBufferedImage(), "png", new File(path));
 		else if (imp.getBitDepth()==16 && !imp.isComposite() && imp.getProcessor().isDefaultLut())
 			write16gs(imp, path);

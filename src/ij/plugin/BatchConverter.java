@@ -2,11 +2,11 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
-import ij.util.Tools;
 import ij.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.Objects;
 
 /** This plugin implements the File/ /Convert command, 
 	which converts the images in a folder to a specified format. */
@@ -17,7 +17,7 @@ import java.io.*;
 		private static boolean useBioFormats;
 		private static int interpolationMethod = ImageProcessor.BILINEAR;
 		private static boolean averageWhenDownSizing;
-		private String[] methods = ImageProcessor.getInterpolationMethods();
+		private final String[] methods = ImageProcessor.getInterpolationMethods();
 		private Button input, output;
 		private TextField inputDir, outputDir;
 		private GenericDialog gd;
@@ -41,7 +41,7 @@ import java.io.*;
 			return;
 		}
 		File f2 = new File(outputPath);
-		if (!outputPath.equals("") && (!f2.exists() || !f2.isDirectory())) {
+		if (!f2.exists() || !f2.isDirectory()) {
 			IJ.error("Batch Converter", "Output does not exist or is not a folder\n \n"+outputPath);
 			return;
 		}
@@ -50,7 +50,7 @@ import java.io.*;
 		Opener opener = new Opener();
 		opener.setSilentMode(true);
 		long t0 = System.currentTimeMillis();
-		for (int i=0; i<list.length; i++) {
+		for (int i = 0; i< Objects.requireNonNull(list).length; i++) {
 			if (IJ.escapePressed())
 				break;
 			if (IJ.debugMode) IJ.log(i+"  "+list[i]);

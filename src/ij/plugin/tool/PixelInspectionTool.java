@@ -9,7 +9,7 @@ import ij.util.Tools;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.datatransfer.*;
-import java.awt.geom.*;
+import java.util.Objects;
 
 /**
  * This plugin continuously displays the pixel values of the cursor and
@@ -70,7 +70,7 @@ public class  PixelInspectionTool extends PlugInTool {
 		if (overlay==null)
 			overlay = new Overlay();
 		Roi roi = null;
-		int index = PixelInspector.getIndex(overlay, PixelInspector.TITLE);
+		int index = PixelInspector.getIndex(overlay);
 		if (index>=0) {
 			roi = overlay.get(index);
 			Rectangle r = roi.getBounds();
@@ -93,7 +93,7 @@ public class  PixelInspectionTool extends PlugInTool {
 				PixelInspector.instance.close();
 			pi = new PixelInspector(imp, this);
 		}
-		pi.update(imp, PixelInspector.POSITION_UPDATE, x, y);
+		pi.update(imp, x, y);
 	}
 
 	public String getToolName() {
@@ -139,9 +139,9 @@ class PixelInspector extends PlugInFrame
 	final static int POSITION_UPDATE = 1, FULL_UPDATE = 2;
 	static final String TITLE = "Pixel Inspector";
 	static PixelInspector instance;
-	PixelInspectionTool tool;
+	final PixelInspectionTool tool;
 
-	ImageJ ij;
+	final ImageJ ij;
 	ImagePlus imp;					//the ImagePlus that we listen to
 	int id;					        //the image ID
 	int bitDepth;                 //the image bit depth
@@ -151,7 +151,7 @@ class PixelInspector extends PlugInFrame
 	Thread bgThread;				//thread for output (in the background)
 	Label[] labels;					//the display fields
 	//Label prefsLabel = new Label("Prefs\u2026");
-	Label prefsLabel = new Label("Prefs");
+    final Label prefsLabel = new Label("Prefs");
 	
 
 	/* Initialization, preparing the window (panel) **/
@@ -224,7 +224,7 @@ class PixelInspector extends PlugInFrame
 	private void removeOutline() {
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null) return;
-		int index = getIndex(overlay, TITLE);
+		int index = getIndex(overlay);
 		if (index>=0) {
 			overlay.remove(index);
 			imp.setOverlay(overlay);
@@ -232,15 +232,15 @@ class PixelInspector extends PlugInFrame
 	}
 
 	private void addImageListeners() {
-		imp.addImageListener(this);
+		ImagePlus.addImageListener(this);
 		ImageWindow win = imp.getWindow();
 		if (win == null) close();
-		canvas = win.getCanvas();
+		canvas = Objects.requireNonNull(win).getCanvas();
 		canvas.addKeyListener(this);
 	}
 
 	private void removeImageListeners() {
-		imp.removeImageListener(this);
+		ImagePlus.removeImageListener(this);
 		canvas.removeKeyListener(this);
 	}
 
@@ -268,7 +268,7 @@ class PixelInspector extends PlugInFrame
 			ij.keyPressed(e);  //forward other keys from the panel to ImageJ
 		Overlay overlay = imp.getOverlay();
 		if (overlay==null) return;
-		int index = getIndex(overlay, TITLE);
+		int index = getIndex(overlay);
 		if (index>=0) {
 			overlay.remove(index);
 			Roi roi = new Roi(x0-radius, y0-radius, radius*2+1, radius*2+1);
@@ -288,11 +288,11 @@ class PixelInspector extends PlugInFrame
 	public void mouseReleased(MouseEvent e) {}   
 
 	/** In the Overlay class in imageJ 1.46g and later. */
-	static int getIndex(Overlay overlay, String name) {
-		if (name==null) return -1;
+	static int getIndex(Overlay overlay) {
+		if (PixelInspector.TITLE ==null) return -1;
 		Roi[] rois = overlay.toArray();
 		for (int i=rois.length-1; i>=0; i--) {
-			if (name.equals(rois[i].getName()))
+			if (PixelInspector.TITLE.equals(rois[i].getName()))
 				return i;
 		}
 		return -1;
@@ -301,7 +301,7 @@ class PixelInspector extends PlugInFrame
 	public void keyReleased(KeyEvent e) {}
 	public void keyTyped(KeyEvent e) {}
 
-	void update(ImagePlus imp, int whichUpdate, int x, int y) {
+	void update(ImagePlus imp, int x, int y) {
 		if (imp!=this.imp) {
 			removeImageListeners();
 			removeOutline();
@@ -311,7 +311,7 @@ class PixelInspector extends PlugInFrame
 		}
 		this.x0 = x;
 		this.y0 = y;
-		update(whichUpdate);
+		update(PixelInspector.POSITION_UPDATE);
 	}
 
 	synchronized void update(int whichUpdate) {

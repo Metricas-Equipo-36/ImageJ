@@ -2,7 +2,7 @@ package ij.macro;
 
 /** This runtime exception is thrown by break and continue statements. */
 class MacroException extends RuntimeException {
-	private int type;
+	private final int type;
 	
 	MacroException(int type) {
 		this.type = type;

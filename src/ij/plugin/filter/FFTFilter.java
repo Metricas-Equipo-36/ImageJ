@@ -5,7 +5,6 @@ import ij.gui.*;
 import ij.measure.*;
 import ij.plugin.ContrastEnhancer;
 import java.awt.*;
-import java.util.*;
 
 /** 
 This class implements the Process/FFT/Bandpass Filter command. It is based on 
@@ -20,7 +19,7 @@ public class FFTFilter implements  PlugInFilter, Measurements {
 
 	private ImagePlus imp;
 	private String arg;
-	private static int filterIndex = 1;
+	private static final int filterIndex = 1;
 	private FHT fht;
 	private int slice;
 	private int stackSize = 1;	
@@ -28,7 +27,7 @@ public class FFTFilter implements  PlugInFilter, Measurements {
 	private static double filterLargeDia = 40.0;
 	private static double  filterSmallDia = 3.0;
 	private static int choiceIndex = 0;
-	private static String[] choices = {"None","Horizontal","Vertical"};
+	private static final String[] choices = {"None","Horizontal","Vertical"};
 	private static String choiceDia = choices[0];
 	private static double toleranceDia = 5.0;
 	private static boolean doScalingDia = true;
@@ -134,6 +133,7 @@ public class FFTFilter implements  PlugInFilter, Measurements {
 			case 24:
 				ip.snapshot();
 				showStatus("Setting brightness");
+				assert ip instanceof ColorProcessor;
 				((ColorProcessor)ip).setBrightness((FloatProcessor)ip2);
 				break;
 			case 32: break;

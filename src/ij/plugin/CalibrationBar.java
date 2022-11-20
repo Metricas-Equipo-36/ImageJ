@@ -1,16 +1,13 @@
 package ij.plugin;
 import ij.*;
-import static ij.IJ.createImage;
+
 import java.awt.*;
 import java.awt.image.*;
 import java.awt.event.*;
-import java.io.*;
-import java.awt.datatransfer.*;
+
 import ij.gui.*;
 import ij.process.*;
-import ij.measure.Measurements;
 import ij.plugin.filter.Analyzer;
-import ij.text.TextWindow;
 import ij.measure.*;
 
 /** This plugin implements the Analyze/Tools/Calibration Bar command.
@@ -30,7 +27,7 @@ public class CalibrationBar implements PlugIn {
 	final static int WIN_HEIGHT = BAR_LENGTH;
 	final static int BOX_PAD = 0;
 	final static String CALIBRATION_BAR = "|CB|";
-	static int nBins = 256;
+	static final int nBins = 256;
 	static final String[] colors = {"White","Light Gray","Dark Gray","Black","Red","Green","Blue","Yellow","None"};
 	static final String[] locations = {"Upper Right","Lower Right","Lower Left", "Upper Left", "At Selection", "Separate Image"};
 	static final int UPPER_RIGHT=0, LOWER_RIGHT=1, LOWER_LEFT=2, UPPER_LEFT=3, AT_SELECTION=4, SEPARATE_IMAGE = 5;
@@ -77,8 +74,8 @@ public class CalibrationBar implements PlugIn {
 	int[] intStorage;
 	short[] shortStorage;
 	float[] floatStorage;
-	String boxOutlineColor = colors[8];
-	String barOutlineColor = colors[3];
+	final String boxOutlineColor = colors[8];
+	final String barOutlineColor = colors[3];
 	
 	ImageProcessor ip;
 	String[] fieldNames = null;
@@ -98,7 +95,7 @@ public class CalibrationBar implements PlugIn {
 		ImageCanvas ic = imp.getCanvas();
 		double mag = (ic!=null)?ic.getMagnification():1.0;
 		if (zoom<=1 && mag<1)
-			zoom = (double) 1.0/mag;
+			zoom = 1.0 /mag;
 		insetPad = (imp.getWidth()+imp.getHeight())/100;
 		if (insetPad<4)
 			insetPad = 4;
@@ -182,7 +179,7 @@ public class CalibrationBar implements PlugIn {
 	}
 
 	private boolean showDialog() {
-		gd = new LiveDialog("Calibration Bar");
+		gd = new LiveDialog();
 		gd.addChoice("Location:", locations, location);
 		gd.addChoice("Fill color: ", colors, fillColor);
 		gd.addChoice("Label color: ", colors, textColor);
@@ -206,7 +203,7 @@ public class CalibrationBar implements PlugIn {
 		numLabels = (int)gd.getNextNumber();
 		decimalPlaces = (int)gd.getNextNumber();
 		fontSize = (int)gd.getNextNumber();
-		zoom = (double)gd.getNextNumber();
+		zoom = gd.getNextNumber();
 		boldText = gd.getNextBoolean();
 		flatten = !gd.getNextBoolean();
 		showUnit = gd.getNextBoolean();
@@ -329,7 +326,7 @@ public class CalibrationBar implements PlugIn {
 			return 0;
 		double hmin = cal.getCValue(stats.histMin);
 		double hmax = cal.getCValue(stats.histMax);
-		double barStep = (double)(BAR_LENGTH*zoom) ;
+		double barStep = BAR_LENGTH*zoom;
 		if (numLabels > 2)
 			barStep /= (numLabels - 1);
 
@@ -417,15 +414,15 @@ public class CalibrationBar implements PlugIn {
 	
 	private FontMetrics getFontMetrics(Font font) {
 		BufferedImage bi =new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-		Graphics g = (Graphics2D)bi.getGraphics();
+		Graphics g = bi.getGraphics();
 		g.setFont(font);
 		return g.getFontMetrics(font);
 	}
 		
 	class LiveDialog extends GenericDialog {
 
-		LiveDialog(String title) {
-			super(title);
+		LiveDialog() {
+			super("Calibration Bar");
 		}
 
 		public void textValueChanged(TextEvent e) {
@@ -488,7 +485,6 @@ public class CalibrationBar implements PlugIn {
 
 			if (needsRefresh)
 				updateColorBar();
-			return;
 		}
 
 		public void itemStateChanged(ItemEvent e) {
@@ -499,10 +495,7 @@ public class CalibrationBar implements PlugIn {
 			flatten = !( (Checkbox)(checkbox.elementAt(1)) ).getState();
 			showUnit = ( (Checkbox)(checkbox.elementAt(2)) ).getState();
 			Checkbox overlayBox = (Checkbox)(checkbox.elementAt(1) );
-			if (location.equals(locations[SEPARATE_IMAGE]))
-					overlayBox.setEnabled(false);
-			else
-					overlayBox.setEnabled(true);
+			overlayBox.setEnabled(!location.equals(locations[SEPARATE_IMAGE]));
 			updateColorBar();
 		}
 

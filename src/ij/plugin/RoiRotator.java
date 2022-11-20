@@ -30,9 +30,7 @@ public class RoiRotator implements PlugIn {
 			ycenter = imp.getHeight()/2.0;
 		}
 		Roi roi2 = rotate(roi, angle, xcenter, ycenter);
-		if (roi2==null && (roi instanceof ImageRoi))
-			return;
-		if (!rotateAroundImageCenter)
+        if (!rotateAroundImageCenter)
 			roi2.setRotationCenter(xcenter,ycenter);
 		Undo.setup(Undo.ROI, imp);
 		roi = (Roi)roi.clone();
@@ -103,9 +101,7 @@ public class RoiRotator implements PlugIn {
 		else {
 			if (type==Roi.RECTANGLE)
 				type = Roi.POLYGON;
-			if (type==Roi.RECTANGLE && poly.npoints>4) // rounded rectangle
-				type = Roi.FREEROI;
-			if (type==Roi.OVAL||type==Roi.TRACED_ROI)
+            if (type==Roi.OVAL||type==Roi.TRACED_ROI)
 				type = Roi.FREEROI;
 			roi2 = new PolygonRoi(poly.xpoints, poly.ypoints,poly.npoints, type);
 		}

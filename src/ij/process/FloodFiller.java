@@ -1,6 +1,4 @@
 package ij.process;
-import ij.*;
-import ij.gui.Toolbar;
 import java.awt.Rectangle;
 
 
@@ -14,30 +12,32 @@ public class FloodFiller {
 	int[] xstack = new int[maxStackSize];
 	int[] ystack = new int[maxStackSize];
 	int stackSize;
-	ImageProcessor ip;
+	final ImageProcessor ip;
 	int max;
-	boolean isFloat;
+	final boolean isFloat;
   
 	public FloodFiller(ImageProcessor ip) {
 		this.ip = ip;
 		isFloat = ip instanceof FloatProcessor;
 	}
 
-	/** Does a 4-connected flood fill using the current fill/draw
-		value, which is defined by ImageProcessor.setValue(). */
-	public boolean fill(int x, int y) {
+	/**
+	 * Does a 4-connected flood fill using the current fill/draw
+	 * value, which is defined by ImageProcessor.setValue().
+	 */
+	public void fill(int x, int y) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		int color = ip.getPixel(x, y);
 		fillLine(ip, x, x, y);
 		int newColor = ip.getPixel(x, y);
 		ip.putPixel(x, y, color);
-		if (color==newColor) return false;
+		if (color==newColor) return;
 		stackSize = 0;
 		push(x, y);
 		while(true) {   
 			x = popx(); 
-			if (x ==-1) return true;
+			if (x ==-1) return;
 			y = popy();
 			if (ip.getPixel(x,y)!=color) continue;
 			int x1 = x; int x2 = x;
@@ -63,9 +63,11 @@ public class FloodFiller {
 		}        
 	}
 	
-	/** Does a 8-connected flood fill using the current fill/draw
-		value, which is defined by ImageProcessor.setValue(). */
-	public boolean fill8(int x, int y) {
+	/**
+	 * Does a 8-connected flood fill using the current fill/draw
+	 * value, which is defined by ImageProcessor.setValue().
+	 */
+	public void fill8(int x, int y) {
 		int width = ip.getWidth();
 		int height = ip.getHeight();
 		int color = ip.getPixel(x, y);
@@ -74,12 +76,12 @@ public class FloodFiller {
 		fillLine(ip, x, x, y);
 		int newColor = ip.getPixel(x, y);
 		ip.putPixel(x, y, color);
-		if (color==newColor) return false;
+		if (color==newColor) return;
 		stackSize = 0;
 		push(x, y);
 		while(true) {   
 			x = popx(); 
-			if (x==-1) return true;
+			if (x==-1) return;
 			y = popy();
 			int x1 = x; int x2 = x;
 			if(ip.getPixel(x1,y)==color){ 
@@ -124,7 +126,7 @@ public class FloodFiller {
 			for (int i=x1; i<=x2; i++) {// find scan-lines below this one
 				if (!inScanLine && y<hm1 && ip.getPixel(i,y+1)==color)
 					{push(i, y+1); inScanLine = true;}
-				else if (inScanLine && y<hm1 && ip.getPixel(i,y+1)!=color)
+				else if (inScanLine && ip.getPixel(i, y + 1) != color)
 					inScanLine = false;
 			}
 		}

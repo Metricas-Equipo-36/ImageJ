@@ -8,8 +8,6 @@ import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
 import ij.util.Java2;
 import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.KeyEvent;
 import java.util.*;
 import java.awt.geom.*;
 
@@ -32,7 +30,7 @@ public class PointRoi extends PolygonRoi {
 	private static int defaultType = HYBRID;
 	private static int defaultSize = SMALL;
 	private static Font font;
-	private static Color defaultCrossColor = Color.white;
+	private static final Color defaultCrossColor = Color.white;
 	private static int fontSize = 9;
 	public static final int MAX_COUNTERS = 100;
 	private static String[] counterChoices;
@@ -208,7 +206,7 @@ public class PointRoi extends PolygonRoi {
 			fontSize = 8;
 			double scale = size>=XXL?2:1.5;
 			fontSize += scale*convertSizeToIndex(size);
-			fontSize = (int)Math.round(fontSize);
+			fontSize = Math.round(fontSize);
 			//IJ.log("fontSize: "+fontSize+" "+scale);
 			font = new Font("SansSerif", Font.PLAIN, fontSize);
 			g.setFont(font);
@@ -229,7 +227,7 @@ public class PointRoi extends PolygonRoi {
 		}
 		if (updateFullWindow) {
 			updateFullWindow = false;
-			imp.draw();
+			Objects.requireNonNull(imp).draw();
 		}
 		PointToolOptions.update();
 		flattenScale = 1.0;
@@ -314,7 +312,7 @@ public class PointRoi extends PolygonRoi {
 				g.drawOval(x-(size2+1), y-(size2+1), size+1, size+1);
 		}
 		if (type==CIRCLE) {
-			int scaledSize = (int)Math.round(size+1);
+			int scaledSize = Math.round(size+1);
 			g.setColor(color);
 			if (size>LARGE)
 				g2d.setStroke(twoPixelsWide);
@@ -840,7 +838,7 @@ public class PointRoi extends PolygonRoi {
 		FloatPolygon p = getFloatPolygon();
 		Point[] points = new Point[p.npoints];
 		for (int i=0; i<p.npoints; i++)
-			points[i] = new Point((int) Math.round(p.xpoints[i] - 0.5f), (int) Math.round(p.ypoints[i] - 0.5f));
+			points[i] = new Point(Math.round(p.xpoints[i] - 0.5f), Math.round(p.ypoints[i] - 0.5f));
 		return points;
 	}
 
@@ -902,18 +900,15 @@ public class PointRoi extends PolygonRoi {
 		PointRoi r = (PointRoi)super.clone();
 		if (counters!=null) {
 			r.counters = new short[counters.length];
-			for (int i=0; i<counters.length; i++)
-				r.counters[i] = counters[i];
+			System.arraycopy(counters, 0, r.counters, 0, counters.length);
 		}
 		if (positions!=null) {
 			r.positions = new int[positions.length];
-			for (int i=0; i<positions.length; i++)
-				r.positions[i] = positions[i];
+			System.arraycopy(positions, 0, r.positions, 0, positions.length);
 		}
 		if (counts!=null) {
 			r.counts = new int[counts.length];
-			for (int i=0; i<counts.length; i++)
-				r.counts[i] = counts[i];
+			System.arraycopy(counts, 0, r.counts, 0, counts.length);
 		}
 		return r;
 	}
@@ -938,7 +933,6 @@ public class PointRoi extends PolygonRoi {
 			this.type = p2.type;
 			this.size = p2.size;
 			this.showLabels = p2.showLabels;
-			this.fontSize = p2.fontSize;
 		}
 	}
 

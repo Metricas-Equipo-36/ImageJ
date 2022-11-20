@@ -2,7 +2,6 @@ package ij.plugin.filter;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import java.awt.*;
 
 /** This plugin implements the Invert, Smooth, Sharpen, Find Edges, 
 	and Add Noise commands. */
@@ -86,8 +85,7 @@ public class Filters implements PlugInFilter {
 			}
 	 		ip.noise(sd);
 	 		IJ.register(Filters.class);
-	 		return;
-	 	}
+        }
         	 	
 	}
 		

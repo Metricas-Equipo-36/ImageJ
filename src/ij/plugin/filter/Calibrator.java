@@ -25,17 +25,18 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
     private ImagePlus imp;
 	private int choiceIndex;
 	private String[] functions;
-	private	int nFits = Calibration.EXP_RECOVERY+1;   //don't set to CurveFitter.fitList.length; Calibration can't cope with it
+	private final int nFits = Calibration.EXP_RECOVERY+1;   //don't set to CurveFitter.fitList.length; Calibration can't cope with it
 	private String curveFitError;
-	private int spacerIndex = nFits+1;
-	private int inverterIndex = nFits+2;
-	private int odIndex = nFits+3;
-	private int customIndex = nFits+4;
+	private final int spacerIndex = nFits+1;
+	private final int inverterIndex = nFits+2;
+	private final int odIndex = nFits+3;
+	private final int customIndex = nFits+4;
 	private static String xText = "";
 	private static String yText = "";
 	private static boolean importedValues;
 	private String unit;
-	private double lx=0.02, ly=0.1;
+	private final double lx=0.02;
+	private double ly=0.1;
 	private int oldFunction;
 	private String sumResiduals, fitGoodness;
 	private Button open, save;
@@ -56,7 +57,6 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			return;
 		if (choiceIndex==customIndex) {
 			showPlot(null, null, imp.getCalibration(), null);
-			return;
 		} else if (imp.getType()==ImagePlus.GRAY32) {
 			if (choiceIndex==0)
 				imp.getCalibration().setValueUnit(unit);
@@ -98,8 +98,8 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		gd.addTextAreas(xText, yText, 20, 14);
 		//gd.addMessage("Left column contains uncalibrated measured values,\n right column contains known values (e.g., OD).");
 		gd.addPanel(makeButtonPanel(gd));
-		gd.addCheckbox("Global calibration", IJ.isMacro()?false:global1);
-		gd.addCheckbox("Show plot", IJ.isMacro()?false:showPlotFlagSaved);
+		gd.addCheckbox("Global calibration", !IJ.isMacro() && global1);
+		gd.addCheckbox("Show plot", !IJ.isMacro() && showPlotFlagSaved);
 		//gd.addCheckbox("Show Simplex Settings", showSettings);
 		gd.addHelp(IJ.URL+"/docs/menus/analyze.html#cal");
 		gd.showDialog();
@@ -148,7 +148,6 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 				IJ.error("Calibrate", "Please select a function");
 			    return;
 			}
-			function = Calibration.NONE;
 		} else if (choiceIndex<=nFits) {
 			function = choiceIndex - 1;
 			x = getData(xText);
@@ -171,7 +170,10 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			if (!is16Bits && function!=Calibration.STRAIGHT_LINE) {
 				zeroClip = true;
 				for (int i=0; i<y.length; i++)
-					if (y[i]<0.0) zeroClip = false;
+					if (y[i] < 0.0) {
+						zeroClip = false;
+						break;
+					}
 			}
 		} else if (choiceIndex==inverterIndex) {
 			function = Calibration.STRAIGHT_LINE;
@@ -193,22 +195,22 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		cal.setFunction(function, parameters, unit, zeroClip);
 		if (function==Calibration.NONE)
 			cal.setValueUnit(unit);
-		if (!cal.equals(calOrig))
+		if (cal.equals(calOrig))
 			imp.setCalibration(cal);
 		int bitDepth = imp.getBitDepth();
 		imp.setGlobalCalibration(global2?cal:null);
-		if (function!=Calibration.NONE && bitDepth!=8 && imp.getNChannels()==1 && !(bitDepth==16&&imp.getDefault16bitRange()>0)) {
+		if (function!=Calibration.NONE && bitDepth!=8 && imp.getNChannels()==1 && !(bitDepth==16&& ImagePlus.getDefault16bitRange()>0)) {
 			ImageStatistics stats = imp.getProcessor().getStats();
 			if (imp.getDisplayRangeMin()<stats.min || imp.getDisplayRangeMax()>stats.max) {
 				imp.resetDisplayRange();
 				imp.updateAndDraw();
 			}
 		}
-		if (global2 || global2!=global1)
+		if (global2 || !!global1)
 			WindowManager.repaintImageWindows();
 		else
 			imp.repaintWindow();
-		if (global2 && global2!=global1)
+		if (global2 && !global1)
 			FileOpener.setShowConflictMessage(true);
 		if (function!=Calibration.NONE && showPlotFlag) {
 			if (curveFitter!=null)
@@ -270,8 +272,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		fitGoodness = IJ.d2s(cf.getRSquared(),6);
 		curveFitter = cf;
 		double[] parameters = new double[np];
-		for (int i=0; i<np; i++)
-			parameters[i] = p[i];
+		System.arraycopy(p, 0, parameters, 0, np);
 		return parameters;									
 	}
 	
@@ -338,8 +339,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		if (custom) n++;
 		String[] list = new String[n];
 		list[0] = NONE;
-		for (int i=0; i<nFits; i++)
-			list[1+i] = CurveFitter.fitList[i];
+		System.arraycopy(CurveFitter.fitList, 0, list, 1, nFits);
 		list[spacerIndex] = "-";
 		list[inverterIndex] = INVERTER;
 		list[odIndex] = UNCALIBRATED_OD;
@@ -355,11 +355,11 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			return "";
 		if (count>MAX_STANDARDS)
 			count = MAX_STANDARDS;
-		String s = "";
+		StringBuilder s = new StringBuilder();
 		for (int i=0; i<count; i++)
-			s += IJ.d2s(umeans[i],2)+"\n";
+			s.append(IJ.d2s(umeans[i], 2)).append("\n");
 		importedValues = false;
-		return s;
+		return s.toString();
 	}
 
 	double[] getData(String xData) {
@@ -377,7 +377,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		if (nTokens<1)
 			return new double[0];
 		int n = nTokens;
-		double data[] = new double[n];
+		double[] data = new double[n];
 		for (int i=0; i<n; i++) {
 			data[i] = getNum(st);
 		}
@@ -450,7 +450,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 		}
 		StringBuffer sb = new StringBuffer();
 		for (int i=0; i<height; i++) {
-			sb.append(""+ip.getPixelValue(0, i));
+			sb.append("").append(ip.getPixelValue(0, i));
 			sb.append("\n");
 		}
 		String s1=null, s2=null;
@@ -458,7 +458,7 @@ public class Calibrator implements PlugInFilter, Measurements, ActionListener {
 			s1 = new String(sb);
 			sb = new StringBuffer();
 			for (int i=0; i<height; i++) {
-				sb.append(""+ip.getPixelValue(1, i));
+				sb.append("").append(ip.getPixelValue(1, i));
 				sb.append("\n");
 			}
 			s2 = new String(sb);

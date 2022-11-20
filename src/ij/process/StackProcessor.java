@@ -5,7 +5,6 @@ import ij.process.*;
 import ij.macro.Interpreter;
 import ij.util.ArrayUtil;
 import ij.plugin.Filters3D;
-import java.util.concurrent.atomic.AtomicInteger;
 
 
 /** This class processes stacks. */
@@ -13,9 +12,9 @@ public class StackProcessor {
     public final static int FILTER_MEAN=Filters3D.MEAN, FILTER_MEDIAN=Filters3D.MEDIAN, FILTER_MIN=Filters3D.MIN,
 		FILTER_MAX=Filters3D.MAX, FILTER_VAR=Filters3D.VAR, FILTER_MAXLOCAL=Filters3D.MAXLOCAL;
 
-    private ImageStack stack;
+    private final ImageStack stack;
     private ImageProcessor ip;
-	int nSlices;
+	final int nSlices;
 	double xScale, yScale;
 	int[] table;
 	double fillValue;

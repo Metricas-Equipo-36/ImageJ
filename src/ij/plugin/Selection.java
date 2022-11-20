@@ -6,21 +6,21 @@ import ij.measure.*;
 import ij.plugin.frame.*;
 import ij.macro.Interpreter;
 import ij.plugin.filter.*;
-import ij.util.Tools;
+
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.util.Vector;
 import java.awt.geom.*;
+import java.util.Objects;
 
 
 /** This plugin implements the commands in the Edit/Selection submenu. */
 public class Selection implements PlugIn, Measurements {
 	private ImagePlus imp;
-	private float[] kernel = {1f, 1f, 1f, 1f, 1f};
-	private float[] kernel3 = {1f, 1f, 1f};
+	private final float[] kernel = {1f, 1f, 1f, 1f, 1f};
+	private final float[] kernel3 = {1f, 1f, 1f};
 	private static int bandSize = 15; // pixels
 	private static Color linec, fillc;
-	private static int lineWidth = 1;
+	private static final int lineWidth = 1;
 	private static boolean smooth;
 	private static boolean adjust;
 	private static double translateX;
@@ -68,7 +68,7 @@ public class Selection implements PlugIn, Measurements {
 		else if (arg.equals("toline"))
 			areaToLine(imp); 
 		else if (arg.equals("properties"))
-			{setProperties("Properties ", imp.getRoi()); imp.draw();}
+			{setProperties(imp.getRoi()); imp.draw();}
 		else if (arg.equals("band"))
 			makeBand(imp);
 		else if (arg.equals("tobox"))
@@ -273,8 +273,8 @@ public class Selection implements PlugIn, Measurements {
 			Macro.setOptions("interval=1");
 		GenericDialog gd = new GenericDialog("Interpolate");
 		gd.addNumericField("Interval:", 1.0, 1, 4, "pixel");
-		gd.addCheckbox("Smooth", IJ.isMacro()?false:smooth);
-		gd.addCheckbox("Adjust interval to match", IJ.isMacro()?false:adjust);
+		gd.addCheckbox("Smooth", !IJ.isMacro() && smooth);
+		gd.addCheckbox("Adjust interval to match", !IJ.isMacro() && adjust);
 		gd.showDialog();
 		if (gd.wasCanceled())
 			return;
@@ -376,7 +376,7 @@ public class Selection implements PlugIn, Measurements {
 		gb.blur1Direction(fp, 2.0, 0.01, true, 0);
 		IJ.showProgress(1.0);
 		for (int i=0; i<n; i++)
-			a[i] = (int)Math.round(fp.getPixelValue(i, 0));
+			a[i] = Math.round(fp.getPixelValue(i, 0));
 		return a;
 	}
 	
@@ -713,6 +713,7 @@ public class Selection implements PlugIn, Measurements {
 		frame = WindowManager.getFrame("ROI Manager");
 		if (frame==null || !(frame instanceof RoiManager))
 			IJ.error("ROI Manager not found");
+		assert frame instanceof RoiManager;
 		RoiManager rm = (RoiManager)frame;
 		boolean altDown= IJ.altKeyDown();
 		IJ.setKeyUp(IJ.ALL_KEYS);
@@ -750,30 +751,29 @@ public class Selection implements PlugIn, Measurements {
 					Recorder.record("Roi.setPosition", position);
 			}
 		}
-		rm.allowRecording(true);
+		Objects.requireNonNull(rm).allowRecording(true);
 		rm.runCommand("add");
 		rm.allowRecording(false);
 		IJ.setKeyUp(IJ.ALL_KEYS);
 	}
 	
-	boolean setProperties(String title, Roi roi) {
+	void setProperties(Roi roi) {
 		if ((roi instanceof PointRoi) && Toolbar.getMultiPointMode() && IJ.altKeyDown()) {
 			((PointRoi)roi).displayCounts();
-			return true;
+			return;
 		}
 		Frame f = WindowManager.getFrontWindow();
 		if (f!=null && f.getTitle().indexOf("3D Viewer")!=-1)
-			return false;
+			return;
 		if (roi==null) {
 			IJ.error("This command requires a selection.");
-			return false;
+			return;
 		}
-		RoiProperties rp = new RoiProperties(title, roi);
+		RoiProperties rp = new RoiProperties("Properties ", roi);
 		boolean ok = rp.showDialog();
 		if (IJ.debugMode)
 			IJ.log(roi.getDebugInfo());
-		return ok;
-	}
+    }
 	
 	private void makeBand(ImagePlus imp) {
 		Roi roi = imp.getRoi();
@@ -880,7 +880,10 @@ public class Selection implements PlugIn, Measurements {
 			boolean colinear = true;
 			for(int i=2; i<n; i++) {
 				float prod = (x[i] - x[0]) * (y[i] - y[0]) - (x[i] - x[1]) * (y[i] - y[1]);
-				if (prod != 0)	colinear = false;	
+				if (prod != 0) {
+					colinear = false;
+					break;
+				}
 			}
 			if (colinear)
 				{IJ.error("Fit Rectangle", "Points are colinear"); return;}
@@ -990,8 +993,7 @@ public class Selection implements PlugIn, Measurements {
 		dy = gd.getNextNumber();
 		Rectangle2D r = roi.getFloatBounds();
 		roi.setLocation(r.getX()+dx, r.getY()+dy);
-		if (imp!=null)
-			imp.draw();
+		imp.draw();
 		if (options==null) {
 			translateX = dx;
 			translateY = dy;

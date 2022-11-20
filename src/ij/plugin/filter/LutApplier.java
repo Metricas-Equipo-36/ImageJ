@@ -1,12 +1,7 @@
 package ij.plugin.filter;
 import ij.*;
-import ij.gui.*;
 import ij.process.*;
-import ij.measure.*;
-import ij.util.*;
 import ij.plugin.frame.ContrastAdjuster;
-import java.awt.*;
-import java.util.*;
 
 /** This plugin implements the Image/Lookup Tables/Apply LUT command. */
 public class LutApplier implements PlugInFilter {
@@ -56,7 +51,7 @@ public class LutApplier implements PlugInFilter {
 		int range = 256;
 		if (depth==16) {
 			range = 65536;
-			int defaultRange = imp.getDefault16bitRange();
+			int defaultRange = ImagePlus.getDefault16bitRange();
 			if (defaultRange>0)
 				range = (int)Math.pow(2,defaultRange)-1;
 		}

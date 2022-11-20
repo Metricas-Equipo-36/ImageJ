@@ -9,7 +9,7 @@ import java.awt.*;
 public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	
 	public static final String MACRO_KEY = "math.macro";
-	private int flags = DOES_ALL|SUPPORTS_MASKING|KEEP_PREVIEW|PARALLELIZE_STACKS;
+	private final int flags = DOES_ALL|SUPPORTS_MASKING|KEEP_PREVIEW|PARALLELIZE_STACKS;
 	private String arg;
 	private ImagePlus imp;
 	private boolean canceled;	
@@ -18,13 +18,13 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	private PlugInFilterRunner pfr;
 	private GenericDialog gd;
 	
-	private static double defaultAddValue = 25;
-	private static double defaultMulValue = 1.25;
-	private static double defaultMinValue = 0;
-	private static double defaultMaxValue = 255;
-	private static String defaultAndValue = "11110000";
-	private static double defaultGammaValue = 0.5;
-	private static String defaultMacro = Prefs.get(MACRO_KEY, "v=v+50*sin(d/10)");
+	private static final double defaultAddValue = 25;
+	private static final double defaultMulValue = 1.25;
+	private static final double defaultMinValue = 0;
+	private static final double defaultMaxValue = 255;
+	private static final String defaultAndValue = "11110000";
+	private static final double defaultGammaValue = 0.5;
+	private static final String defaultMacro = Prefs.get(MACRO_KEY, "v=v+50*sin(d/10)");
 	
 	private static double lastAddValue = defaultAddValue;
 	private static double lastMulValue = defaultMulValue;
@@ -59,8 +59,8 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		} else if (arg.equals("mul")) {
 			ip.multiply(mulValue);
 		} else if (arg.equals("div")) {
-	 		if (mulValue==0.0&&imp.getBitDepth()!=32)
-	 			return;
+	 		if (mulValue==0.0&&imp.getBitDepth()!=32) {
+			}
 	 		else
 				ip.multiply(1.0/mulValue);
 		} else if (arg.equals("and")) {
@@ -163,9 +163,9 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 		gd.showDialog();
 	}
 
-	void getBinaryValue (String title, String prompt, String defaultValue) {
+	void getBinaryValue (String title, String defaultValue) {
 		gd = GUI.newNonBlockingDialog(title, imp);
-		gd.addStringField(prompt, defaultValue);
+		gd.addStringField("Value (binary): ", defaultValue);
 		gd.addPreviewCheckbox(pfr);
 		gd.addDialogListener(this);
 		gd.showDialog();
@@ -208,7 +208,6 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
             }
         }
 		ip.resetMinAndMax();
-		return;
 	}
 	
 	// first default: v = v+(sin(x/(w/25))+sin(y/(h/25)))*40
@@ -452,11 +451,11 @@ public class ImageMath implements ExtendedPlugInFilter, DialogListener {
 	 	else if (arg.equals("div"))
 	 		getValue("Divide", "Value: ", mulValue, 2);
 	 	else if (arg.equals("and"))
-	 		getBinaryValue("AND", "Value (binary): ", andValue);
+	 		getBinaryValue("AND", andValue);
 	 	else if (arg.equals("or"))
-	 		getBinaryValue("OR", "Value (binary): ", andValue);
+	 		getBinaryValue("OR", andValue);
 	 	else if (arg.equals("xor"))
-	 		getBinaryValue("XOR", "Value (binary): ", andValue);
+	 		getBinaryValue("XOR", andValue);
 	 	else if (arg.equals("min"))
 	 		getValue("Min", "Value: ", minValue, 0);
 	 	else if (arg.equals("max"))

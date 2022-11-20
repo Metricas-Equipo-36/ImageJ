@@ -1,13 +1,9 @@
 package ij;
 import ij.gui.*;
-import ij.process.*;
-import ij.io.*;
 import ij.plugin.*;
-import ij.plugin.filter.*;
 import ij.plugin.frame.*;
 import ij.text.*;
 import ij.macro.Interpreter;
-import ij.io.Opener;
 import ij.util.*;
 import java.awt.*;
 import java.util.*;
@@ -17,7 +13,6 @@ import java.net.*;
 import java.awt.image.*;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
 
 /**
 This frame is the main ImageJ class.
@@ -80,7 +75,7 @@ public class ImageJ extends Frame implements ActionListener,
 	/** Plugins should call IJ.getVersion() or IJ.getFullVersion() to get the version string. */
 	public static final String VERSION = "1.53t";
 	public static final String BUILD = ""; //39
-	public static Color backgroundColor = new Color(237,237,237);
+	public static final Color backgroundColor = new Color(237,237,237);
 	/** SansSerif, 12-point, plain font. */
 	public static final Font SansSerif12 = new Font("SansSerif", Font.PLAIN, 12);
 	/** Address of socket where Image accepts commands */
@@ -105,19 +100,18 @@ public class ImageJ extends Frame implements ActionListener,
 	private static int port = DEFAULT_PORT;
 	private static String[] arguments;
 	
-	private Toolbar toolbar;
-	private Panel statusBar;
-	private ProgressBar progressBar;
-	private JLabel statusLine;
-	private boolean firstTime = true;
-	private java.applet.Applet applet; // null if not running as an applet
-	private Vector classes = new Vector();
+	private final Toolbar toolbar;
+	private final Panel statusBar;
+	private final ProgressBar progressBar;
+	private final JLabel statusLine;
+	private final boolean firstTime = true;
+	private final java.applet.Applet applet; // null if not running as an applet
+	private final Vector classes = new Vector();
 	private boolean exitWhenQuitting;
 	private boolean quitting;
 	private boolean quitMacro;
 	private long keyPressedTime, actionPerformedTime;
 	private String lastKeyCommand;
-	private boolean embedded;
 	private boolean windowClosed;
 	private static String commandName;
 	private static boolean batchMode;
@@ -153,7 +147,6 @@ public class ImageJ extends Frame implements ActionListener,
 			useExceptionHandler = true;
 		}
 		if (IJ.debugMode) IJ.log("ImageJ starting in debug mode: "+mode);
-		embedded = applet==null && (mode==EMBEDDED||mode==NO_SHOW);
 		this.applet = applet;
 		String err1 = Prefs.load(this, applet);
 		setBackground(backgroundColor);
@@ -328,15 +321,7 @@ public class ImageJ extends Frame implements ActionListener,
     void doCommand(String name) {
 		new Executer(name, null);
     }
-        
-	public void runFilterPlugIn(Object theFilter, String cmd, String arg) {
-		new PlugInFilterRunner(theFilter, cmd, arg);
-	}
-        
-	public Object runUserPlugIn(String commandName, String className, String arg, boolean createNewLoader) {
-		return IJ.runUserPlugIn(commandName, className, arg, createNewLoader);	
-	} 
-	
+
 	/** Return the current list of modifier keys. */
 	public static String modifiers(int flags) { //?? needs to be moved
 		String s = " [ ";
@@ -392,7 +377,7 @@ public class ImageJ extends Frame implements ActionListener,
 		String cmd = e.getItem().toString();
 		if ("Autorun Examples".equals(cmd)) // Examples>Autorun Examples
 			Prefs.autoRunExamples = e.getStateChange()==1;
-		else if ((Menu)parent==Menus.window)
+		else if (parent ==Menus.window)
 			WindowManager.activateWindow(cmd, item);
 		else
 			doCommand(cmd);
@@ -445,9 +430,8 @@ public class ImageJ extends Frame implements ActionListener,
 		
 		if (imp!=null && !meta && ((keyChar>=32 && keyChar<=255) || keyChar=='\b' || keyChar=='\n')) {
 			Roi roi = imp.getRoi();
-			if (roi!=null && roi instanceof TextRoi) {
-				if (imp.getOverlay()!=null && (control || alt || meta)
-				&& (keyCode==KeyEvent.VK_BACK_SPACE || keyCode==KeyEvent.VK_DELETE)) {
+			if (roi instanceof TextRoi) {
+				if (imp.getOverlay() != null && (control || alt) && (keyCode == KeyEvent.VK_BACK_SPACE || keyCode == KeyEvent.VK_DELETE)) {
 					if (deleteOverlayRoi(imp))
 							return;
 				}
@@ -542,9 +526,9 @@ public class ImageJ extends Frame implements ActionListener,
 							cmd="Next Slice [>]";
 					else if (stackKey && keyCode==KeyEvent.VK_LEFT)
 							cmd="Previous Slice [<]";
-					else if (zoomKey && keyCode==KeyEvent.VK_DOWN && !ignoreArrowKeys(imp) && Toolbar.getToolId()<Toolbar.SPARE6)
+					else if (zoomKey && keyCode==KeyEvent.VK_DOWN && ignoreArrowKeys(imp) && Toolbar.getToolId()<Toolbar.SPARE6)
 							cmd="Out [-]";
-					else if (zoomKey && keyCode==KeyEvent.VK_UP && !ignoreArrowKeys(imp) && Toolbar.getToolId()<Toolbar.SPARE6)
+					else if (zoomKey && keyCode==KeyEvent.VK_UP && ignoreArrowKeys(imp) && Toolbar.getToolId()<Toolbar.SPARE6)
 							cmd="In [+]";
 					else if (roi!=null) {
 						if ((flags & KeyEvent.ALT_MASK)!=0 || (flags & KeyEvent.CTRL_MASK)!=0)
@@ -606,20 +590,18 @@ public class ImageJ extends Frame implements ActionListener,
 		Frame frame = WindowManager.getFrontWindow();
 		String title = frame!=null?frame.getTitle():null;
 		if (title!=null && title.equals("ROI Manager"))
-			return true;
+			return false;
 		// Control Panel?
-		if (frame!=null && frame instanceof javax.swing.JFrame)
-			return true;
+		if (frame instanceof javax.swing.JFrame)
+			return false;
 		// Channels dialog?
 		Window window = WindowManager.getActiveWindow();
-		title = window!=null&&(window instanceof Dialog)?((Dialog)window).getTitle():null;
+		title = (window instanceof Dialog) ?((Dialog)window).getTitle():null;
 		if (title!=null && title.equals("Channels"))
-			return true;
+			return false;
 		ImageWindow win = imp.getWindow();
 		// LOCI Data Browser window?
-		if (imp.getStackSize()>1 && win!=null && win.getClass().getName().startsWith("loci"))
-			return true;
-		return false;
+		return imp.getStackSize() <= 1 || win == null || !win.getClass().getName().startsWith("loci");
 	}
 	
 	public void keyTyped(KeyEvent e) {
@@ -720,7 +702,7 @@ public class ImageJ extends Frame implements ActionListener,
 		prefs.put(IJ_Y, Integer.toString(loc.y));
 	}
 
-	public static void main(String args[]) {
+	public static void main(String[] args) {
 		boolean noGUI = false;
 		int mode = IMAGEJ_APP;
 		arguments = args;
@@ -742,7 +724,7 @@ public class ImageJ extends Frame implements ActionListener,
 				commandLine = true;
 				args[i+1] = null;
 			} else if (arg.startsWith("-port")) {
-				int delta = (int)Tools.parseDouble(arg.substring(5, arg.length()), 0.0);
+				int delta = (int)Tools.parseDouble(arg.substring(5), 0.0);
 				commandLine = true;
 				if (delta==0)
 					mode = EMBEDDED;
@@ -751,13 +733,13 @@ public class ImageJ extends Frame implements ActionListener,
 			} 
 		}
   		// If existing ImageJ instance, pass arguments to it and quit.
-  		boolean passArgs = (mode==IMAGEJ_APP||mode==STANDALONE) && !noGUI;
+  		boolean passArgs = mode == IMAGEJ_APP && !noGUI;
 		if (IJ.isMacOSX() && !commandLine)
 			passArgs = false;
 		if (passArgs && isRunning(args)) 
   			return;
  		ImageJ ij = IJ.getInstance();    	
-		if (!noGUI && (ij==null || (ij!=null && !ij.isShowing()))) {
+		if (!noGUI && (ij == null || !ij.isShowing())) {
 			ij = new ImageJ(null, mode);
 			ij.exitWhenQuitting = true;
 		} else if (batchMode && noGUI)
@@ -797,7 +779,7 @@ public class ImageJ extends Frame implements ActionListener,
 	}
 		
 	// Is there another instance of ImageJ? If so, send it the arguments and quit.
-	static boolean isRunning(String args[]) {
+	static boolean isRunning(String[] args) {
 		return OtherInstance.sendArguments(args);
 	}
 
@@ -824,22 +806,20 @@ public class ImageJ extends Frame implements ActionListener,
 		boolean changes = false;
 		int[] wList = WindowManager.getIDList();
 		if (wList!=null) {
-			for (int i=0; i<wList.length; i++) {
-				ImagePlus imp = WindowManager.getImage(wList[i]);
-				if (imp!=null && imp.changes==true) {
+			for (int j : wList) {
+				ImagePlus imp = WindowManager.getImage(j);
+				if (imp != null && imp.changes) {
 					changes = true;
 					break;
 				}
 			}
 		}
 		Frame[] frames = WindowManager.getNonImageWindows();
-		if (frames!=null) {
-			for (int i=0; i<frames.length; i++) {
-				if (frames[i]!=null && (frames[i] instanceof Editor)) {
-					if (((Editor)frames[i]).fileChanged()) {
-						changes = true;
-						break;
-					}
+		for (Frame frame : frames) {
+			if (frame != null && (frame instanceof Editor)) {
+				if (((Editor) frame).fileChanged()) {
+					changes = true;
+					break;
 				}
 			}
 		}
@@ -914,15 +894,15 @@ public class ImageJ extends Frame implements ActionListener,
 
     // for EDT exceptions
     public void handle(Throwable thrown) {
-      handleException(Thread.currentThread().getName(), thrown);
+      handleException(thrown);
     }
 
     // for other uncaught exceptions
     public void uncaughtException(Thread thread, Throwable thrown) {
-      handleException(thread.getName(), thrown);
+      handleException(thrown);
     }
 
-    protected void handleException(String tname, Throwable e) {
+    protected void handleException(Throwable e) {
     	if (Macro.MACRO_CANCELED.equals(e.getMessage()))
 			return;
 		CharArrayWriter caw = new CharArrayWriter();

@@ -2,11 +2,8 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.measure.Calibration;
 import ij.macro.Interpreter;
-import ij.io.FileInfo;
 import ij.plugin.frame.Recorder;
-import java.awt.image.ColorModel;
 
 
 /** Implements the "Stack to HyperStack", "RGB to HyperStack" 
@@ -124,11 +121,12 @@ public class HyperStackConverter implements PlugIn {
 		int first=C, middle=Z, last=T;
 		int nFirst=nChannels, nMiddle=nSlices, nLast=nFrames;
 		switch (order) {
-			case CTZ: first=C; middle=T; last=Z;
-				nFirst=nChannels; nMiddle=nFrames; nLast=nSlices;
+			case CTZ:
+				middle=T; last=Z;
+				nMiddle=nFrames; nLast=nSlices;
 				break;
-			case ZCT: first=Z; middle=C; last=T;
-				nFirst=nSlices; nMiddle=nChannels; nLast=nFrames;
+			case ZCT: first=Z; middle=C;
+				nFirst=nSlices; nMiddle=nChannels;
 				break;
 			case ZTC: first=Z; middle=T; last=C;
 				nFirst=nSlices; nMiddle=nFrames; nLast=nChannels;
@@ -136,8 +134,10 @@ public class HyperStackConverter implements PlugIn {
 			case TCZ: first=T; middle=C; last=Z;
 				nFirst=nFrames; nMiddle=nChannels; nLast=nSlices;
 				break;
-			case TZC: first=T; middle=Z; last=C;
-				nFirst=nFrames; nMiddle=nSlices; nLast=nChannels;
+			case TZC: first=T;
+				last=C;
+				nFirst=nFrames;
+				nLast=nChannels;
 				break;
 		}
 		int[] indexes1 = new int[n];
@@ -191,7 +191,7 @@ public class HyperStackConverter implements PlugIn {
 		int mode = gd.getNextChoiceIndex();
 		if (rgb)
 			splitRGB = gd.getNextBoolean();
-		if (rgb && splitRGB==true) {
+		if (rgb && splitRGB) {
 			new CompositeConverter().run(mode==0?"composite":"color");
 			return;
 		}
@@ -255,11 +255,12 @@ public class HyperStackConverter implements PlugIn {
 		int first=C, middle=Z, last=T;
 		int nFirst=nChannels, nMiddle=nSlices, nLast=nFrames;
 		switch (order) {
-			case CTZ: first=C; middle=T; last=Z;
-				nFirst=nChannels; nMiddle=nFrames; nLast=nSlices;
+			case CTZ:
+				middle=T; last=Z;
+				nMiddle=nFrames; nLast=nSlices;
 				break;
-			case ZCT: first=Z; middle=C; last=T;
-				nFirst=nSlices; nMiddle=nChannels; nLast=nFrames;
+			case ZCT: first=Z; middle=C;
+				nFirst=nSlices; nMiddle=nChannels;
 				break;
 			case ZTC: first=Z; middle=T; last=C;
 				nFirst=nSlices; nMiddle=nFrames; nLast=nChannels;
@@ -267,8 +268,10 @@ public class HyperStackConverter implements PlugIn {
 			case TCZ: first=T; middle=C; last=Z;
 				nFirst=nFrames; nMiddle=nChannels; nLast=nSlices;
 				break;
-			case TZC: first=T; middle=Z; last=C;
-				nFirst=nFrames; nMiddle=nSlices; nLast=nChannels;
+			case TZC: first=T;
+				last=C;
+				nFirst=nFrames;
+				nLast=nChannels;
 				break;
 		}
 		if (order!=CZT) {

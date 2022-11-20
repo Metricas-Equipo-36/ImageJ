@@ -4,9 +4,10 @@ import ij.process.*;
 import ij.io.*;
 import java.net.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.awt.*;
-import java.awt.image.*;
 
 /** This plugin opens GIFs and Animated GIFs. */
 public class GIF_Reader extends ImagePlus implements PlugIn {
@@ -40,7 +41,7 @@ public class GIF_Reader extends ImagePlus implements PlugIn {
 				Opener.convertGrayJpegTo8Bits(this);
 		}
 		FileInfo fi = new FileInfo();
-		fi.fileFormat = fi.GIF_OR_JPG;
+		fi.fileFormat = FileInfo.GIF_OR_JPG;
 		fi.fileName = name;
 		fi.directory = dir;
 		setFileInfo(fi);
@@ -101,7 +102,7 @@ class GifDecoder {
 	private ImageProcessor image;	 // current frame
 	private ImageProcessor lastImage;	 // previous frame
 
-	private byte[] block = new byte[256];	 // current data block
+	private final byte[] block = new byte[256];	 // current data block
 	private int blockSize = 0;	// block size
 
 	// last graphic control extension info
@@ -200,7 +201,7 @@ class GifDecoder {
 			status = STATUS_OPEN_ERROR;
 		}
 		try {
-			is.close();
+			Objects.requireNonNull(is).close();
 		} catch (IOException e) {}
 		return status;
 	}
@@ -220,7 +221,7 @@ class GifDecoder {
 				URL url = new URL(name);
 				in = new BufferedInputStream(url.openStream());
 			} else {
-				in = new BufferedInputStream(new FileInputStream(name));
+				in = new BufferedInputStream(Files.newInputStream(Paths.get(name)));
 			}
 			status = read(in);
 		} catch (IOException e) {
@@ -467,10 +468,10 @@ class GifDecoder {
 
 						case 0xff:	  // application extension
 							readBlock();
-							String app = "";
+							StringBuilder app = new StringBuilder();
 							for (int i = 0; i < 11; i++)
-								app += (char) block[i];
-							if (app.equals("NETSCAPE2.0"))
+								app.append((char) block[i]);
+							if (app.toString().equals("NETSCAPE2.0"))
 								readNetscapeExt();
 							else
 								skip();		   // don't care
@@ -510,10 +511,10 @@ class GifDecoder {
 	 * Reads GIF file header information.
 	 */
 	private void readHeader() {
-		String id = "";
+		StringBuilder id = new StringBuilder();
 		for (int i = 0; i < 6; i++)
-			id += (char) read();
-		if (!id.startsWith("GIF")) {
+			id.append((char) read());
+		if (!id.toString().startsWith("GIF")) {
 			status = STATUS_FORMAT_ERROR;
 			 return;
 		}
@@ -735,7 +736,7 @@ class GifDecoder {
 			image = im;
 			delay = del;
 		}
-		public ImageProcessor image;
-		public int delay;
+		public final ImageProcessor image;
+		public final int delay;
 	}
 

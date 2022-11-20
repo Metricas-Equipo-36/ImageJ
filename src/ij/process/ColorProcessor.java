@@ -1,9 +1,8 @@
 package ij.process;
 
-import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
-import ij.gui.*;
+
 import ij.ImageStack;
 
 /**
@@ -34,7 +33,7 @@ public class ColorProcessor extends ImageProcessor {
 		PixelGrabber pg = new PixelGrabber(img, 0, 0, width, height, pixels, 0, width);
 		try {
 			pg.grabPixels();
-		} catch (InterruptedException e){};
+		} catch (InterruptedException e){}
 		createColorModel();
 		fgColor = 0xff000000; //black
 		resetRoi();
@@ -191,7 +190,7 @@ public class ColorProcessor extends ImageProcessor {
 	public void snapshot() {
 		snapshotWidth = width;
 		snapshotHeight = height;
-		if (snapshotPixels==null || (snapshotPixels!=null && snapshotPixels.length!=pixels.length))
+		if (snapshotPixels == null || snapshotPixels.length != pixels.length)
 			snapshotPixels = new int[width * height];
 		System.arraycopy(pixels, 0, snapshotPixels, 0, width*height);
 		caSnapshot = false;
@@ -228,7 +227,7 @@ public class ColorProcessor extends ImageProcessor {
 
 	/** Used by the ContrastAdjuster */
 	public boolean caSnapshot() {
-		return caSnapshot;
+		return !caSnapshot;
 	}
 	
 	/** Swaps the pixel and snapshot (undo) arrays. */
@@ -421,7 +420,7 @@ public class ColorProcessor extends ImageProcessor {
 	/**	Returns a reference to the int array containing
 		this image's pixel data. */
 	public Object getPixels() {
-		return (Object)pixels;
+		return pixels;
 	}
 
 
@@ -562,7 +561,7 @@ public class ColorProcessor extends ImageProcessor {
 		int size = width*height;
 		int shift = 16 - 8*(channel-1);
 		if (channel==4) shift=24;
-		int resetMask = 0xffffffff^(255<<shift);
+		int resetMask = ~(255 << shift);
 		for (int i=0; i<size; i++)
 			pixels[i] = (pixels[i]&resetMask) | ((bPixels[i]&255)<<shift);
 	}
@@ -1303,9 +1302,7 @@ public class ColorProcessor extends ImageProcessor {
 	public synchronized boolean weightedHistogram() {
 		if (weights!=null && (weights[0]!=1d/3d||weights[1]!=1d/3d||weights[2]!=1d/3d))
 			return true;
-		if (rWeight!=1d/3d || gWeight!=1d/3d || bWeight!=1d/3d)
-			return true;
-		return false;
+		return rWeight != 1d / 3d || gWeight != 1d / 3d || bWeight != 1d / 3d;
 	}
 
 	/** Performs a convolution operation using the specified kernel. */
@@ -1448,7 +1445,7 @@ public class ColorProcessor extends ImageProcessor {
 		float value;
 		int size = width*height;
 		int shift = 16 - 8*channelNumber;
-		int resetMask = 0xffffffff^(255<<shift);
+		int resetMask = ~(255 << shift);
 		for (int i=0; i<size; i++) {
 			value = fPixels[i] + 0.5f;
 			if (value<0f) value = 0f;

@@ -2,12 +2,12 @@ package ij.plugin;
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
-import ij.util.Tools;
 import ij.io.*;
 import ij.macro.Interpreter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.Objects;
 import java.util.Vector;
 
 /** This plugin implements the File/Batch/Macro and File/Batch/Virtual Stack commands. */
@@ -72,7 +72,7 @@ import java.util.Vector;
 		String macroPath = IJ.getDirectory("macros")+MACRO_FILE_NAME;
 		macro = IJ.openAsString(macroPath);
 		if (macro==null || macro.startsWith("Error: ")) {
-			IJ.showStatus(macro.substring(7) + ": "+macroPath);
+			IJ.showStatus(Objects.requireNonNull(macro).substring(7) + ": "+macroPath);
 			macro = "";
 		}
 		if (!showDialog()) return;
@@ -177,10 +177,10 @@ import java.util.Vector;
 	}
 	
 	String pad(int n) {
-		String str = ""+n;
+		StringBuilder str = new StringBuilder("" + n);
 		while (str.length()<5)
-		str = "0" + str;
-		return str;
+		str.insert(0, "0");
+		return str.toString();
 	}
 
 	
@@ -345,7 +345,7 @@ import java.util.Vector;
 
 	public static String openMacroFromJar(String name) {
 		ImageJ ij = IJ.getInstance();
-		Class c = ij!=null?ij.getClass():(new ImageStack()).getClass();
+		Class c = ij!=null?ij.getClass(): ImageStack.class;
 		String macro = null;
         try {
 			InputStream is = c .getResourceAsStream("/macros/"+name);
@@ -460,7 +460,7 @@ import java.util.Vector;
 			return null;
 		}
 		String[] list = (new File(inputPath)).list();
-		String name = list[0];
+		String name = Objects.requireNonNull(list)[0];
 		if (name.startsWith(".")&&list.length>1) name = list[1];
 		String path = inputPath + name;
 		setDirAndName(path);

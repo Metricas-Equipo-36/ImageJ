@@ -5,9 +5,10 @@ import java.awt.image.*;
 /** This class does bit blitting of RGB images. */
 public class ColorBlitter implements Blitter {
 
-	private ColorProcessor ip;
-	private int width, height;
-	private int[] pixels;
+	private final ColorProcessor ip;
+	private final int width;
+	private final int height;
+	private final int[] pixels;
 	private int transparent = 0xffffff;
 	
 	/** Constructs a ColorBlitter from a ColorProcessor. */

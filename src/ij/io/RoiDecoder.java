@@ -1,10 +1,10 @@
 package ij.io;
 import ij.gui.*;
 import ij.ImagePlus;
-import ij.process.*;
+
 import java.io.*;
-import java.util.*;
-import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 
@@ -153,7 +153,7 @@ public class RoiDecoder {
 			if (!path.endsWith(".roi") && size>5242880)
 				throw new IOException("This is not an ROI or file size>5MB)");
 			name = f.getName();
-			is = new FileInputStream(path);
+			is = Files.newInputStream(Paths.get(path));
 		}
 		data = new byte[size];
 
@@ -172,7 +172,7 @@ public class RoiDecoder {
 		int right = getShort(RIGHT);
 		int width = right-left;
 		int height = bottom-top;
-		int n = getUnsignedShort(N_COORDINATES);
+		int n = getUnsignedShort();
 		if (n==0)
 			n = getInt(SIZE);
 		int options = getShort(OPTIONS);
@@ -337,10 +337,7 @@ public class RoiDecoder {
 						roiType = Roi.POLYLINE;
 					else if (type==freeline)
 						roiType = Roi.FREELINE;
-					else if (type==angle)
-						roiType = Roi.ANGLE;
-					else
-						roiType = Roi.FREEROI;
+					else roiType = Roi.ANGLE;
 					if (subPixelResolution) {
 						roi = new PolygonRoi(xf, yf, n, roiType);
 						roi.setDrawOffset(drawOffset);
@@ -567,9 +564,9 @@ public class RoiDecoder {
 		return n;		
 	}
 	
-	int getUnsignedShort(int base) {
-		int b0 = data[base]&255;
-		int b1 = data[base+1]&255;
+	int getUnsignedShort() {
+		int b0 = data[RoiDecoder.N_COORDINATES]&255;
+		int b1 = data[RoiDecoder.N_COORDINATES +1]&255;
 		return (b0<<8) + b1;	
 	}
 
@@ -589,7 +586,7 @@ public class RoiDecoder {
 	public static Roi openFromByteArray(byte[] bytes) {
 		Roi roi = null;
 		if (bytes==null || bytes.length==0)
-			return roi;
+			return null;
 		try {
 			RoiDecoder decoder = new RoiDecoder(bytes, null);
 			roi = decoder.getRoi();

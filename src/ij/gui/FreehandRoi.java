@@ -1,7 +1,5 @@
 package ij.gui;
 
-import java.awt.*;
-import java.awt.image.*;
 import ij.*;
 
 /** Freehand region of interest or freehand line of interest*/
@@ -61,10 +59,10 @@ public class FreehandRoi extends PolygonRoi {
 	void drawLine() {
 		int x1, y1, x2, y2;
 		if (xpf!=null) {
-			x1 = (int)Math.round(xpf[nPoints-2]+x);
-			y1 = (int)Math.round(ypf[nPoints-2]+y);
-			x2 = (int)Math.round(xpf[nPoints-1]+x);
-			y2 = (int)Math.round(ypf[nPoints-1]+y);
+			x1 = Math.round(xpf[nPoints-2]+x);
+			y1 = Math.round(ypf[nPoints-2]+y);
+			x2 = Math.round(xpf[nPoints-1]+x);
+			y2 = Math.round(ypf[nPoints-1]+y);
 		} else {
 			x1 = xp[nPoints-2]+x;
 			y1 = yp[nPoints-2]+y;

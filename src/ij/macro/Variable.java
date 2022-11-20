@@ -29,8 +29,8 @@ public class Variable implements MacroConstants, Cloneable {
         this.str = str;
     }
 
-    Variable(int symTabIndex, double value, String str, Variable[] array) {
-        this.symTabIndex = symTabIndex;
+    Variable(double value, String str, Variable[] array) {
+        this.symTabIndex = 0;
         this.value = value;
         this.str = str;
         this.array = array;
@@ -63,8 +63,8 @@ public class Variable implements MacroConstants, Cloneable {
 
 	double convertToDouble() {
 		try {
-			Double d = Double.valueOf(str);
-			return d.doubleValue();
+			double d = Double.parseDouble(str);
+			return (double) d;
 		} catch (NumberFormatException e){
 			return Double.NaN;
 		}

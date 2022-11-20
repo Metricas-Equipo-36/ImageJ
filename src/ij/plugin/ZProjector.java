@@ -2,13 +2,11 @@ package ij.plugin;
 import ij.*; 
 import ij.gui.*; 
 import ij.process.*;
-import ij.plugin.filter.*; 
 import ij.plugin.frame.Recorder;
-import ij.measure.Measurements;
-import java.lang.*; 
-import java.awt.*; 
-import java.awt.event.*; 
+
+import java.lang.*;
 import java.util.Arrays;
+import java.util.Objects;
 
 /** This plugin performs a z-projection of the input stack. Type of
     output image is same as type of input image.
@@ -173,7 +171,7 @@ public class ZProjector implements PlugIn {
 		method = gd.getNextChoiceIndex();
 		Prefs.set(METHOD_KEY, method);
 		if (isHyperstack)
-			allTimeFrames = imp.getNFrames()>1&&imp.getNSlices()>1?gd.getNextBoolean():false;
+			allTimeFrames = imp.getNFrames() > 1 && imp.getNSlices() > 1 && gd.getNextBoolean();
 		doProjection(true); 
 
 		if (arg.equals("") && projImage!=null) {
@@ -277,7 +275,8 @@ public class ZProjector implements PlugIn {
 				bpixels[i] *= scale;
 			}
 			r.resetMinAndMax(); g.resetMinAndMax(); b.resetMinAndMax();
-        	if (method==SUM_METHOD&&clip) clip=true;
+        	if (method==SUM_METHOD&&clip) {
+			}
         }
         RGBStackMerge merge = new RGBStackMerge();
         if (clip)
@@ -326,7 +325,7 @@ public class ZProjector implements PlugIn {
 		FloatProcessor fp = new FloatProcessor(imp.getWidth(),imp.getHeight()); 
 		ImageStack stack = imp.getStack();
 		RayFunction rayFunc = getRayFunction(method, fp);
-		if (IJ.debugMode==true) {
+		if (IJ.debugMode) {
 	    	IJ.log("\nProjecting stack from: "+startSlice
 		     	+" to: "+stopSlice); 
 		}
@@ -363,17 +362,15 @@ public class ZProjector implements PlugIn {
 			fp.resetMinAndMax();
 			projImage = new ImagePlus(makeTitle(), fp);
 		} else if (method==SD_METHOD) {
-			rayFunc.postProcess();
+			Objects.requireNonNull(rayFunc).postProcess();
 			fp.resetMinAndMax();
 			projImage = new ImagePlus(makeTitle(), fp); 
 		} else {
-			rayFunc.postProcess(); 
+			Objects.requireNonNull(rayFunc).postProcess();
 			projImage = makeOutputImage(imp, fp, ptype);
 		}
 
-		if(projImage==null)
-	    	IJ.error("Z Project", "Error computing projection.");
-    }
+	}
 
 	//Added by Marcel Boeglin 2013.09.23
 	/** Performs actual projection using specified method.
@@ -576,7 +573,7 @@ public class ZProjector implements PlugIn {
 		// Adjust for display.
 	    // Calling this on non-ByteProcessors ensures image
 	    // processor is set up to correctly display image.
-	    oip.resetMinAndMax(); 
+	    Objects.requireNonNull(oip).resetMinAndMax();
 
 		// Create new image plus object. Don't use
 		// ImagePlus.createImagePlus here because there may be
@@ -681,7 +678,7 @@ public class ZProjector implements PlugIn {
 	function. Preprocessing should be done in derived class
 	constructors.
 	*/
-    abstract class RayFunction {
+    abstract static class RayFunction {
 		/** Do actual slice projection for specific data types. */
 		public abstract void projectSlice(byte[] pixels);
 		public abstract void projectSlice(short[] pixels);
@@ -696,8 +693,9 @@ public class ZProjector implements PlugIn {
 
     /** Compute average intensity projection. */
     class AverageIntensity extends RayFunction {
-     	private float[] fpixels;
- 		private int num, len; 
+     	private final float[] fpixels;
+ 		private final int num;
+		private final int len;
 
 		/** Constructor requires number of slices to be
 	    	projected. This is used to determine average at each
@@ -734,8 +732,8 @@ public class ZProjector implements PlugIn {
 
      /** Compute max intensity projection. */
     class MaxIntensity extends RayFunction {
-    	private float[] fpixels;
- 		private int len; 
+    	private final float[] fpixels;
+ 		private final int len;
 
 		/** Simple constructor since no preprocessing is necessary. */
 		public MaxIntensity(FloatProcessor fp) {
@@ -770,8 +768,8 @@ public class ZProjector implements PlugIn {
 
      /** Compute min intensity projection. */
     class MinIntensity extends RayFunction {
-    	private float[] fpixels;
- 		private int len; 
+    	private final float[] fpixels;
+ 		private final int len;
 
 		/** Simple constructor since no preprocessing is necessary. */
 		public MinIntensity(FloatProcessor fp) {
@@ -807,9 +805,11 @@ public class ZProjector implements PlugIn {
 
     /** Compute standard deviation projection. */
     class StandardDeviation extends RayFunction {
-    	private float[] result;
-    	private double[] sum, sum2;
-		private int num,len; 
+    	private final float[] result;
+    	private final double[] sum;
+		private final double[] sum2;
+		private final int num;
+		private final int len;
 
 		public StandardDeviation(FloatProcessor fp, int num) {
 			result = (float[])fp.getPixels();

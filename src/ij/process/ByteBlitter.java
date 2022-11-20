@@ -4,9 +4,10 @@ import java.awt.*;
 /** This class does bit blitting of byte images. */
 public class ByteBlitter implements Blitter {
 
-	private ByteProcessor ip;
-	private int width, height;
-	private byte[] pixels;
+	private final ByteProcessor ip;
+	private final int width;
+	private final int height;
+	private final byte[] pixels;
 	private int transparent = 255;
 	
 	/** Constructs a ByteBlitter from a ByteProcessor. */

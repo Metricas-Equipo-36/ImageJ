@@ -4,7 +4,7 @@ import ij.gui.GenericDialog;
 import ij.gui.DialogListener;
 import ij.process.*;
 import ij.plugin.filter.GaussianBlur;
-import ij.measure.Measurements;
+
 import java.awt.*;
 
 /** This plugin-filter implements ImageJ's Unsharp Mask command.
@@ -84,9 +84,7 @@ public class UnsharpMask implements ExtendedPlugInFilter, DialogListener {
     public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {
         sigma = gd.getNextNumber();
         weight = gd.getNextNumber();
-        if (sigma < 0 || weight < 0 || weight > 0.99 || gd.invalidNumber())
-            return false;
-        else return true;
+        return !(sigma < 0) && !(weight < 0) && !(weight > 0.99) && !gd.invalidNumber();
     }
 
     /** Since most computing time is spent in GaussianBlur, forward the

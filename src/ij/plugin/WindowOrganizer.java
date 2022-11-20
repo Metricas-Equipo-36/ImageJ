@@ -1,15 +1,14 @@
 package ij.plugin;
 import ij.*;
-import ij.process.*;
 import ij.gui.*;
-import ij.plugin.frame.ThresholdAdjuster;
+
 import java.awt.*;
 
 /** This class implements the Window menu's "Show All", "Main Window", "Cascade" and "Tile" commands. */
 public class WindowOrganizer implements PlugIn {
 
 	private static final int XSTART=4, YSTART=94, XOFFSET=8, YOFFSET=24,MAXSTEP=200,GAP=2;
-	private int titlebarHeight = IJ.isMacintosh()?40:20;
+	private final int titlebarHeight = IJ.isMacintosh()?40:20;
 
 	public void run(String arg) {
 		if (arg.equals("imagej"))
@@ -174,10 +173,8 @@ public class WindowOrganizer implements PlugIn {
 			}
 		}
 		Window[] windows = WindowManager.getAllNonImageWindows();
-		if (windows!=null) {
-			for (int i=0; i<windows.length; i++)
-					WindowManager.toFront(windows[i]);
-		}
+		for (int i=0; i<windows.length; i++)
+				WindowManager.toFront(windows[i]);
 		IJ.getInstance().toFront();
 	}
 

@@ -8,6 +8,7 @@ import ij.plugin.Colors;
 import java.awt.geom.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.util.Objects;
 
 
 /** This class is a rectangular ROI containing text. */
@@ -98,8 +99,7 @@ public class TextRoi extends Roi {
 	private void init(String text, Font font) {
 		String[] lines = Tools.split(text, "\n");
 		int count = Math.min(lines.length, MAX_LINES);
-		for (int i=0; i<count; i++)
-			theText[i] = lines[i];
+		System.arraycopy(lines, 0, theText, 0, count);
 		if (font==null)
 			font = defaultFont;
 		if (font==null)
@@ -156,7 +156,7 @@ public class TextRoi extends Roi {
 		if (!(c>=' ' || c=='\b' || c=='\n')) return;
 		int cline = 0;
 		if (firstChar) {
-			theText[cline] = new String("");
+			theText[cline] = "";
 			for (int i=1; i<MAX_LINES; i++)
 				theText[i] = null;
 		} else {
@@ -165,7 +165,7 @@ public class TextRoi extends Roi {
 		}
 		if ((int)c=='\b') {
 			// backspace
-			if (theText[cline].length()>0)
+			if (Objects.requireNonNull(theText[cline]).length()>0)
 				theText[cline] = theText[cline].substring(0, theText[cline].length()-1);
 			else if (cline>0) {
 				theText[cline] = null;
@@ -176,7 +176,6 @@ public class TextRoi extends Roi {
 			else
 				imp.draw(clipX, clipY, clipWidth, clipHeight);
 			firstChar = false;
-			return;
 		} else if ((int)c=='\n') {
 			// newline
 			if (cline<(MAX_LINES-1)) cline++;
@@ -189,7 +188,6 @@ public class TextRoi extends Roi {
 			updateBounds();
 			updateText();
 			firstChar = false;
-			return;
 		}
 	}
 
@@ -211,7 +209,7 @@ public class TextRoi extends Roi {
 	 *	@see ij.process.ImageProcessor#setColor(Color)
 	*/
 	public void drawPixels(ImageProcessor ip) {
-		if (!ip.fillValueSet())
+		if (ip.fillValueSet())
 			ip.setColor(Toolbar.getForegroundColor());
 		ip.setFont(font);
 		ip.setAntialiasedText(getAntiAlias());
@@ -482,7 +480,7 @@ public class TextRoi extends Roi {
 			firstMouseUp = false;
 		}
 		if (this.width<5 || this.height<5)
-			imp.deleteRoi();
+			Objects.requireNonNull(imp).deleteRoi();
 	}
 	
 	/** Increases the size of bounding rectangle so it's large enough to hold the text. */ 
@@ -525,7 +523,7 @@ public class TextRoi extends Roi {
 	private Graphics getFontGraphics(Font font) {
 		if (fontGraphics==null) {
 			BufferedImage bi =new BufferedImage(1, 1, BufferedImage.TYPE_INT_RGB);
-			fontGraphics = (Graphics2D)bi.getGraphics();
+			fontGraphics = bi.getGraphics();
 		}
 		fontGraphics.setFont(font);
 		return  fontGraphics;
@@ -597,13 +595,13 @@ public class TextRoi extends Roi {
 	}
 	
 	private String text() {
-		String text = "";
+		StringBuilder text = new StringBuilder();
 		for (int i=0; i<MAX_LINES; i++) {
 			if (theText[i]==null) break;
-			text += theText[i];
-			if (theText[i+1]!=null) text += "\\n";
+			text.append(theText[i]);
+			if (theText[i+1]!=null) text.append("\\n");
 		}
-		return text;
+		return text.toString();
 	}
 	
 	private String getAddSelectionScript(String code) {
@@ -629,12 +627,12 @@ public class TextRoi extends Roi {
 	}
 	
 	public String getText() {
-		String text = "";
+		StringBuilder text = new StringBuilder();
 		for (int i=0; i<MAX_LINES; i++) {
 			if (theText[i]==null) break;
-			text += theText[i]+"\n";
+			text.append(theText[i]).append("\n");
 		}
-		return text;
+		return text.toString();
 	}
 
 	public void setText(String text) {
@@ -692,8 +690,7 @@ public class TextRoi extends Roi {
 	public synchronized Object clone() {
 		TextRoi tr = (TextRoi)super.clone();
 		tr.theText = new String[MAX_LINES];
-		for (int i=0; i<MAX_LINES; i++)
-			tr.theText[i] = theText[i];
+		System.arraycopy(theText, 0, tr.theText, 0, MAX_LINES);
 		return tr;
 	}
 	

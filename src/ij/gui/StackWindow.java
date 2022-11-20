@@ -1,9 +1,7 @@
 package ij.gui;
 import ij.*;
-import ij.measure.Calibration;
 import ij.plugin.frame.SyncWindows;
 import java.awt.*;
-import java.awt.image.*;
 import java.awt.event.*;
 
 /** This class is an extended ImageWindow that displays stacks and hyperstacks. */
@@ -11,7 +9,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 
 	protected Scrollbar sliceSelector; // for backward compatibity with Image5D
 	protected ScrollbarWithLabel cSelector, zSelector, tSelector;
-	protected Thread thread;
+	protected final Thread thread;
 	protected volatile boolean done;
 	protected volatile int slice;
 	protected ScrollbarWithLabel animationSelector;
@@ -273,11 +271,11 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		int index = subtitle.indexOf(";");
 		if (index!=-1) {
 			int index2 = subtitle.indexOf("(");
-			if (index2>=0 && index2<index && subtitle.length()>index2+4 && !subtitle.substring(index2+1, index2+4).equals("ch:")) {
+			if (index2>=0 && index2<index && subtitle.length()>index2+4 && !subtitle.startsWith("ch:", index2+1)) {
 				index = index2;
 				s = s + " ";
 			}
-			subtitle = subtitle.substring(index, subtitle.length());
+			subtitle = subtitle.substring(index);
 		} else
 			subtitle = "";
 		return s + subtitle;
@@ -329,10 +327,7 @@ public class StackWindow extends ImageWindow implements Runnable, AdjustmentList
 		int size = imp.getStackSize();
 		if (c==size && c*z*t==size && nSlices==size && nChannels*nSlices*nFrames==size)
 			return true;
-		if (c!=nChannels||z!=nSlices||t!=nFrames||c*z*t!=size)
-			return false;
-		else
-			return true;
+        return c == nChannels && z == nSlices && t == nFrames && c * z * t == size;
 	}
 
 	public void setAnimate(boolean b) {

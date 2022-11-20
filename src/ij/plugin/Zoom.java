@@ -1,8 +1,6 @@
 package ij.plugin;
 import ij.*;
 import ij.gui.*;
-import ij.process.*;
-import ij.measure.*;
 import ij.plugin.frame.Recorder;
 import java.awt.*;
 
@@ -141,12 +139,12 @@ public class Zoom implements PlugIn {
 		int marginh = (int)((w.height - mag * imp.getHeight()));
 		int x = r.x+r.width/2;
 		int y = r.y+r.height/2;
-		mag = ic.getHigherZoomLevel(mag);
+		mag = ImageCanvas.getHigherZoomLevel(mag);
 		while (r.width*mag<w.width-marginw && r.height*mag<w.height-marginh) {
 			ic.zoomIn(ic.screenX(x), ic.screenY(y));
 			double cmag = ic.getMagnification();
 			if (cmag==32.0) break;
-			mag = ic.getHigherZoomLevel(cmag);
+			mag = ImageCanvas.getHigherZoomLevel(cmag);
 			w = imp.getWindow().getBounds();
 		}
 	}

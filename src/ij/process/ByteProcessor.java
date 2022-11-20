@@ -3,7 +3,7 @@ package ij.process;
 import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
-import ij.gui.*;
+
 import ij.Prefs;
 
 /**
@@ -31,8 +31,8 @@ public class ByteProcessor extends ImageProcessor {
 			pg.grabPixels();
 		} catch (InterruptedException e) {
 			System.err.println(e);
-		};
-   		cm = pg.getColorModel();
+		}
+		cm = pg.getColorModel();
 		if (cm instanceof IndexColorModel)
 			pixels = (byte[])(pg.getPixels());
 		if ((cm instanceof IndexColorModel) && ((IndexColorModel)cm).getTransparentPixel()!=-1) {
@@ -166,7 +166,7 @@ public class ByteProcessor extends ImageProcessor {
 	public void snapshot() {
 		snapshotWidth=width;
 		snapshotHeight=height;
-		if (snapshotPixels==null || (snapshotPixels!=null && snapshotPixels.length!=pixels.length))
+		if (snapshotPixels == null || snapshotPixels.length != pixels.length)
 			snapshotPixels = new byte[width * height];
 		System.arraycopy(pixels, 0, snapshotPixels, 0, width*height);
 	}
@@ -392,7 +392,7 @@ public class ByteProcessor extends ImageProcessor {
 		pixel data. To avoid sign extension, the pixel values must be
 		accessed using a mask (e.g. int i = pixels[j]&0xff). */
 	public Object getPixels() {
-		return (Object)pixels;
+		return pixels;
 	}
 
 	/** Returns a copy of the pixel data. Or returns a reference to the

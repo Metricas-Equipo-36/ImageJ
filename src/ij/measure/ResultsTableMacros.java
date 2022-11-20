@@ -1,24 +1,24 @@
 package ij.measure;
 import ij.plugin.filter.Analyzer;
 import ij.plugin.frame.Recorder;
-import ij.plugin.*;
 import ij.*;
 import ij.gui.*;
-import ij.text.*;
+
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Objects;
 
 
 /** This class implements the Apply Macro command in tables.
 * @author Michael Schmid
 */
 public class ResultsTableMacros implements Runnable, DialogListener, ActionListener, KeyListener {
-	private static String NAME = "TableMacro.ijm";
-	private String defaultMacro = "Sin=sin(row*0.1);\nCos=cos(row*0.1);\nSqr=Sin*Sin+Cos*Cos;";
+	private static final String NAME = "TableMacro.ijm";
+	private final String defaultMacro = "Sin=sin(row*0.1);\nCos=cos(row*0.1);\nSqr=Sin*Sin+Cos*Cos;";
 	private GenericDialog gd;
 	private ResultsTable rt, rtBackup;
 	private Button runButton, resetButton, openButton, saveButton;
-	private String title;
+	private final String title;
 	private int runCount;
 	private TextArea ta;
 
@@ -40,8 +40,7 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 		String[] variableNames = new String[temp.length+2];
 		variableNames[0] = "Insert...";
 		variableNames[1] = "row";
-		for (int i=2; i<variableNames.length; i++)
-			variableNames[i] = temp[i-2];
+		System.arraycopy(temp, 0, variableNames, 2, variableNames.length - 2);
 		String dialogTitle = "Apply Macro to "+(title!=null?"\""+title+"\"":"Table");
 		Frame parent = title!=null?WindowManager.getFrame(title):null;
 		if (parent!=null)
@@ -106,7 +105,7 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 				Recorder.recordCall("rt.applyMacro(\""+macro+"\");");
 				Recorder.recordCall("rt.show(title);");
 			} else {
-				if (title.equals("Results"))
+				if (Objects.requireNonNull(title).equals("Results"))
 					Recorder.record("Table.applyMacro", macro);
 				else
 					Recorder.record("Table.applyMacro", macro, title);
@@ -158,7 +157,6 @@ public class ResultsTableMacros implements Runnable, DialogListener, ActionListe
 				return;
 			if (macro.startsWith("Error: ")) {
 				IJ.error(macro);
-				return;
 			} else
 				ta.setText(macro);
 		} else if (source==saveButton) {

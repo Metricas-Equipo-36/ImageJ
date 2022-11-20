@@ -4,8 +4,11 @@ import java.awt.*;
 
 /** Implements the ROI Brush tool.*/
 class RoiBrush implements Runnable {
-	static int ADD=0, SUBTRACT=1;
-	static int leftClick=16, alt=9, shift=1;
+	static final int ADD=0;
+    static final int SUBTRACT=1;
+	static final int leftClick=16;
+    static final int alt=9;
+    static final int shift=1;
 	private Polygon poly;
 	private Point previousP;
 	private int mode = ADD;

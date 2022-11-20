@@ -5,9 +5,9 @@ import ij.gui.*;
 import ij.plugin.frame.Recorder;
 import java.awt.*;
 import java.awt.image.*;
-import ij.util.*;
+
 import ij.measure.*;
-import java.util.Vector;
+
 import java.awt.event.*;
 
 public class LUT_Editor implements PlugIn, ActionListener{
@@ -62,7 +62,6 @@ public class LUT_Editor implements PlugIn, ActionListener{
 		Recorder.record = recording;
         if (gd.wasCanceled()){
             colorPanel.cancelLUT();
-            return;
         } else {
         	colorPanel.applyLUT();
         	String lutName = imp.getProp(LUT.nameKey);
@@ -92,18 +91,21 @@ public class LUT_Editor implements PlugIn, ActionListener{
 
 class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
      static final int entryWidth=12, entryHeight=12;
-     int rows = 16;
-     int columns = 16; 
-     Color c[] = new Color[256];
+     final int rows = 16;
+     final int columns = 16;
+     final Color[] c = new Color[256];
      Color b;
      ColorProcessor cp;
      IndexColorModel origin;
      private ImagePlus imp;
-     private int[] xSize = new int[256], redY, greenY, blueY;
+     private final int[] xSize = new int[256];
+    private int[] redY;
+    private int[] greenY;
+    private int[] blueY;
      private int mapSize, x, y, initialC = -1, finalC = -1;
      private byte[] reds, greens, blues;
      private boolean updateLut;
-     private static String[] choices = {"Replication","Interpolation", "Spline Fitting"};
+     private static final String[] choices = {"Replication","Interpolation", "Spline Fitting"};
      private static String scaleMethod = choices[1];
      private int bitDepth;
      
@@ -143,8 +145,8 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
     }
     
     int getMouseZone(int x, int y){
-        int horizontal = (int)x/entryWidth;
-        int vertical = (int)y/entryHeight;
+        int horizontal = x /entryWidth;
+        int vertical = y /entryHeight;
         int index = (columns*vertical + horizontal);
         return index;
     }
@@ -324,8 +326,8 @@ class ColorPanel extends Panel implements MouseListener, MouseMotionListener{
     }
 
     void scale(byte[] reds, byte[] greens, byte[] blues, int newSize) {
-        if (newSize==mapSize)
-            return;
+        if (newSize==mapSize) {
+        }
         else if (newSize<mapSize || scaleMethod.equals(choices[0]))
             scaleUsingReplication(reds, greens, blues, newSize);
         else if (scaleMethod.equals(choices[1]))

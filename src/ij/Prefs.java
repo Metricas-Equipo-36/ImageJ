@@ -1,19 +1,18 @@
 package ij;
-import ij.util.Java2;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.applet.*;
 import java.net.URL;
 import java.awt.*;
-import java.applet.Applet;
+
 import ij.io.*;
 import ij.util.Tools;
 import ij.gui.*;
 import ij.plugin.filter.*;
-import ij.process.ImageConverter;
 import ij.plugin.Animator;
 import ij.process.FloatBlitter;
-import ij.plugin.GelAnalyzer;
 import ij.process.ColorProcessor;
 import ij.text.TextWindow;
 
@@ -40,7 +39,7 @@ public class Prefs {
     public static final String THREADS = "threads";
 	public static final String KEY_PREFIX = ".";
  
-	private static final int USE_POINTER=1<<0, ANTIALIASING=1<<1, INTERPOLATE=1<<2, ONE_HUNDRED_PERCENT=1<<3,
+	private static final int USE_POINTER= 1, ANTIALIASING=1<<1, INTERPOLATE=1<<2, ONE_HUNDRED_PERCENT=1<<3,
 		BLACK_BACKGROUND=1<<4, JFILE_CHOOSER=1<<5, UNUSED=1<<6, BLACK_CANVAS=1<<7, WEIGHTED=1<<8, 
 		AUTO_MEASURE=1<<9, REQUIRE_CONTROL=1<<10, USE_INVERTING_LUT=1<<11, ANTIALIASED_TOOLS=1<<12,
 		INTEL_BYTE_ORDER=1<<13, DOUBLE_BUFFER=1<<14, NO_POINT_LABELS=1<<15, NO_BORDER=1<<16,
@@ -53,7 +52,7 @@ public class Prefs {
     
 	public static final String vistaHint = "";  // no longer used
 
-	private static final int USE_SYSTEM_PROXIES=1<<0, USE_FILE_CHOOSER=1<<1,
+	private static final int USE_SYSTEM_PROXIES= 1, USE_FILE_CHOOSER=1<<1,
 		SUBPIXEL_RESOLUTION=1<<2, ENHANCED_LINE_TOOL=1<<3, SKIP_RAW_DIALOG=1<<4,
 		REVERSE_NEXT_PREVIOUS_ORDER=1<<5, AUTO_RUN_EXAMPLES=1<<6, SHOW_ALL_POINTS=1<<7,
 		DO_NOT_SAVE_WINDOW_LOCS=1<<8, JFILE_CHOOSER_CHANGED=1<<9,
@@ -62,7 +61,7 @@ public class Prefs {
 	public static final String OPTIONS2 = "prefs.options2";
     
 	/** file.separator system property */
-	public static String separator = System.getProperty("file.separator");
+	public static final String separator = System.getProperty("file.separator");
 	/** Use pointer cursor instead of cross */
 	public static boolean usePointerCursor;
 	/** No longer used */
@@ -88,11 +87,11 @@ public class Prefs {
 	/** Open 8-bit images with inverting LUT so 0 is white and 255 is black. */
 	public static boolean useInvertingLut;
 	/** Draw tool icons using antialiasing (always true). */
-	public static boolean antialiasedTools = true;
+	public static final boolean antialiasedTools = true;
 	/** Export TIFF and Raw using little-endian byte order. */
 	public static boolean intelByteOrder = true;
 	/** No longer used */
-	public static boolean doubleBuffer = true;
+	public static final boolean doubleBuffer = true;
 	/** Do not label multiple points created using point tool. */
 	public static boolean noPointLabels;
 	/** Disable Edit/Undo command. */
@@ -195,8 +194,8 @@ public class Prefs {
 	//public static boolean saveImageLocation = true;
 
 	static boolean commandLineMacro;
-	static Properties ijPrefs = new Properties();
-	static Properties props = new Properties(ijPrefs);
+	static final Properties ijPrefs = new Properties();
+	static final Properties props = new Properties(ijPrefs);
 	static String prefsDir;
 	static String imagesURL;
 	static String ImageJDir;
@@ -205,7 +204,7 @@ public class Prefs {
 	static int transparentIndex = -1;
 	private static boolean resetPreferences;
 	private static double guiScale = 1.0;
-	private static Properties locKeys = new Properties();
+	private static final Properties locKeys = new Properties();
 	private static String propertiesPath; // location of custom IJ_Props.txt
 	private static String preferencesPath; // location of custom IJ_Prefs.txt
 
@@ -269,7 +268,8 @@ public class Prefs {
 		Double d = null;
 		if (s!=null) {
 			try {d = Double.valueOf(s);}
-			catch (NumberFormatException e) {d = null;}
+			catch (NumberFormatException e) {
+			}
 			if (d!=null)
 				return(d.doubleValue());
 		}
@@ -300,7 +300,6 @@ public class Prefs {
 				f = new FileInputStream(ImageJDir+"/"+PROPS_NAME);
 				propertiesPath = ImageJDir+"/"+PROPS_NAME;
 			} catch (FileNotFoundException e) {
-				f = null;
 			}
 			if (f==null) {
 				// Look in ij.jar if not found in ImageJ folder
@@ -469,7 +468,7 @@ public class Prefs {
 
 	static boolean loadPrefs(String path) {
 		try {
-			InputStream is = new BufferedInputStream(new FileInputStream(path));
+			InputStream is = new BufferedInputStream(Files.newInputStream(Paths.get(path)));
 			ijPrefs.load(is);
 			is.close();
 			return true;
@@ -527,10 +526,8 @@ public class Prefs {
 			String msg = t.getMessage();
 			if (msg==null) msg = ""+t;
 			int delay = 4000;
-			try {
-				new TextWindow("Error Saving Preferences:\n"+path, msg, 500, 200);
-				IJ.wait(delay);
-			} catch (Throwable t2) {}
+			new TextWindow("Error Saving Preferences:\n"+path, msg, 500, 200);
+			IJ.wait(delay);
 		}
 	}
 
@@ -776,7 +773,8 @@ public class Prefs {
 		Double d = null;
 		if (s!=null) {
 			try {d = Double.valueOf(s);}
-			catch (NumberFormatException e){d = null;}
+			catch (NumberFormatException e){
+			}
 			if (d!=null)
 				return(d.doubleValue());
 		}

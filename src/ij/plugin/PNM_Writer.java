@@ -1,12 +1,10 @@
 package ij.plugin;
 import ij.*;
 import ij.process.*;
-import ij.gui.*;
-import java.awt.*;
 import ij.io.SaveDialog;
 import java.io.*;
-import java.util.*;
-import java.awt.image.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /*
  This plugin saves grayscale images in PGM (portable graymap) format 
@@ -57,7 +55,7 @@ public class PNM_Writer implements PlugIn {
 			return;
 		}
 		try {
-			OutputStream fileOutput = new FileOutputStream(path);
+			OutputStream fileOutput = Files.newOutputStream(Paths.get(path));
 			DataOutputStream output = new DataOutputStream(fileOutput);
 			int w = img.getWidth(), h = img.getHeight();
 			output.writeBytes((isGray ? "P5" : "P6")
@@ -72,7 +70,7 @@ public class PNM_Writer implements PlugIn {
 				for (int j = 0; j < h; j++)
 					for (int i = 0; i < w; i++) {
 						int c = proc.getPixel(i, j);
-						pixels[3 * (i + w * j) + 0] =
+						pixels[3 * (i + w * j)] =
 							(byte)((c & 0xff0000) >> 16);
 						pixels[3 * (i + w * j) + 1] =
 							(byte)((c & 0xff00) >> 8);
@@ -93,7 +91,7 @@ public class PNM_Writer implements PlugIn {
 		int max = (int)ip.getMax();
 		if (max<256) max=256;
 		try {
-			DataOutputStream output = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
+			DataOutputStream output = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(Paths.get(path))));
 			output.writeBytes("P5\n# Written by ImageJ PNM Writer\n" + ip.getWidth() + " " + ip.getHeight() + "\n"+max+"\n");
 			for (int i=0; i<ip.getPixelCount(); i++)
 				output.writeShort(ip.get(i));
@@ -103,5 +101,5 @@ public class PNM_Writer implements PlugIn {
 		}
 	}
 
-};
+}
 

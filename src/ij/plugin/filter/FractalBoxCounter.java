@@ -1,6 +1,5 @@
 package ij.plugin.filter;
 import java.awt.*;
-import java.awt.image.*;
 import java.util.*;
 import ij.*;
 import ij.process.*;
@@ -82,7 +81,6 @@ public class FractalBoxCounter implements PlugInFilter {
 			foreground = 255 - foreground;
 		doBoxCounts(ip);
 		IJ.register(FractalBoxCounter.class);  // keeps this class from being GC'd on 1.1 JVMs
-		return;
 	}
 
 	/** Breaks the specified string into an array

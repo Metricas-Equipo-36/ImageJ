@@ -4,7 +4,6 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.Recorder;
-import ij.plugin.filter.PlugInFilter;
 import ij.plugin.frame.ThresholdAdjuster;
 import java.awt.*;
 import java.awt.event.*;
@@ -20,8 +19,8 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 	private double maxThreshold;
 	private boolean autoThreshold;
 	private boolean showLegacyDialog = true;
-	private static boolean fill1 = true;
-	private static boolean fill2 = true;
+	private static final boolean fill1 = true;
+	private static final boolean fill2 = true;
 	private static boolean useBW = true;
 	private boolean useLocal = true;
 	private boolean listThresholds;
@@ -74,7 +73,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 		gd.addChoice("Method:", methods, method);
 		gd.addChoice("Background:", backgrounds, background);
 		gd.addCheckbox("Calculate threshold for each image", useLocal);
-		gd.addCheckbox("Only convert current image", oneSlice);
+		gd.addCheckbox("Only convert current image", false);
 		gd.addCheckbox("Black background (of binary masks)", Prefs.blackBackground);
 		gd.addCheckbox("List thresholds", listThresholds);
 		gd.addCheckbox("Create new stack", createStack);
@@ -109,7 +108,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			useLocal = false;
 			listThresholds = false;
 			createStack = false;
-			if (oneSlice && imp.getBitDepth()!=8) {
+			if (imp.getBitDepth() != 8) {
 				IJ.error("Thresholder", "8-bit stack required to process a single slice.");
 				return;
 			}
@@ -167,8 +166,8 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 			
 		if (showLegacyDialog) {
 			GenericDialog gd = new GenericDialog("Make Binary");
-			gd.addCheckbox("Thresholded pixels to foreground color", fill1);
-			gd.addCheckbox("Remaining pixels to background color", fill2);
+			gd.addCheckbox("Thresholded pixels to foreground color", true);
+			gd.addCheckbox("Remaining pixels to background color", true);
 			gd.addMessage("");
 			gd.addCheckbox("Black foreground, white background", useBW);
 			gd.showDialog();
@@ -339,8 +338,8 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 				ImageProcessor ip = stack1.getProcessor(i);
 				ip.resetMinAndMax();
 				if (listThresholds) {
-					minValues[i-1] = ip.getMin();
-					maxValues[i-1] = ip.getMax();
+					Objects.requireNonNull(minValues)[i-1] = ip.getMin();
+					Objects.requireNonNull(maxValues)[i-1] = ip.getMax();
 				}
 				stack2.addSlice(label, ip.convertToByte(true));
 			}
@@ -363,7 +362,7 @@ public class Thresholder implements PlugIn, Measurements, ItemListener {
 				double t1 = minThreshold;
 				double t2 = maxThreshold;
 				if (bitDepth!=8) {
-					t1 = minValues[i-1] + (t1/255.0)*(maxValues[i-1]-minValues[i-1]);
+					t1 = Objects.requireNonNull(minValues)[i-1] + (t1/255.0)*(Objects.requireNonNull(maxValues)[i-1]-minValues[i-1]);
 					t2 = minValues[i-1] + (t2/255.0)*(maxValues[i-1]-minValues[i-1]);
 				}
 				int digits = bitDepth==32?2:0;

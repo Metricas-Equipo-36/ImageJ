@@ -1,6 +1,5 @@
 package ij.plugin;
 import ij.*;
-import ij.process.*;
 import ij.gui.*;
 import ij.util.Tools;
 import ij.plugin.filter.Analyzer;
@@ -10,7 +9,7 @@ import java.util.Vector;
 /** This plugin implements the Image/Overlay/Labels command. */
 public class OverlayLabels implements PlugIn, DialogListener {
 	private static final String[] fontSizes = {"7", "8", "9", "10", "12", "14", "18", "24", "28", "36", "48", "72"};
-	private static Overlay defaultOverlay = new Overlay();
+	private static final Overlay defaultOverlay = new Overlay();
 	private ImagePlus imp;
 	private Overlay overlay;
 	private GenericDialog gd;
@@ -96,7 +95,7 @@ public class OverlayLabels implements PlugIn, DialogListener {
 			overlay.drawBackgrounds(drawBackgrounds);
 			Color color = Colors.getColor(colorName, Color.white);
 			overlay.setLabelColor(color);
-			if (sizeChanged || bold || bold!=bold2)
+			if (sizeChanged || bold || !!bold2)
 				overlay.setLabelFont(new Font("SansSerif", bold?Font.BOLD:Font.PLAIN, fontSize));
 			if (imp!=null) {
 				Overlay o = imp.getOverlay();

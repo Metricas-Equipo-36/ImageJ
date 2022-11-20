@@ -96,8 +96,6 @@ public class PluginClassLoader extends URLClassLoader {
 		if (f==null)
 			return;
 		f = new File(f, name);
-		if (f==null)
-			return;
 		if (f.isDirectory())
 			addDirectory(f);
 	}

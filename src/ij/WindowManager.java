@@ -1,5 +1,4 @@
 package ij;
-import ij.plugin.Converter;
 import ij.plugin.frame.Recorder;
 import ij.plugin.frame.Editor; 
 import ij.text.TextWindow;
@@ -15,14 +14,14 @@ import ij.gui.*;
 public class WindowManager {
 
 	public static boolean checkForDuplicateName;
-	private static Vector imageList = new Vector();		 // list of image windows
-	private static Vector activations = new Vector(); 	// list of image windows, ordered by activation time
-	private static Vector nonImageList = new Vector();	// list of non-image windows (Frames and Dialogs)
+	private static final Vector imageList = new Vector();		 // list of image windows
+	private static final Vector activations = new Vector(); 	// list of image windows, ordered by activation time
+	private static final Vector nonImageList = new Vector();	// list of non-image windows (Frames and Dialogs)
 	private static ImageWindow currentWindow;			 // active image window
 	private static Window frontWindow;
 	private static Window frontTable;
 	private static Frame frontFrame;
-	private static Hashtable tempImageTable = new Hashtable();
+	private static final Hashtable tempImageTable = new Hashtable();
 	
 	private WindowManager() {
 	}
@@ -36,14 +35,13 @@ public class WindowManager {
 		tempImageTable.remove(Thread.currentThread());
 		if (win==currentWindow || imageList.size()==0)
 			return;
-		if (currentWindow!=null) {
+		if (currentWindow!=null && currentWindow.getImagePlus()!=null) {
 			// free up pixel buffers used by current window
 			ImagePlus imp = currentWindow.getImagePlus();
-			if (imp!=null ) {
-				if (!Prefs.keepUndoBuffers)
-					imp.trimProcessor();
-				imp.saveRoi();
-			}
+			if (!Prefs.keepUndoBuffers)
+				currentWindow.getImagePlus().trimProcessor();
+			currentWindow.getImagePlus().saveRoi();
+
 		}
 		Undo.reset();
 		currentWindow = win;
@@ -100,8 +98,8 @@ public class WindowManager {
 	private static ImagePlus getActiveImage() {
 		if (currentWindow!=null)
 			return currentWindow.getImagePlus();
-		else if (frontWindow!=null && (frontWindow instanceof ImageWindow))
-			return frontWindow!=null?((ImageWindow)frontWindow).getImagePlus():null;
+		else if ((frontWindow instanceof ImageWindow))
+			return ((ImageWindow)frontWindow).getImagePlus();
 		else if (imageList.size()>0) {	
 			ImagePlus imp = getFocusManagerActiveImage();
 			if (imp!=null)
@@ -118,7 +116,7 @@ public class WindowManager {
 		KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
 		Window win = kfm.getActiveWindow();
 		ImagePlus imp = null;
-		if (win!=null && (win instanceof ImageWindow))
+		if ((win instanceof ImageWindow))
 			imp = ((ImageWindow)win).getImagePlus();
 		return imp;
 	}
@@ -164,8 +162,7 @@ public class WindowManager {
 		if ((nWindows+nBatchImages)==0)
 			return null;
 		int[] list = new int[nWindows+nBatchImages];
-		for (int i=0; i<nBatchImages; i++)
-			list[i] = batchModeImages[i];
+		System.arraycopy(batchModeImages, 0, list, 0, nBatchImages);
 		int index = 0;
 		for (int i=nBatchImages; i<nBatchImages+nWindows; i++) {
 			ImageWindow win = (ImageWindow)imageList.get(index++);
@@ -182,7 +179,7 @@ public class WindowManager {
 		String[] titles = new String[list.length];
 		for (int i=0; i<list.length; i++) {
 			ImagePlus img = getImage(list[i]);
-			titles[i] = img.getTitle();
+			titles[i] = Objects.requireNonNull(img).getTitle();
 		}
 		return titles;
 	}
@@ -190,8 +187,7 @@ public class WindowManager {
 	/** Returns an array containing a list of the non-image Frames. */
 	public synchronized static Frame[] getNonImageWindows() {
 		ArrayList list = new ArrayList();
-		for (int i=0; i<nonImageList.size(); i++) {
-			Object win = nonImageList.get(i);
+		for (Object win : nonImageList) {
 			if (win instanceof Frame)
 				list.add(win);
 		}
@@ -203,8 +199,7 @@ public class WindowManager {
 	/** Returns an array containing a list of the non-image Frames and Dialogs. */
 	public synchronized static Window[] getAllNonImageWindows() {
 		ArrayList list = new ArrayList();
-		for (int i=0; i<nonImageList.size(); i++) {
-			Object win = nonImageList.get(i);
+		for (Object win : nonImageList) {
 			if (win instanceof Window)
 				list.add(win);
 		}
@@ -216,9 +211,8 @@ public class WindowManager {
 	/** Returns an array containing the titles of non-image Frames and Dialogs. */
 	public synchronized static String[] getNonImageTitles() {
 		ArrayList list = new ArrayList();
-		for (int i=0; i<nonImageList.size(); i++) {
-			Object win = nonImageList.get(i);
-			String title = win instanceof Frame?((Frame)win).getTitle():((Dialog)win).getTitle();
+		for (Object win : nonImageList) {
+			String title = win instanceof Frame ? ((Frame) win).getTitle() : ((Dialog) win).getTitle();
 			list.add(title);
 		}
 		String[] titles = new String[list.size()];
@@ -239,10 +233,10 @@ public class WindowManager {
 		if (imp2!=null)
 			return imp2;
 		ImagePlus imp = null;
-		for (int i=0; i<imageList.size(); i++) {
-			ImageWindow win = (ImageWindow)imageList.get(i);
+		for (Object o : imageList) {
+			ImageWindow win = (ImageWindow) o;
 			imp2 = win.getImagePlus();
-			if (imageID==imp2.getID()) {
+			if (imageID == imp2.getID()) {
 				imp = imp2;
 				break;
 			}
@@ -259,7 +253,7 @@ public class WindowManager {
 			if (n<=0) return 0;
             if (Interpreter.isBatchMode()) {
                 int[] list = getIDList();
-                if (n>list.length)
+                if (n> Objects.requireNonNull(list).length)
                 	return 0;
                 else
                 	return list[n-1];
@@ -278,9 +272,9 @@ public class WindowManager {
 	public synchronized static ImagePlus getImage(String title) {
 		int[] wList = getIDList();
 		if (wList==null) return null;
-		for (int i=0; i<wList.length; i++) {
-			ImagePlus imp = getImage(wList[i]);
-			if (imp!=null && imp.getTitle().equals(title))
+		for (int j : wList) {
+			ImagePlus imp = getImage(j);
+			if (imp != null && imp.getTitle().equals(title))
 				return imp;
 		}
 		return null;
@@ -288,8 +282,8 @@ public class WindowManager {
 
 	/** Adds the specified window to the Window menu. */
 	public synchronized static void addWindow(Window win) {
-		if (win==null)
-			return;
+		if (win==null) {
+		}
 		else if (win instanceof ImageWindow)
 			addImageWindow((ImageWindow)win);
 		else {
@@ -325,8 +319,8 @@ public class WindowManager {
 		if (name==null)
 			return false;
 		int n = imageList.size();
-		for (int i=0; i<n; i++) {
-			ImageWindow win = (ImageWindow)imageList.get(i);
+		for (Object o : imageList) {
+			ImageWindow win = (ImageWindow) o;
 			String name2 = win.getImagePlus().getTitle();
 			if (name.equals(name2))
 				return true;
@@ -408,24 +402,22 @@ public class WindowManager {
 		int index = imageList.indexOf(win);
 		if (index==-1)
 			return;  // not on the window list
-		try {
-			synchronized(WindowManager.class) {
-				imageList.remove(win);
-			}
-			activations.remove(win);
-			if (imageList.size()>1 && !Prefs.closingAll) {
-				ImageWindow win2 = activations.size()>0?(ImageWindow)activations.get(activations.size()-1):null;
-				setCurrentWindow(win2);
-			} else
-				currentWindow = null;
-			setTempCurrentImage(null);  //???
-			int nonImageCount = nonImageList.size();
-			if (nonImageCount>0)
-				nonImageCount++;
-			Menus.removeWindowMenuItem(nonImageCount+index);
-			Menus.updateMenus();
-			Undo.reset();
-		}  catch (Exception e) { }
+		synchronized(WindowManager.class) {
+			imageList.remove(win);
+		}
+		activations.remove(win);
+		if (imageList.size()>1 && !Prefs.closingAll) {
+			ImageWindow win2 = activations.size()>0?(ImageWindow)activations.get(activations.size()-1):null;
+			setCurrentWindow(win2);
+		} else
+			currentWindow = null;
+		setTempCurrentImage(null);  //???
+		int nonImageCount = nonImageList.size();
+		if (nonImageCount>0)
+			nonImageCount++;
+		Menus.removeWindowMenuItem(nonImageCount+index);
+		Menus.updateMenus();
+		Undo.reset();
 	}
 
 	/** The specified Window becomes the front window. */
@@ -440,7 +432,7 @@ public class WindowManager {
 	public static void setWindow(Frame win) {
 		frontWindow = win;
 		frontFrame = win;
-		if (win!=null && win instanceof TextWindow && !(win instanceof Editor) && !"Log".equals(((TextWindow)win).getTitle()))
+		if (win instanceof TextWindow && !"Log".equals(win.getTitle()))
 			frontTable = win;
 		//System.out.println("Set window(F): "+(win!=null?win.getTitle():"null"));
     }
@@ -453,32 +445,30 @@ public class WindowManager {
 				Prefs.closingAll = false;
 				return false;
 			}
-			if (!quittingViaMacro())
+			if (quittingViaMacro())
 				IJ.wait(100);
 		}
 		Prefs.closingAll = false;
 		Frame[] nonImages = getNonImageWindows();
-		for (int i=0; i<nonImages.length; i++) {
-			Frame frame = nonImages[i];
-			if (frame!=null && frame instanceof Commands)
-				((Commands)frame).close();
-			else if (frame!=null && (frame instanceof Editor)) {
-				((Editor)frame).close();
-				if (((Editor)frame).fileChanged())
+		for (Frame frame : nonImages) {
+			if (frame instanceof Commands)
+				((Commands) frame).close();
+			else if ((frame instanceof Editor)) {
+				((Editor) frame).close();
+				if (((Editor) frame).fileChanged())
 					return false;
-				if (!quittingViaMacro())
+				if (quittingViaMacro())
 					IJ.wait(100);
 			}
 		}
 		ImageJ ij = IJ.getInstance();
 		if (ij!=null && ij.quitting() && IJ.getApplet()==null)
 			return true;
-		for (int i=0; i<nonImages.length; i++) {
-			Frame frame = nonImages[i];
+		for (Frame frame : nonImages) {
 			if ((frame instanceof PlugInFrame) && !(frame instanceof Editor))
-				((PlugInFrame)frame).close();
+				((PlugInFrame) frame).close();
 			else if (frame instanceof TextWindow)
-				((TextWindow)frame).close();
+				((TextWindow) frame).close();
 			else {
 				//frame.setVisible(false);
 				frame.dispose();
@@ -489,7 +479,7 @@ public class WindowManager {
     
     private static boolean quittingViaMacro() {
     	ImageJ ij = IJ.getInstance();
-    	return ij!=null && ij.quittingViaMacro();
+    	return ij == null || !ij.quittingViaMacro();
     }
     
 	/** Activates the next image window on the window list. */
@@ -520,22 +510,20 @@ public class WindowManager {
     /** Returns the window (a Frame or a Dialog) with the specified
     	  title,  or null if a window with that title is not found. */
     public static Window getWindow(String title) {
-		for (int i=0; i<nonImageList.size(); i++) {
-			Object win = nonImageList.get(i);
-			String winTitle = win instanceof Frame?((Frame)win).getTitle():((Dialog)win).getTitle();
+		for (Object win : nonImageList) {
+			String winTitle = win instanceof Frame ? ((Frame) win).getTitle() : ((Dialog) win).getTitle();
 			if (title.equals(winTitle))
-				return (Window)win;
+				return (Window) win;
 		}
 		return getImageWindow(title);
     }
 
     /** Obsolete; replaced by getWindow(). */
     public static Frame getFrame(String title) {
-		for (int i=0; i<nonImageList.size(); i++) {
-			Object win = nonImageList.get(i);
-			String winTitle = win instanceof Frame?((Frame)win).getTitle():null;
+		for (Object win : nonImageList) {
+			String winTitle = win instanceof Frame ? ((Frame) win).getTitle() : null;
 			if (title.equals(winTitle))
-				return (Frame)win;
+				return (Frame) win;
 		}
 		Frame frame = getImageWindow(title);
 		if (frame==null) {
@@ -561,23 +549,21 @@ public class WindowManager {
 
 	/** Activates a window selected from the Window menu. */
 	synchronized static void activateWindow(String menuItemLabel, MenuItem item) {
-		for (int i=0; i<nonImageList.size(); i++) {
-			Object win = nonImageList.get(i);
-			String title = win instanceof Frame?((Frame)win).getTitle():((Dialog)win).getTitle();
+		for (Object win : nonImageList) {
+			String title = win instanceof Frame ? ((Frame) win).getTitle() : ((Dialog) win).getTitle();
 			if (menuItemLabel.equals(title)) {
 				if (win instanceof Frame)
-					toFront((Frame)win);
+					toFront((Frame) win);
 				else
-					((Dialog)win).toFront();
-				((CheckboxMenuItem)item).setState(false);
+					((Dialog) win).toFront();
+				((CheckboxMenuItem) item).setState(false);
 				if (Recorder.record && !IJ.isMacro())
 					Recorder.record("selectWindow", title);
 				return;
 			}
 		}
 		int lastSpace = menuItemLabel.lastIndexOf(' ');
-		if (lastSpace>0) // remove image size (e.g., " 90K")
-		menuItemLabel = menuItemLabel.substring(0, lastSpace);
+		// remove image size (e.g., " 90K")
 		String idString = item.getActionCommand();
 		int id = (int)Tools.parseDouble(idString, 0);
 		ImagePlus imp = WindowManager.getImage(id);
@@ -600,12 +586,12 @@ public class WindowManager {
     public synchronized static void repaintImageWindows() {
 		int[] list = getIDList();
 		if (list==null) return;
-		for (int i=0; i<list.length; i++) {
-			ImagePlus imp2 = getImage(list[i]);
-			if (imp2!=null) {
+		for (int j : list) {
+			ImagePlus imp2 = getImage(j);
+			if (imp2 != null) {
 				imp2.setTitle(imp2.getTitle()); // update "(G)" flag (global calibration)
 				ImageWindow win = imp2.getWindow();
-				if (win!=null) win.repaint();
+				if (win != null) win.repaint();
 			}
 		}
 	}

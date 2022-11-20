@@ -36,7 +36,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 	private Label message;
 	private ImagePlus imp;
 	private double gx1, gy1, gx2, gy2, gLength;
-	private Color lineColor = new Color(1f, 1f, 0f, 0.4f);
+	private final Color lineColor = new Color(1f, 1f, 0f, 0.4f);
 
 	// Variables used by getIrregularProfile and doIrregularSetup
 	private int n;
@@ -151,7 +151,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 			cal.pixelHeight = origCal.pixelDepth/zSpacing;
 			//cal.pixelWidth = origCal.pixelDepth/zSpacing;
 			//cal.pixelHeight = origCal.pixelHeight;
-			cal.pixelDepth = origCal.pixelWidth*outputZSpacing;;
+			cal.pixelDepth = origCal.pixelWidth*outputZSpacing;
 		} else { // oblique line, polyLine or freeline
 				if (origCal.pixelHeight==origCal.pixelWidth) {
 					cal.pixelWidth = origCal.pixelWidth;
@@ -499,11 +499,11 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		 Calibration cal = imp.getCalibration();
 		 double zSpacing = inputZSpacing/cal.pixelWidth;
 		 if (zSpacing!=1.0) {
-				ip2.setInterpolate(true);
+				Objects.requireNonNull(ip2).setInterpolate(true);
 				if (rotate)
-					ip2 = ip2.resize((int)(stackSize*zSpacing), line.length);
+					ip2 = ip2.resize((int)(stackSize*zSpacing), Objects.requireNonNull(line).length);
 				else
-					ip2 = ip2.resize(line.length, (int)(stackSize*zSpacing));
+					ip2 = ip2.resize(Objects.requireNonNull(line).length, (int)(stackSize*zSpacing));
 		 }
 		 return ip2;
 	}
@@ -640,7 +640,7 @@ public class Slicer implements PlugIn, TextListener, ItemListener {
 		int yinc = dy/n;
 		for (int i=0; i<n; i++) {
 			if (rgb) {
-				int rgbPixel = ((ColorProcessor)ip).getPixel(x1, y1);
+				int rgbPixel = ip.getPixel(x1, y1);
 				data[i] = Float.intBitsToFloat(rgbPixel&0xffffff);
 			} else
 				data[i] = ip.getf(x1,y1);

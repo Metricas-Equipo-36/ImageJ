@@ -160,7 +160,6 @@ public class FITS_Writer implements PlugIn {
 			output.close();
 		} catch (IOException e) {
 			IJ.showStatus("Error writing file!");
-			return;
 		}
 	}
 			
@@ -180,8 +179,7 @@ public class FITS_Writer implements PlugIn {
 				dos.close();
             } catch (IOException e) {
 				IJ.showStatus("Error writing file!");
-				return;
-            }    
+			}
         } else if (ip instanceof ShortProcessor) {
 			short[] pixels = (short[])ip.getPixels();
 			try {   
@@ -192,8 +190,7 @@ public class FITS_Writer implements PlugIn {
 				dos.close();
             } catch (IOException e) {
 				IJ.showStatus("Error writing file!");
-				return;
-            }
+			}
 		} else if (ip instanceof FloatProcessor) {
 			float[] pixels = (float[])ip.getPixels();
 			try {   
@@ -204,8 +201,7 @@ public class FITS_Writer implements PlugIn {
 				dos.close();
             } catch (IOException e) {
 				IJ.showStatus("Error writing file!");
-				return;
-                }					   
+			}
             }
         }
 
@@ -226,7 +222,7 @@ public class FITS_Writer implements PlugIn {
 			Properties props = img.getProperties();
 			if (props == null)
 				return null;
-			content = (String)props.getProperty ("Info");
+			content = props.getProperty ("Info");
 		}
 		else if (depth > 1) {
 			int slice = img.getCurrentSlice();
@@ -236,7 +232,7 @@ public class FITS_Writer implements PlugIn {
                 Properties props = img.getProperties();
                 if (props == null)
                     return null;
-                content = (String)props.getProperty ("Info");  
+                content = props.getProperty ("Info");
             }
         }
 		if (content == null)
@@ -262,10 +258,10 @@ public class FITS_Writer implements PlugIn {
 		if (iend >= lines.length) return null;
 
 		int l = iend-istart+1;
-		String header = "";
+		StringBuilder header = new StringBuilder();
 		for (int i=0; i < l; i++)
-			header += lines[istart+i]+"\n";
-		return header.split("\n");
+			header.append(lines[istart + i]).append("\n");
+		return header.toString().split("\n");
 	}
 
 	/**

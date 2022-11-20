@@ -3,7 +3,7 @@ import ij.gui.GenericDialog;
 import java.awt.*;
 import java.io.*;
 import javax.swing.*;
-import javax.swing.filechooser.*;
+
 import ij.*;
 import ij.plugin.frame.Recorder;
 import ij.util.Java2;
@@ -15,7 +15,7 @@ public class SaveDialog {
 
 	private String dir;
 	private String name;
-	private String title;
+	private final String title;
 	private String ext;
 	
 	/** Displays a file save dialog with 'title' as the 
@@ -110,8 +110,7 @@ public class SaveDialog {
 		fc.setTransferHandler(new DragAndDropHandler(fc));
 		if (defaultDir!=null) {
 			File f = new File(defaultDir);
-			if (f!=null)
-				fc.setCurrentDirectory(f);
+			fc.setCurrentDirectory(f);
 		}
 		if (defaultName!=null)
 			fc.setSelectedFile(new File(defaultName));
@@ -151,8 +150,7 @@ public class SaveDialog {
 					fc.setTransferHandler(new DragAndDropHandler(fc));
 					if (defaultDir!=null) {
 						File f = new File(defaultDir);
-						if (f!=null)
-							fc.setCurrentDirectory(f);
+						fc.setCurrentDirectory(f);
 					}
 					if (defaultName!=null)
 						fc.setSelectedFile(new File(defaultName));

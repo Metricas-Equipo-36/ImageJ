@@ -14,6 +14,7 @@ import ij.*;
 import ij.io.*;
 import ij.gui.*;
 import java.io.File;
+import java.util.Objects;
 
 public class NextImageOpener implements PlugIn {
 
@@ -116,7 +117,7 @@ public class NextImageOpener implements PlugIn {
 		String[] names = dir.list();
 		ij.util.StringSorter.sort(names);
 		int thisfile = -1;
-		for (int i=0; i<names.length; i++) {
+		for (int i = 0; i< Objects.requireNonNull(names).length; i++) {
 			if (names[i].equals(imageName)) {
 				thisfile = i;
 				break;
@@ -135,10 +136,8 @@ public class NextImageOpener implements PlugIn {
 			String nextPath = path + names[candidate];
 			if (IJ.debugMode) IJ.log("OpenNext: "+ candidate + "  " + names[candidate]);
 			File nextFile = new File(nextPath);
-			boolean canOpen = true;
-			if (names[candidate].startsWith(".") || nextFile.isDirectory())
-				canOpen = false;
-			if (canOpen) {
+			boolean canOpen = !names[candidate].startsWith(".") && !nextFile.isDirectory();
+            if (canOpen) {
 				Opener o = new Opener();
 				int type = o.getFileType(nextPath);
 				if (type==Opener.JAVA_OR_TEXT

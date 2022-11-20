@@ -7,7 +7,7 @@ import ij.plugin.Animator;
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
-import java.util.*;
+import java.nio.charset.StandardCharsets;
 import javax.imageio.ImageIO;
 
 /**
@@ -75,7 +75,7 @@ public class AVI_Writer implements PlugInFilter {
     private byte[]          bufferWrite;    //output buffer for image data
     private BufferedImage   bufferedImage;  //data source for writing compressed images
     private RaOutputStream  raOutputStream; //output stream for writing compressed images
-    private long[]          sizePointers =  //a stack of the pointers to the chunk sizes (pointers are
+    private final long[]          sizePointers =  //a stack of the pointers to the chunk sizes (pointers are
                                 new long[5];//  remembered to write the sizes later, when they are known)
     private int             stackPointer;   //points to first free position in sizePointers stack
     private int             endHeadPointer; //position of first 'movi' chunk, i.e., end of the space reserved for indx
@@ -143,7 +143,7 @@ public class AVI_Writer implements PlugInFilter {
         this.biCompression = compression;
         if (jpegQuality < 0) jpegQuality = 0;
         if (jpegQuality > 100) jpegQuality = 100;
-        this.jpegQuality = jpegQuality;
+        AVI_Writer.jpegQuality = jpegQuality;
         File file = new File(path);
         raFile = new RandomAccessFile(file, "rw");
         raFile.setLength(0);
@@ -572,7 +572,7 @@ public class AVI_Writer implements PlugInFilter {
     }
 
     private void writeString(String s) throws IOException {
-        byte[] bytes =  s.getBytes("UTF8");
+        byte[] bytes =  s.getBytes(StandardCharsets.UTF_8);
         raFile.write(bytes);
     }
 
@@ -609,8 +609,8 @@ public class AVI_Writer implements PlugInFilter {
     }
 
     /** An output stream directed to a RandomAccessFile (starting at the current position) */
-    class RaOutputStream extends OutputStream {
-        RandomAccessFile raFile;
+    static class RaOutputStream extends OutputStream {
+        final RandomAccessFile raFile;
         RaOutputStream (RandomAccessFile raFile) {
             this.raFile = raFile;
         }

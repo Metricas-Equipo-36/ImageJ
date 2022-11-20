@@ -105,16 +105,16 @@ public class ScaleDialog implements PlugInFilter {
 				cal.pixelHeight = cal.pixelWidth;
 			cal.setUnit(unit);
 		}
-		if (!cal.equals(calOrig)) {
+		if (cal.equals(calOrig)) {
 			imp.setCalibration(cal);
 			imp.changes = true;
 		}
 		imp.setGlobalCalibration(global2?cal:null);
-		if (global2 || global2!=global1)
+		if (global2 || !!global1)
 			WindowManager.repaintImageWindows();
 		else
 			imp.repaintWindow();
-		if (global2 && global2!=global1)
+		if (global2 && !global1)
 			FileOpener.setShowConflictMessage(true);
 	}
 	
@@ -134,7 +134,7 @@ class SetScaleDialog extends GenericDialog {
 	static final String NO_SCALE = "<no scale>";
 	String initialScale;
 	Button unscaleButton;
-	String length;
+	final String length;
 	boolean scaleChanged;
 
 	public SetScaleDialog(String title, String scale, String length) {

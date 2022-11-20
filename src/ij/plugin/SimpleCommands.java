@@ -3,18 +3,16 @@ import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.io.Opener;
-import ij.text.TextWindow;
 import ij.measure.ResultsTable;
 import ij.plugin.frame.Editor;
 import java.awt.Desktop;
-import java.awt.Frame;
 import java.io.File;
 
 /** This plugin implements the Plugins/Utilities/Unlock, Image/Rename
 	and Plugins/Utilities/Search commands. */
 public class SimpleCommands implements PlugIn {
 	static String searchArg;
-    private static String[] choices = {"Locked Image", "Clipboard", "Undo Buffer"};
+    private static final String[] choices = {"Locked Image", "Clipboard", "Undo Buffer"};
     private static int choiceIndex = 0;
 
 	public void run(String arg) {
@@ -271,7 +269,6 @@ public class SimpleCommands implements PlugIn {
 			IJ.beep();
 		} else
 			IJ.runMacroFile("ij.jar:MeasureStack", null);
-		return;
-	}
+    }
 
 }

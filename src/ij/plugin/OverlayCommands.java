@@ -4,13 +4,11 @@ import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.RoiManager;
 import ij.plugin.frame.Recorder;
-import ij.macro.Interpreter;
-import ij.io.RoiDecoder;
 import ij.plugin.filter.PlugInFilter;
 import ij.measure.*;
 import java.awt.*;
-import java.util.ArrayList;
 import java.awt.geom.Rectangle2D;
+import java.util.Objects;
 
 /** This plugin implements the commands in the Image/Overlay menu. */
 public class OverlayCommands implements PlugIn {
@@ -173,7 +171,7 @@ public class OverlayCommands implements PlugIn {
 		if (wList.length==2) {
 			ImagePlus i1 = WindowManager.getImage(wList[0]);
 			ImagePlus i2 = WindowManager.getImage(wList[1]);
-			if (i2.getWidth()<i1.getWidth() && i2.getHeight()<i1.getHeight())
+			if (Objects.requireNonNull(i2).getWidth()< Objects.requireNonNull(i1).getWidth() && i2.getHeight()<i1.getHeight())
 				index = 1;
 		} else if (imp.getID()==wList[0])
 			index = 1;
@@ -207,7 +205,7 @@ public class OverlayCommands implements PlugIn {
 		if (wList.length==2) {
 			ImagePlus i1 = WindowManager.getImage(wList[0]);
 			ImagePlus i2 = WindowManager.getImage(wList[1]);
-			if (i2.getWidth()<i1.getWidth() && i2.getHeight()<i1.getHeight()) {
+			if (Objects.requireNonNull(i2).getWidth()< Objects.requireNonNull(i1).getWidth() && i2.getHeight()<i1.getHeight()) {
 				imp = i1;
 				overlay = i2;
 			}
@@ -216,7 +214,7 @@ public class OverlayCommands implements PlugIn {
 			IJ.error("Add Image...", "Image to be added cannot be the same as\n\""+imp.getTitle()+"\".");
 			return;
 		}
-		if (overlay.getWidth()>imp.getWidth() && overlay.getHeight()>imp.getHeight()) {
+		if (Objects.requireNonNull(overlay).getWidth()>imp.getWidth() && overlay.getHeight()>imp.getHeight()) {
 			IJ.error("Add Image...", "Image to be added cannnot be larger than\n\""+imp.getTitle()+"\".");
 			return;
 		}
@@ -310,8 +308,8 @@ public class OverlayCommands implements PlugIn {
 			return;
 		}
 		int flags = IJ.setupDialog(imp, 0);
-		if (flags==PlugInFilter.DONE)
-			return;
+		if (flags==PlugInFilter.DONE) {
+		}
 		else if (flags==PlugInFilter.DOES_STACKS && !(imp.isComposite()&&overlay==null)) {
 			//Added by Marcel Boeglin 2014.01.24
 			if (overlay==null && roiManagerOverlay==null && !imp.isComposite()) {

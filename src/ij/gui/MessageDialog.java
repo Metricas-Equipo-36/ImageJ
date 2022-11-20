@@ -6,8 +6,8 @@ import java.awt.event.*;
 /** A modal dialog box that displays information. Based on the
 	InfoDialogclass from "Java in a Nutshell" by David Flanagan. */
 public class MessageDialog extends Dialog implements ActionListener, KeyListener, WindowListener {
-	protected Button button;
-	protected MultiLineLabel label;
+	protected final Button button;
+	protected final MultiLineLabel label;
 	private boolean escapePressed;
 	
 	public MessageDialog(Frame parent, String title, String message) {

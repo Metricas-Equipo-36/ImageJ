@@ -4,7 +4,7 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.Calibration;
 import ij.macro.Interpreter;
-import ij.io.FileInfo;
+
 import java.awt.*;
 import java.util.ArrayList;
 
@@ -119,7 +119,7 @@ public class StackEditor implements PlugIn {
 			slices++;
 		} else if (choice.equals("channel")) { // add channel
 			if (imp.isComposite())
-				luts = ((CompositeImage)imp).getLuts();
+				luts = imp.getLuts();
 			int index = imp.getStackIndex(c1, slices, frames);
 			int minIndex = 1;
 			if (prepend) {
@@ -210,7 +210,7 @@ public class StackEditor implements PlugIn {
 			slices--;
 		} else if (choice.equals("channel")) { // delete channe c1
 			if (imp.isComposite())
-				luts = ((CompositeImage)imp).getLuts();
+				luts = imp.getLuts();
 			int index = imp.getStackIndex(c1, slices, frames);
 			while (index>0) {
 				stack.deleteSlice(index);
@@ -311,7 +311,7 @@ public class StackEditor implements PlugIn {
 
 	String getTitle(ImagePlus imp, int n) {
 		String digits = "00000000"+n;
-		return getShortTitle(imp)+"-"+digits.substring(digits.length()-4,digits.length());
+		return getShortTitle(imp)+"-"+digits.substring(digits.length()-4);
 	}
 	
 	/** Returns a shortened version of image name that does not 

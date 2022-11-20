@@ -11,9 +11,9 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 	private static final String[] modes = {"Composite", "Color", "Grayscale", "---------",
 		"Composite Max", "Composite Min", "Composite Invert"};
 	private static final int COMP=0, COLOR=1, GRAY=2, DIVIDER=3, MAX=4, MIN=5, INVERT=6;
-	private static String[] menuItems = {"Make Composite", "Create RGB Image", "Split Channels", "Merge Channels...",
+	private static final String[] menuItems = {"Make Composite", "Create RGB Image", "Split Channels", "Merge Channels...",
 		"Show LUT", "Invert LUTs", "-", "Red", "Green", "Blue", "Cyan", "Magenta", "Yellow", "Grays"};
-	private static String moreLabel = "More "+'\u00bb';
+	private static final String moreLabel = "More "+'\u00bb';
 
 	public static final String help = "<html>"
 	+"<h1>Composite Display Modes</h1>"
@@ -209,13 +209,18 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 			String cstr = null;
 			int cmode = IJ.COMPOSITE;
 			switch (index) {
-				case COMP: cmode=IJ.COMPOSITE; cstr="Sum"; break;
+				case COMP:
+                    cstr="Sum"; break;
 				case COLOR: cmode=IJ.COLOR; break;
 				case GRAY: cmode=IJ.GRAYSCALE; break;
-				case DIVIDER: cmode=IJ.COMPOSITE; cstr="Sum"; break;
-				case MAX: cmode=IJ.COMPOSITE; ; cstr="Max"; break;
-				case MIN: cmode=IJ.COMPOSITE; ; cstr="Min"; break;
-				case INVERT: cmode=IJ.COMPOSITE; ; cstr="Invert"; break;
+				case DIVIDER:
+                    cstr="Sum"; break;
+				case MAX:
+                    cstr="Max"; break;
+				case MIN:
+                    cstr="Min"; break;
+				case INVERT:
+                    cstr="Invert"; break;
 			}
 			if (cstr!=null && !(cstr.equals("Sum")&&ci.getProp("CompositeProjection")==null))
 				ci.setProp("CompositeProjection", cstr);
@@ -254,13 +259,13 @@ public class Channels extends PlugInDialog implements PlugIn, ItemListener, Acti
 						boolean[] active = ci.getActiveChannels();
 						active[i] = cb.getState();
 						if (Recorder.record) {
-							String str = "";
+							StringBuilder str = new StringBuilder();
 							for (int c=0; c<ci.getNChannels(); c++)
-								str += active[c]?"1":"0";
+								str.append(active[c] ? "1" : "0");
 							if (Recorder.scriptMode())
 								Recorder.recordCall("imp.setActiveChannels(\""+str+"\");");
 							else
-								Recorder.record("Stack.setActiveChannels", str);
+								Recorder.record("Stack.setActiveChannels", str.toString());
 						}
 					} else {
 						imp.setPosition(i+1, imp.getSlice(), imp.getFrame());

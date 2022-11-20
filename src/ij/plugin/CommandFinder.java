@@ -25,7 +25,6 @@
 package ij.plugin;
 
 import ij.*;
-import ij.text.*;
 import ij.plugin.frame.Editor;
 import ij.process.ImageProcessor;
 import ij.gui.GUI;
@@ -37,13 +36,12 @@ import java.io.File;
 import javax.swing.*;
 import javax.swing.table.*;
 import javax.swing.event.*;
-import javax.swing.event.DocumentEvent;
 
 public class CommandFinder implements PlugIn, ActionListener, WindowListener, KeyListener, ItemListener, MouseListener {
 
 	private static final int TABLE_WIDTH = 640;
 	private static final int TABLE_ROWS = 18;
-	private int multiClickInterval;
+	private final int multiClickInterval;
 	private long lastClickTime;
 	private static JFrame frame;
 	private JTextField prompt;
@@ -70,14 +68,14 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 			multiClickInterval = interval.intValue();
 	}
 
-	class CommandAction {
+	static class CommandAction {
 		CommandAction(String classCommand, MenuItem menuItem, String menuLocation) {
 			this.classCommand = classCommand;
 			this.menuItem = menuItem;
 			this.menuLocation = menuLocation;
 		}
 
-		String classCommand;
+		final String classCommand;
 		MenuItem menuItem;
 		String menuLocation;
 
@@ -328,7 +326,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 			String cmd = tableModel.getCommand(row);
 			String mPath = (String) tableModel.getValueAt(row, 1);
 			String cName = (String) tableModel.getValueAt(row, 2);
-			if ((mPath.indexOf("Lookup Table") > 0) && ((null == cName) || (cName.indexOf("LutLoader") > 0))) {
+			if ((Objects.requireNonNull(mPath).indexOf("Lookup Table") > 0) && ((null == cName) || (cName.indexOf("LutLoader") > 0))) {
 				ImagePlus imp = WindowManager.getCurrentImage();
 				if (null == imp) {
 					imp = IJ.createImage("LUT Preview", "8-bit ramp", 256, 32, 1);
@@ -531,7 +529,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 				}
 				final int sRow = table.getSelectedRow();
 				for (int row = (sRow + 1) % nRows; row != sRow; row = (row + 1) % nRows) {
-					final String rowData = tableModel.getValueAt(row, 0).toString();
+					final String rowData = Objects.requireNonNull(tableModel.getValueAt(row, 0)).toString();
 					final char rowCh = Character.toLowerCase(rowData.charAt(0));
 					if (ch == rowCh) {
 						table.setRowSelectionInterval(row, row);
@@ -596,7 +594,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 		int dialogWidth = frame.getWidth();
 		int dialogHeight = frame.getHeight();
 
-		Point pos = imageJ.getLocationOnScreen();
+		Point pos = Objects.requireNonNull(imageJ).getLocationOnScreen();
 		Dimension size = imageJ.getSize();
 
 		/*
@@ -645,7 +643,7 @@ public class CommandFinder implements PlugIn, ActionListener, WindowListener, Ke
 	public void windowDeiconified(WindowEvent e) {
 	}
 
-	private class TableModel extends AbstractTableModel {
+	private static class TableModel extends AbstractTableModel {
 		protected ArrayList list;
 		public final static int COLUMNS = 4;
 

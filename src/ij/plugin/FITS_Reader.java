@@ -1,6 +1,7 @@
 package ij.plugin;
-import java.awt.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.zip.GZIPInputStream;
 import ij.*;
 import ij.io.*;
@@ -63,9 +64,10 @@ public class FITS_Reader extends ImagePlus implements PlugIn {
 }
 
 class FitsDecoder {
-	private String directory, fileName;
+	private final String directory;
+    private final String fileName;
 	private DataInputStream f;
-	private StringBuffer info = new StringBuffer(512);
+	private final StringBuffer info = new StringBuffer(512);
 	double bscale, bzero;
 
 	public FitsDecoder(String directory, String fileName) {
@@ -82,18 +84,18 @@ class FitsDecoder {
 		fi.height = 0;
 		fi.offset = 0;
 
-		InputStream is = new FileInputStream(directory + fileName);
+		InputStream is = Files.newInputStream(Paths.get(directory + fileName));
 		if (fileName.toLowerCase().endsWith(".gz")) is = new GZIPInputStream(is);
 		f = new DataInputStream(is);
-		String line = getString(80);
-		info.append(line+"\n");
+		String line = getString();
+		info.append(line).append("\n");
 		if (!line.startsWith("SIMPLE"))
 			{f.close(); return null;}
 		int count = 1;
 		while ( true ) {
 			count++;
-			line = getString(80);
-			info.append(line+"\n");
+			line = getString();
+			info.append(line).append("\n");
   
 			// Cut the key/value pair
 			int index = line.indexOf ( "=" );
@@ -165,8 +167,8 @@ class FitsDecoder {
 		return fi;
 	}
 
-	String getString(int length) throws IOException {
-		byte[] b = new byte[length];
+	String getString() throws IOException {
+		byte[] b = new byte[80];
 		f.readFully(b);
 		if (IJ.debugMode)
 			IJ.log(new String(b));
@@ -180,8 +182,8 @@ class FitsDecoder {
 	}
 
 	double parseDouble(String s) throws NumberFormatException {
-		Double d = Double.valueOf(s);
-		return d.doubleValue();
+		double d = Double.parseDouble(s);
+		return (double) d;
 	}
 
 	String getHeaderInfo() {

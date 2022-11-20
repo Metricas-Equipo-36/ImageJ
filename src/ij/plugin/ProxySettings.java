@@ -11,7 +11,7 @@ import java.util.*;
 *     @author	Dimiter Prodanov
 */
 public class ProxySettings implements PlugIn {
-	private Properties props = System.getProperties();
+	private final Properties props = System.getProperties();
 	private String proxyhost = Prefs.get("proxy.server", "");
 	private int proxyport = (int)Prefs.get("proxy.port", 8080);
 	

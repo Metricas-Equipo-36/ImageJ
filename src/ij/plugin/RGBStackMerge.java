@@ -4,12 +4,13 @@ import ij.process.*;
 import ij.gui.*;
 import java.awt.*;
 import java.awt.image.*;
+import java.util.Objects;
 
 /** This plugin implements the Image/Color/Merge Channels command. */
 public class RGBStackMerge implements PlugIn {
-	private static String none = "*None*";
-	private static int maxChannels = 7;
-	private static String[] colors = {"red", "green", "blue", "gray", "cyan", "magenta", "yellow"};
+	private static final String none = "*None*";
+	private static final int maxChannels = 7;
+	private static final String[] colors = {"red", "green", "blue", "gray", "cyan", "magenta", "yellow"};
 	private static boolean staticCreateComposite = true;
 	private static boolean staticKeep;
 	private static boolean staticIgnoreLuts;
@@ -100,7 +101,7 @@ public class RGBStackMerge implements PlugIn {
 			if (index[i]<wList.length) {
 				images[i] = WindowManager.getImage(wList[index[i]]);
 				if (width==0) {
-					width = images[i].getWidth();
+					width = Objects.requireNonNull(images[i]).getWidth();
 					height = images[i].getHeight();
 					stackSize = images[i].getStackSize();
 					bitDepth = images[i].getBitDepth();
@@ -168,8 +169,8 @@ public class RGBStackMerge implements PlugIn {
 				createComposite = true;
 			}
 		}
-		if (fourOrMoreChannelRGB)
-			createComposite = true;
+		if (fourOrMoreChannelRGB) {
+		}
 		boolean isRGB = false;
 		int extraIChannels = 0;
 		for (int i=0; i<maxChannels; i++) {
@@ -190,7 +191,7 @@ public class RGBStackMerge implements PlugIn {
 			imp2 = new ImagePlus("RGB", rgb);
 			if (createComposite) {
 				imp2 = CompositeConverter.makeComposite(imp2);
-				imp2.setTitle("Composite");
+				Objects.requireNonNull(imp2).setTitle("Composite");
 			}
 		}
 		for (int i=0; i<images.length; i++) {
@@ -231,7 +232,7 @@ public class RGBStackMerge implements PlugIn {
 	 	String str = "C"+channel;
 	 	String name = null;
 		for (int i=titles.length-1; i>=0; i--) {
-			if (titles!=null && titles[i].startsWith(str) && (firstChannelName==null||titles[i].contains(firstChannelName))) {
+			if (titles[i].startsWith(str) && (firstChannelName == null || titles[i].contains(firstChannelName))) {
 				name = titles[i];
 	 			if (channel==1) {
 	 				if (name==null || name.length()<3)
@@ -244,7 +245,7 @@ public class RGBStackMerge implements PlugIn {
 	 	if (name==null) {
 			for (int i=titles.length-1; i>=0; i--) {
 				int index = titles[i].indexOf(colors[channel-1]);
-				if (titles!=null && index!=-1 && (firstChannelName==null||titles[i].contains(firstChannelName))) {
+				if (index != -1 && (firstChannelName == null || titles[i].contains(firstChannelName))) {
 					name = titles[i];
 	 				if (channel==1 && index>0) 
 	 					firstChannelName = name.substring(0, index-1);
@@ -328,7 +329,7 @@ public class RGBStackMerge implements PlugIn {
 			ImageProcessor ip = images[c].getProcessor();
 			IndexColorModel cm = (IndexColorModel)ip.getColorModel();
 			LUT lut = null;
-			if (c<colors.length && colors[c]!=null && (ignoreLuts||allGrayLuts)) {
+			if (colors[c] != null && (ignoreLuts || allGrayLuts)) {
 				lut = LUT.createLutFromColor(colors[c]);
 				lut.min = ip.getMin();
 				lut.max = ip.getMax();
@@ -370,9 +371,9 @@ public class RGBStackMerge implements PlugIn {
 		int slice = 1;
 		blank = new byte[w*h];
 		byte[] redPixels, greenPixels, bluePixels;
-		boolean invertedRed = red!=null?red.getProcessor(1).isInvertedLut():false;
-		boolean invertedGreen = green!=null?green.getProcessor(1).isInvertedLut():false;
-		boolean invertedBlue = blue!=null?blue.getProcessor(1).isInvertedLut():false;
+		boolean invertedRed = red != null && red.getProcessor(1).isInvertedLut();
+		boolean invertedGreen = green != null && green.getProcessor(1).isInvertedLut();
+		boolean invertedBlue = blue != null && blue.getProcessor(1).isInvertedLut();
 		try {
 			for (int i=1; i<=d; i++) {
 				cp = new ColorProcessor(w, h);
@@ -414,7 +415,7 @@ public class RGBStackMerge implements PlugIn {
 		imp2 = zp.getProjection();
 		if (createComposite) {
 			imp2 = CompositeConverter.makeComposite(imp2);
-			imp2.setTitle("Composite");
+			Objects.requireNonNull(imp2).setTitle("Composite");
 		} else
 			imp2.setTitle("RGB");
 		return imp2;
@@ -434,7 +435,7 @@ public class RGBStackMerge implements PlugIn {
 			}
 		} else { //RGB
 			ColorProcessor cp = (ColorProcessor)stack.getProcessor(slice);
-			return ((ColorProcessor)cp).getChannel(color+1);
+			return cp.getChannel(color+1);
 		}
 	}
 

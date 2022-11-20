@@ -1,6 +1,5 @@
 package ij.gui;
 import java.awt.*;
-import java.awt.image.*;
 import java.awt.event.*;
 import ij.*;
 import ij.plugin.frame.Recorder;
@@ -201,7 +200,7 @@ public class RotatedRectRoi extends PolygonRoi {
 		int halfSize = size/2;
 		int index = -1;
 		for (int i=0; i<4; i++) {
-			int sx2 = (int)Math.round(hxs(i)-halfSize), sy2=(int)Math.round(hys(i)-halfSize);
+			int sx2 = Math.round(hxs(i)-halfSize), sy2= Math.round(hys(i)-halfSize);
 			if (sx>=sx2 && sx<=sx2+size && sy>=sy2 && sy<=sy2+size) {
 				index = i;
 				break;

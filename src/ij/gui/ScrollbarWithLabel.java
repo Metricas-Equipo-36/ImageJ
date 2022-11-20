@@ -1,5 +1,4 @@
 package ij.gui;
-import ij.ImageJ;
 import ij.IJ;
 import ij.Prefs;
 import java.awt.*;
@@ -44,7 +43,7 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		int iconHeight = icon.getPreferredSize().height;
 		if (iconHeight>height)
 			height = iconHeight;
-		dim = new Dimension(width, (int)(height));
+		dim = new Dimension(width, height);
 		return dim;
 	}
 	
@@ -149,8 +148,8 @@ public class ScrollbarWithLabel extends Panel implements Adjustable, AdjustmentL
 		private final double SCALE = Prefs.getGuiScale();
 		private final int WIDTH = (int)(12*SCALE);
 		private final int HEIGHT= (int)(14*SCALE);
-		private BasicStroke stroke = new BasicStroke((float)(2*SCALE));
-		private char type;
+		private final BasicStroke stroke = new BasicStroke((float)(2*SCALE));
+		private final char type;
 		private Image image;
 		
 		public Icon(char type) {

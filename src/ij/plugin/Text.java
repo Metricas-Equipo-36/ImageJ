@@ -83,7 +83,7 @@ public class Text implements PlugIn, DialogListener {
 			if (f.length()<=20 && !(f.equals("SansSerif")||f.equals("Serif")||f.equals("Monospaced")))
 				names.add(f);
 		}
-		return (String[])names.toArray(new String[names.size()]);
+		return (String[])names.toArray(new String[0]);
 	}
 	
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {

@@ -24,9 +24,9 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 	public static final String DEBUG_LOC_KEY = "debug.loc";
 	static final String FONT_SIZE = "tw.font.size";
 	static final String FONT_ANTI= "tw.font.anti";
-	TextPanel textPanel;
+	final TextPanel textPanel;
     CheckboxMenuItem antialiased;
-	int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
+	final int[] sizes = {9, 10, 11, 12, 13, 14, 16, 18, 20, 24, 36, 48, 60, 72};
 	int fontSize = (int)Prefs.get(FONT_SIZE, 5);
 	MenuBar mb;
 	private static Font font;
@@ -170,7 +170,7 @@ public class TextWindow extends Frame implements ActionListener, FocusListener, 
 		m.add(new MenuItem("Make Text Smaller"));
 		m.add(new MenuItem("Make Text Larger"));
 		m.addSeparator();
-		antialiased = new CheckboxMenuItem("Antialiased", Prefs.get(FONT_ANTI, IJ.isMacOSX()?true:false));
+		antialiased = new CheckboxMenuItem("Antialiased", Prefs.get(FONT_ANTI, IJ.isMacOSX()));
 		antialiased.addItemListener(this);
 		m.add(antialiased);
 		m.add(new MenuItem("Save Settings"));

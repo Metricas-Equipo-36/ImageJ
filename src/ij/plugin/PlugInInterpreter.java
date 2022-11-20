@@ -7,8 +7,10 @@ public abstract class PlugInInterpreter implements PlugIn {
 	public void run(String script) {
 	}
 	
-	/** Run script on current thread. */
-	public abstract String run(String script, String arg);
+	/**
+     * Run script on current thread.
+     */
+	public abstract void run(String script, String arg);
 	
 	/** Returns the value returned by the script, if any, or null. */
 	public abstract String getReturnValue();

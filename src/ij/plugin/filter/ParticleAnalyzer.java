@@ -1,6 +1,7 @@
 package ij.plugin.filter;
 import java.awt.*;
 import java.awt.image.IndexColorModel;
+import java.util.Objects;
 import java.util.Properties;
 import ij.*;
 import ij.gui.*;
@@ -96,9 +97,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private static double staticMaxSize = DEFAULT_MAX_SIZE;
 	private static boolean pixelUnits;
 	private static int staticOptions = Prefs.getInt(OPTIONS,CLEAR_WORKSHEET);
-	private static String[] showStrings = {"Nothing", "Outlines", "Bare Outlines", "Ellipses", "Masks", "Count Masks", "Overlay", "Overlay Masks"};
-	private static String[] showStrings2 = {"Nothing", "Overlay", "Overlay Masks", "Outlines", "Bare Outlines", "Ellipses", "Masks", "Count Masks"};
-	private static int[] showStringOrder = {0, 6, 7, 1, 2, 3, 4, 5};
+	private static final String[] showStrings = {"Nothing", "Outlines", "Bare Outlines", "Ellipses", "Masks", "Count Masks", "Overlay", "Overlay Masks"};
+	private static final String[] showStrings2 = {"Nothing", "Overlay", "Overlay Masks", "Outlines", "Bare Outlines", "Ellipses", "Masks", "Count Masks"};
+	private static final int[] showStringOrder = {0, 6, 7, 1, 2, 3, 4, 5};
 	private static double staticMinCircularity=0.0, staticMaxCircularity=1.0;
 		
 	protected static final int NOTHING=0, OUTLINES=1, BARE_OUTLINES=2, ELLIPSES=3, MASKS=4, ROI_MASKS=5,
@@ -158,14 +159,14 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 	private int wandMode = Wand.LEGACY_MODE;
 	private Overlay overlay;
 	boolean blackBackground;
-	private static int defaultFontSize = 9;
+	private static final int defaultFontSize = 9;
 	private static int nextFontSize = defaultFontSize;
-	private static Color defaultFontColor = Color.red;
+	private static final Color defaultFontColor = Color.red;
 	private static Color nextFontColor = defaultFontColor;
 	private static int nextLineWidth = 1;
-	private int fontSize = nextFontSize;
-	private Color fontColor = nextFontColor;
-	private int lineWidth = nextLineWidth;
+	private final int fontSize = nextFontSize;
+	private final Color fontColor = nextFontColor;
+	private final int lineWidth = nextLineWidth;
 	private boolean noThreshold;
 	private boolean calledByPlugin;
 	private boolean hyperstack;
@@ -434,7 +435,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 
 	boolean updateMacroOptions() {
 		String options = Macro.getOptions();
-		options = options.replace("show=[Overlay Outlines]", "show=Overlay");
+		options = Objects.requireNonNull(options).replace("show=[Overlay Outlines]", "show=Overlay");
 		Macro.setOptions(options);
 		int index = options.indexOf("maximum=");
 		if (index==-1)
@@ -742,12 +743,9 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 			float[] c = column>=0?rt.getColumn(column):null;
 			if (c!=null) {
 				ImageProcessor ip = new FloatProcessor(c.length, 1, c, null);
-				if (ip==null) return;
 				ip.setRoi(start, 0, ip.getWidth()-start, 1);
 				ip = ip.crop();
 				ImageStatistics stats = new FloatStatistics(ip);
-				if (stats==null)
-					return;
 				value = stats.mean;
 			}
 		}
@@ -846,10 +844,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 					fillColor = 0;
 				else if (level2<65535)
 					fillColor = 65535;
-			} else if (imageType==FLOAT)
-					fillColor = -Float.MAX_VALUE;
-			else
-				return false;
+			} else fillColor = -Float.MAX_VALUE;
 		}
 		imageType2 = imageType;
 		if (redirectIP!=null) {
@@ -1092,7 +1087,7 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 
 	void drawRoiFilledParticle(ImageProcessor ip, Roi roi, ImageProcessor mask, int count) {
 		int grayLevel = (count < 65535) ? count : 65535;
-		ip.setValue((double) grayLevel); 
+		ip.setValue(grayLevel);
 		ip.setRoi(roi.getBounds());
 		ip.fill(mask);
 	}
@@ -1217,8 +1212,8 @@ public class ParticleAnalyzer implements PlugInFilter, Measurements {
 		cm.getGreens(greens);
 		cm.getBlues(blues);
 		reds[1] =(byte)fontColor.getRed();
-		greens[1] = (byte)fontColor.getGreen();;
-		blues[1] = (byte)fontColor.getBlue();;
+		greens[1] = (byte)fontColor.getGreen();
+		blues[1] = (byte)fontColor.getBlue();
 		customLut = new IndexColorModel(8, 256, reds, greens, blues);
 	}
 

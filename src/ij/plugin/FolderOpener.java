@@ -18,7 +18,7 @@ public class FolderOpener implements PlugIn, TextListener {
 	private static final int MAX_SEPARATE = 100;
 	private static final String DIR_KEY = "import.sequence.dir";
 	private static final String[] types = {"default", "16-bit", "32-bit", "RGB"};
-	private static String[] excludedTypes = {".txt",".lut",".roi",".pty",".hdr",".java",".ijm",".py",".js",".bsh",".xml",".rar",".h5",".doc",".xls"};
+	private static final String[] excludedTypes = {".txt",".lut",".roi",".pty",".hdr",".java",".ijm",".py",".js",".bsh",".xml",".rar",".h5",".doc",".xls"};
 	private static boolean staticSortFileNames = true;
 	private static boolean staticOpenAsVirtualStack;
 	private boolean convertToGrayscale;  //unused
@@ -168,7 +168,7 @@ public class FolderOpener implements PlugIn, TextListener {
 				fileList.add(list[i]);
 		}
 		if (fileList.size()<list.length)
-			list = (String[])fileList.toArray(new String[fileList.size()]);
+			list = (String[])fileList.toArray(new String[0]);
 
 		String title = directory;
 		if (title.endsWith(File.separator) || title.endsWith("/"))
@@ -341,10 +341,14 @@ public class FolderOpener implements PlugIn, TextListener {
 					}
 				}				
 				if (openAsVirtualStack) { 
-					if (fileInfoStack)
+					if (fileInfoStack) {
+						assert stack instanceof FileInfoVirtualStack;
 						openAsFileInfoStack((FileInfoVirtualStack)stack, directory+list[i]);
-					else
+					}
+					else {
+						assert stack instanceof VirtualStack;
 						((VirtualStack)stack).addSlice(list[i]);
+					}
 				} else {
 					for (int slice=1; slice<=stackSize; slice++) {
 						int bitDepth2 = imp.getBitDepth();
@@ -524,7 +528,7 @@ public class FolderOpener implements PlugIn, TextListener {
 			return;
 		int n =info[0].nImages;
 		if (info.length==1 && n>1) {
-			long size = fi.width*fi.height*fi.getBytesPerPixel();
+			long size = (long) fi.width *fi.height*fi.getBytesPerPixel();
 			for (int i=0; i<n; i++) {
 				FileInfo fi = (FileInfo)info[0].clone();
 				fi.nImages = 1;
@@ -645,8 +649,7 @@ public class FolderOpener implements PlugIn, TextListener {
 			return list;
 		if (title==null) {
 			String[] list2 = new String[list.length];
-			for (int i=0; i<list.length; i++)
-				list2[i] = list[i];
+			System.arraycopy(list, 0, list2, 0, list.length);
 			list = list2;
 		}
 		if (filter.length()>=2 && filter.startsWith("(")&&filter.endsWith(")")) {

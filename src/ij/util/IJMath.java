@@ -2,15 +2,15 @@ package ij.util;
 
 public class IJMath {
 
-	static double A = 0.05857895078654250866288;
-	static double B = -0.00626245895772819579;
-	static double C = -0.00299946450696036814;
-	static double D = 0.289389696496082416;
-	static double E = 0.0539962589851632982;
-	static double F = 0.00508516909930653109;
-	static double G = 0.000215969713046142876;
-	static double H = -0.000225663858340491571;
-	static double I = -3.06833213472529049e-7;
+	static final double A = 0.05857895078654250866288;
+	static final double B = -0.00626245895772819579;
+	static final double C = -0.00299946450696036814;
+	static final double D = 0.289389696496082416;
+	static final double E = 0.0539962589851632982;
+	static final double F = 0.00508516909930653109;
+	static final double G = 0.000215969713046142876;
+	static final double H = -0.000225663858340491571;
+	static final double I = -3.06833213472529049e-7;
 
 	/* This approximation of the error function erf has maximum absolute and relative errors below 1e-12
 	 * Except for low and high x, it is based on the type erf(x) = sgn(x) * sqrt(1-exp(-x^2*f(x)),

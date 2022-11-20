@@ -18,32 +18,32 @@ public class ColorSpaceConverter {
 	/**
 	 * reference white in XYZ coordinates
 	 */
-	public double[] D50 = {96.4212, 100.0, 82.5188};
-	public double[] D55 = {95.6797, 100.0, 92.1481};
-	public double[] D65 = {95.0429, 100.0, 108.8900};
-	public double[] D75 = {94.9722, 100.0, 122.6394};
+	public final double[] D50 = {96.4212, 100.0, 82.5188};
+	public final double[] D55 = {95.6797, 100.0, 92.1481};
+	public final double[] D65 = {95.0429, 100.0, 108.8900};
+	public final double[] D75 = {94.9722, 100.0, 122.6394};
 	public double[] whitePoint = D65;
 
 	/**
 	 * reference white in xyY coordinates
 	 */
-	public double[] chromaD50 = {0.3457, 0.3585, 100.0};
-	public double[] chromaD55 = {0.3324, 0.3474, 100.0};
-	public double[] chromaD65 = {0.3127, 0.3290, 100.0};
-	public double[] chromaD75 = {0.2990, 0.3149, 100.0};
+	public final double[] chromaD50 = {0.3457, 0.3585, 100.0};
+	public final double[] chromaD55 = {0.3324, 0.3474, 100.0};
+	public final double[] chromaD65 = {0.3127, 0.3290, 100.0};
+	public final double[] chromaD75 = {0.2990, 0.3149, 100.0};
 	public double[] chromaWhitePoint = chromaD65;
 
 	/**
 	 * sRGB to XYZ conversion matrix
 	 */
-	public double[][] M = {{0.4124, 0.3576,  0.1805},
+	public final double[][] M = {{0.4124, 0.3576,  0.1805},
 							 {0.2126, 0.7152,  0.0722},
 							 {0.0193, 0.1192,  0.9505}};
 
 	/**
 	 * XYZ to sRGB conversion matrix
 	 */
-	public double[][] Mi = {{ 3.2406, -1.5372, -0.4986},
+	public final double[][] Mi = {{ 3.2406, -1.5372, -0.4986},
 							 {-0.9689,	1.8758,	 0.0415},
 							 { 0.0557, -0.2040,	 1.0570}};
 
@@ -51,8 +51,6 @@ public class ColorSpaceConverter {
 	 * Default constructor; uses D65 for the white point
 	 */
 	public ColorSpaceConverter() {
-	  whitePoint = D65;
-	  chromaWhitePoint = chromaD65;
 	}
 
 	/**
@@ -60,8 +58,6 @@ public class ColorSpaceConverter {
 	 * @param white "d50", "d55", "d65" or "d75"
 	 */
 	public ColorSpaceConverter(String white) {
-		whitePoint = D65;
-		chromaWhitePoint = chromaD65;
 		if (white.equalsIgnoreCase("d50")) {
 			whitePoint = D50;
 			chromaWhitePoint = chromaD50;
@@ -69,8 +65,6 @@ public class ColorSpaceConverter {
 			whitePoint = D55;
 			chromaWhitePoint = chromaD55;
 		} else if (white.equalsIgnoreCase("d65")) {
-			whitePoint = D65;
-			chromaWhitePoint = chromaD65;
 		} else if (white.equalsIgnoreCase("d75")) {
 			whitePoint = D75;
 			chromaWhitePoint = chromaD75;
@@ -89,7 +83,7 @@ public class ColorSpaceConverter {
 	  int rgb = Color.HSBtoRGB((float) H, (float) S, (float) B);
 	  result[0] = (rgb >> 16) & 0xff;
 	  result[1] = (rgb >> 8) & 0xff;
-	  result[2] = (rgb >> 0) & 0xff;
+	  result[2] = (rgb) & 0xff;
 	  return result;
 	}
 

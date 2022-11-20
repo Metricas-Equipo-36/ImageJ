@@ -1,9 +1,8 @@
 package ij.plugin;
 import ij.*;
 import ij.process.*;
-import ij.gui.*;
 import ij.io.*;
-import java.awt.*;
+
 import java.io.*;
 import java.util.Properties;
 
@@ -98,7 +97,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		FileInfo fi = info[0];
 		int n = fi.nImages;
 		if (info.length==1 && n>1) {
-			long bytesPerImage = fi.width*fi.height*fi.getBytesPerPixel();
+			long bytesPerImage = (long) fi.width *fi.height*fi.getBytesPerPixel();
 			if (fi.fileType==FileInfo.GRAY12_UNSIGNED)
 				bytesPerImage = (int)(1.5*fi.width)*fi.height;
 			n = validateNImages(fi, bytesPerImage);
@@ -118,7 +117,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		ImagePlus imp2 = new ImagePlus(fi.fileName, this);
 		imp2.setDisplayRange(imp.getDisplayRangeMin(),imp.getDisplayRangeMax());
 		imp2.setFileInfo(fi);
-		if (imp!=null && props!=null) {
+		if (props != null) {
 			setBitDepth(imp.getBitDepth());
 			imp2.setCalibration(imp.getCalibration());
 			imp2.setOverlay(imp.getOverlay());
@@ -129,7 +128,7 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 			int frames = getInt(props,"frames");
 			if (channels*slices*frames==nImages) {
 				imp2.setDimensions(channels, slices, frames);
-				if (getBoolean(props, "hyperstack"))
+				if (getBoolean(props))
 					imp2.setOpenAsHyperStack(true);
 			}
 			if (channels>1 && fi.description!=null) {
@@ -172,16 +171,15 @@ public class FileInfoVirtualStack extends VirtualStack implements PlugIn {
 		return null;
 	}
 
-	boolean getBoolean(Properties props, String key) {
-		String s = props.getProperty(key);
-		return s!=null&&s.equals("true")?true:false;
+	boolean getBoolean(Properties props) {
+		String s = props.getProperty("hyperstack");
+		return s != null && s.equals("true");
 	}
 
 	/** Deletes the specified image, where {@literal 1<=n<=nImages}. */
 	public void deleteSlice(int n) {
 		if (n<1 || n>nImages)
 			throw new IllegalArgumentException("Argument out of range: "+n);
-		if (nImages<1) return;
 		for (int i=n; i<nImages; i++)
 			info[i-1] = info[i];
 		info[nImages-1] = null;

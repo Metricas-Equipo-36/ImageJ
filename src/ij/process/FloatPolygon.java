@@ -1,6 +1,5 @@
 package ij.process;
 import java.awt.Rectangle;
-import java.awt.Polygon;
 import java.awt.geom.Rectangle2D;
 
 /** Used by the Roi classes to return float coordinate arrays and to
@@ -13,10 +12,10 @@ public class FloatPolygon {
 	public int npoints;
 
 	/* The array of x coordinates. */
-	public float xpoints[];
+	public float[] xpoints;
 
 	/* The array of y coordinates. */
-	public float ypoints[];
+	public float[] ypoints;
 
 	/** Constructs an empty FloatPolygon. */ 
 	public FloatPolygon() {
@@ -26,7 +25,7 @@ public class FloatPolygon {
 	}
 
 	/** Constructs a FloatPolygon from x and y arrays. */ 
-	public FloatPolygon(float xpoints[], float ypoints[]) {
+	public FloatPolygon(float[] xpoints, float[] ypoints) {
 		if (xpoints.length!=ypoints.length)
 			throw new IllegalArgumentException("xpoints.length!=ypoints.length");
 		this.npoints = xpoints.length;
@@ -35,7 +34,7 @@ public class FloatPolygon {
 	}
 
 	/** Constructs a FloatPolygon from x and y arrays. */ 
-	public FloatPolygon(float xpoints[], float ypoints[], int npoints) {
+	public FloatPolygon(float[] xpoints, float[] ypoints, int npoints) {
 		this.npoints = npoints;
 		this.xpoints = xpoints;
 		this.ypoints = ypoints;
@@ -57,7 +56,7 @@ public class FloatPolygon {
 		boolean inside = false;
 		for (int i=0, j=npoints-1; i<npoints; j=i++) {
 			if (((ypoints[i]>=y)!=(ypoints[j]>=y)) &&
-					(x>((double)xpoints[j]-xpoints[i])*((double)y-ypoints[i])/((double)ypoints[j]-ypoints[i])+(double)xpoints[i]))
+					(x>((double)xpoints[j]-xpoints[i])*(y -ypoints[i])/((double)ypoints[j]-ypoints[i])+(double)xpoints[i]))
 				inside = !inside;
 		}
 		return inside;
@@ -65,7 +64,7 @@ public class FloatPolygon {
 
 	/** A version of contains() that accepts float arguments. */
 	public boolean contains(float x, float y) {
-		return contains((double)x, (double)y);
+		return contains(x, (double)y);
 	}
 
 	public Rectangle getBounds() {
@@ -227,7 +226,7 @@ public class FloatPolygon {
 	private double sqr(double x) {return x*x;}
 	
     private double crossProduct(double x1, double y1, double x2, double y2) {
-        return (double)x1*y2 - (double)x2*y1;
+        return x1 *y2 - x2 *y1;
     }
 
 	public String toString() {

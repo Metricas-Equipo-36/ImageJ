@@ -22,7 +22,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 	private static boolean newWindow = true;
 	private static int staticInterpolationMethod = ImageProcessor.BILINEAR;
 	private int interpolationMethod = staticInterpolationMethod;
-	private String[] methods = ImageProcessor.getInterpolationMethods();
+	private final String[] methods = ImageProcessor.getInterpolationMethods();
 	private static boolean fillWithBackground;
 	private static boolean processStack = true;
 	private double xscale, yscale, zscale;
@@ -96,7 +96,7 @@ public class Scaler implements PlugIn, TextListener, FocusListener {
 			ip.resetRoi();
 		scaler.doZScaling = dstDepth!=1;
 		if (scaler.doZScaling)
-			scaler.processStack = true;
+			Scaler.processStack = true;
 		return scaler.createNewStack(imp, ip, dstWidth, dstHeight, dstDepth);
 	}
 

@@ -7,9 +7,10 @@ public class FloatBlitter implements Blitter {
 
 	public static float divideByZeroValue;
 	
-	private FloatProcessor ip;
-	private int width, height;
-	private float[] pixels;
+	private final FloatProcessor ip;
+	private final int width;
+	private final int height;
+	private final float[] pixels;
 	
 	static {
 		divideByZeroValue = (float)Prefs.getDouble(Prefs.DIV_BY_ZERO_VALUE, Float.POSITIVE_INFINITY);

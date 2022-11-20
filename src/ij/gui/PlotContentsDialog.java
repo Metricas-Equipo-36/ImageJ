@@ -1,6 +1,5 @@
 package ij.gui;
 import ij.*;
-import ij.process.*;
 import ij.measure.CurveFitter;
 import ij.measure.Minimizer;
 import ij.text.TextWindow;
@@ -9,8 +8,7 @@ import ij.plugin.Colors;
 import ij.plugin.frame.Recorder;
 import ij.util.Tools;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.Arrays;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.ArrayList;
 
@@ -22,7 +20,7 @@ public class PlotContentsDialog implements DialogListener {
 	public final static int ERROR=-1, STYLE=0, ADD_FROM_PLOT=1, ADD_FROM_TABLE=2, ADD_FROM_ARRAYS=3, ADD_FIT=4;
 	/** Dialog headings for each dialogType >= 0 */
 	private static final String[] HEADINGS = new String[] {"Plot Contents Style", "Add From Plot", "Plot From Table", "Add Plot Data", "Add Fit"};
-	private Plot          plot;                     // the plot we work on
+	private final Plot          plot;                     // the plot we work on
 	private int           dialogType;               // determines what to do: ADD_FORM_PLOT, etc.
 	private double[]      savedLimits;              // previous plot range, for undo upon cancel
 	GenericDialog         gd;
@@ -42,15 +40,15 @@ public class PlotContentsDialog implements DialogListener {
 	private Choice        tableChoice;               // for "Add from Table"
 	final static int      N_COLUMNS = 4;             // number of data columns that we can have; x, y, xE, yE
 	private int           nColumnsToUse = N_COLUMNS; // user may restrict to 2, for not having error bars
-	private Choice[]      columnChoice = new Choice[N_COLUMNS];
+	private final Choice[]      columnChoice = new Choice[N_COLUMNS];
 	private final static String[] COLUMN_NAMES = new String[] {"X:", "Y:", "X Error:", "Y Error:"};
 	private final static boolean[] COLUMN_ALLOW_NONE = new boolean[] {true, false, true, true}; //y data cannot be null
 	private ResultsTable[] allTables;
 	private String[]      allTableNames;
 	private static String previousTableName;
-	private static int[]  previousColumns = new int[]{1, 1, 0, 0}; //must be N_COLUMNS elements
+	private static final int[]  previousColumns = new int[]{1, 1, 0, 0}; //must be N_COLUMNS elements
 	private static int    defaultTableIndex;
-	private static int[]  defaultColumnIndex = new int[N_COLUMNS];
+	private static final int[]  defaultColumnIndex = new int[N_COLUMNS];
 	private String[]      arrayHeadings;             // for "Add from Arrays"
 	private ArrayList<float[]> arrayData;
 	private Choice        fitDataChoice;             // for "Add Fit"
@@ -76,7 +74,7 @@ public class PlotContentsDialog implements DialogListener {
 	public PlotContentsDialog(String title, ResultsTable rt) {
 		creatingPlot = true;
 		dialogType = ADD_FROM_TABLE;
-		if (rt == null || !isValid(rt)) {
+		if (!isValid(rt)) {
 			IJ.error("Cant Create Plot","No (results) table or no data in "+title);
 			dialogType = ERROR;
 		}
@@ -329,7 +327,7 @@ public class PlotContentsDialog implements DialogListener {
 		String color2 = color2Field.getText();
 		double width = Tools.parseDouble(widthField.getText());
 		String symbol = symbolChoice.getSelectedItem();
-		Boolean visible = visibleCheckbox.getState();
+		boolean visible = visibleCheckbox.getState();
 		String style = color.trim()+","+color2.trim()+","+(float)width+","+ symbol+(visible?"":"hidden");
 		return style;
 	}
@@ -371,7 +369,7 @@ public class PlotContentsDialog implements DialogListener {
 		int[] windowIDlist = WindowManager.getIDList();
 		ArrayList<ImagePlus> plotImps = new ArrayList<ImagePlus>();
 		ImagePlus currentPlotImp = null;
-		for (int windowID : windowIDlist) {
+		for (int windowID : Objects.requireNonNull(windowIDlist)) {
 			ImagePlus imp = WindowManager.getImage(windowID);
 			if (imp == null || imp.getWindow() == null) continue;
 			Plot thePlot = (Plot)(imp.getProperty(Plot.PROPERTY_KEY));

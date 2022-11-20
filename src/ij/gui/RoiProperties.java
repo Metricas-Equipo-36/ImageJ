@@ -1,7 +1,6 @@
 package ij.gui;
 import ij.*;
 import ij.plugin.Colors;
-import ij.io.RoiDecoder;
 import ij.process.*;
 import ij.measure.*;
 import ij.util.Tools;
@@ -15,19 +14,19 @@ import java.awt.event.*;
  /** Displays a dialog that allows the user to specify ROI properties such as color and line width. */
 public class RoiProperties implements TextListener, WindowListener {
 	private ImagePlus imp;
-	private Roi roi;
+	private final Roi roi;
 	private Overlay overlay;
-	private String title;
+	private final String title;
 	private boolean showName = true;
-	private boolean showListCoordinates;
-	private boolean addToOverlay;
-	private boolean overlayOptions;
+	private final boolean showListCoordinates;
+	private final boolean addToOverlay;
+	private final boolean overlayOptions;
 	private boolean setPositions;
 	private boolean listCoordinates;
 	private boolean listProperties;
 	private boolean showPointCounts;
 	private static final String[] justNames = {"Left", "Center", "Right"};
-	private int nProperties;
+	private final int nProperties;
 	private TextField groupField, colorField;
 	private Label groupName;
 
@@ -153,7 +152,7 @@ public class RoiProperties implements TextListener, WindowListener {
 				gd.setInsets(0,30,0);
 				gd.addCheckbox("Show labels", overlay.getDrawLabels());
 				gd.setInsets(0,30,0);
-				gd.addCheckbox("Hide", imp!=null?imp.getHideOverlay():false);
+				gd.addCheckbox("Hide", imp != null && imp.getHideOverlay());
 			} else
 				gd.addMessage("No overlay", null, Color.darkGray);
 		}
@@ -209,7 +208,7 @@ public class RoiProperties implements TextListener, WindowListener {
 				fillc = gd.getNextString();
 		}
 		boolean applyToOverlay = false;
-		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
+		boolean newOverlay = addToOverlay && gd.getNextBoolean();
 		if (overlayOptions) {
 			setPositions = gd.getNextBoolean();
 			if (overlay!=null) {
@@ -309,7 +308,6 @@ public class RoiProperties implements TextListener, WindowListener {
 					pos[i] = (int)dpos;
 			}
 			roi.setPosition(pos[0], pos[1], pos[2]);
-			return;
 		}
 	}
 	
@@ -344,7 +342,7 @@ public class RoiProperties implements TextListener, WindowListener {
 		boolean zeroTransparent2 = gd.getNextBoolean();
 		if (zeroTransparent!=zeroTransparent2)
 			iRoi.setZeroTransparent(zeroTransparent2);
-		boolean newOverlay = addToOverlay?gd.getNextBoolean():false;
+		boolean newOverlay = addToOverlay && gd.getNextBoolean();
 		if (newOverlay) roi.setName("new-overlay");
 		return true;
 	}

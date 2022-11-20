@@ -6,8 +6,6 @@ import java.io.*;
 import java.awt.datatransfer.*;	
 import ij.*;
 import ij.plugin.PlugIn;
-import ij.plugin.frame.*;
-import ij.text.*;
 import ij.gui.*;
 import ij.util.*;
 import ij.io.*;
@@ -23,14 +21,16 @@ import ij.measure.*;
  */
 public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionListener, KeyListener, ClipboardOwner {
 
-	Choice fit;
-	Button doIt, open, apply;
-	Checkbox settings;
+	final Choice fit;
+	final Button doIt;
+	final Button open;
+	final Button apply;
+	final Checkbox settings;
 	String fitTypeStr = CurveFitter.fitList[0];
-	TextArea textArea;
+	final TextArea textArea;
 
-	double[] dx = {0,1,2,3,4,5};
-	double[] dy = {0,.9,4.5,8,18,24};
+	final double[] dx = {0,1,2,3,4,5};
+	final double[] dy = {0,.9,4.5,8,18,24};
 	double[] x,y;
 
 	static CurveFitter cf;
@@ -62,13 +62,13 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		settings = new Checkbox("Show settings", false);
 		panel.add(settings);
 		add("North", panel);
-		String text = "";
+		StringBuilder text = new StringBuilder();
 		for (int i=0; i<dx.length; i++)
-			text += IJ.d2s(dx[i],2)+"  "+IJ.d2s(dy[i],2)+"\n";
+			text.append(IJ.d2s(dx[i], 2)).append("  ").append(IJ.d2s(dy[i], 2)).append("\n");
 		textArea = new TextArea("",15,30,TextArea.SCROLLBARS_VERTICAL_ONLY);
 		textArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
 		if (IJ.isLinux()) textArea.setBackground(Color.white);
-		textArea.append(text);
+		textArea.append(text.toString());
 		add("Center", textArea);
 		GUI.scale(this);
 		pack();
@@ -77,26 +77,27 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		IJ.register(Fitter.class);
 	}
 
-    /** Fit data in the textArea, show result in log and create plot.
-     *  @param fitType as defined in CurveFitter constants
-     *  @return false on error.
-     */
-	public boolean doFit(int fitType) {
+    /**
+	 * Fit data in the textArea, show result in log and create plot.
+	 *
+	 * @param fitType as defined in CurveFitter constants
+	 */
+	public void doFit(int fitType) {
 		if (!getData()) {
             IJ.beep();
-			return false;
+			return;
 		}
 		cf = new CurveFitter(x, y);
 		cf.setStatusAndEsc("Optimization: Iteration ", true);
 		try {
             if (fitType==USER_DEFINED) {
                 String eqn = getEquation();
-                if (eqn==null) return false;
+                if (eqn==null) return;
                 int params = cf.doCustomFit(eqn, null, settings.getState());
                 if (params==0) {
                     IJ.beep();
                     IJ.log("Bad formula; should be:\n   y = function(x, a, ...)");
-                    return false;
+                    return;
                 }
             } else
                 cf.doFit(fitType, settings.getState());
@@ -104,22 +105,21 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
                 IJ.beep();
                 IJ.showStatus(cf.getStatusString());
                 IJ.log("Curve Fitting Error:\n"+cf.getStatusString());
-                return false;
+                return;
             }
             if (Double.isNaN(cf.getSumResidualsSqr())) {
                 IJ.beep();
                 IJ.showStatus("Error: fit yields Not-a-Number");
-                return false;
+                return;
             }
             
 		} catch (Exception e) {
             IJ.handleException(e);
-            return false;
+            return;
 		}
         IJ.log(cf.getResultString());
 		plot(cf);
-		this.fitType = fitType; 
-		return true;
+		Fitter.fitType = fitType;
 	}
 	
 	String getEquation() {
@@ -223,7 +223,6 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
 		}
 		catch (Exception e) {
 			IJ.error(e.getMessage());
-			return;
 		}
 	}
 	
@@ -248,7 +247,7 @@ public class Fitter extends PlugInFrame implements PlugIn, ItemListener, ActionL
                 final int fitType = CurveFitter.getFitCode(fit.getSelectedItem());
 	            Thread thread = new Thread(
 	                new Runnable() {
-                        final public void run() {
+                        public void run() {
                             doFit(fitType);
                         }
                     }, "CurveFitting"

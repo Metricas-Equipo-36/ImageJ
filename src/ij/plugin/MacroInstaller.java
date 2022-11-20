@@ -5,10 +5,7 @@ import java.awt.event.*;
 import ij.*;
 import ij.gui.*;
 import ij.macro.*;
-import ij.text.*;
-import ij.util.Tools;
 import ij.io.*;
-import ij.macro.MacroConstants;
 import ij.plugin.frame.*;
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 import java.util.*;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
 
@@ -21,12 +18,12 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	static final String commandPrefixS = "^";
 	static final int MACROS_MENU_COMMANDS = 7; // number of commands in Plugins>Macros submenu
 	
-	private ArrayList<String> macroNames = new ArrayList();
-	private ArrayList<Integer> macroStarts = new ArrayList();
-	private MenuBar mb = new MenuBar();
+	private final ArrayList<String> macroNames = new ArrayList();
+	private final ArrayList<Integer> macroStarts = new ArrayList();
+	private final MenuBar mb = new MenuBar();
 	private int nMacros;
 	private Program pgm;
-	private boolean firstEvent = true;
+	private final boolean firstEvent = true;
 	private String shortcutsInUse;
 	private int inUseCount;
 	private int nShortcuts;
@@ -42,7 +39,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	private static String defaultDir, fileName;
 	private static MacroInstaller instance, listener;
 	private Thread macroToolThread;
-	private ArrayList<Menu> subMenus = new ArrayList();
+	private final ArrayList<Menu> subMenus = new ArrayList();
 	
 	private static Program autoRunPgm;
 	private static int autoRunAddress;
@@ -222,9 +219,9 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		menuReset = true;
 	}
 	
-	public int install(String text) {
+	public void install(String text) {
 		if (text==null && pgm==null)
-			return 0;
+			return;
 		this.text = text;
 		macrosMenu = Menus.getMacrosMenu();
 		if (listener!=null)
@@ -232,7 +229,6 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		macrosMenu.addActionListener(this);
 		listener = this;
 		install();
-		return nShortcuts;
 	}
 	
 	public int install(String text, Menu menu) {
@@ -344,7 +340,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		String shortcut = name.substring(index1+1, index2);
 		int len = shortcut.length();
 		if (len>1)
-			shortcut = shortcut.toUpperCase(Locale.US);;
+			shortcut = shortcut.toUpperCase(Locale.US);
 		if (len>3 || (len>1 && shortcut.charAt(0)!='F' && shortcut.charAt(0)!='N' && shortcut.charAt(0)!='&'))
 			return;
 		boolean bothNumKeys = shortcut.startsWith("&");
@@ -407,7 +403,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 				if (s==null)
 					break;
 				else
-					sb.append(s+"\n");
+					sb.append(s).append("\n");
 			}
 			r.close();
 			return new String(sb);
@@ -436,30 +432,28 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 		  return text;
 	}
 	
-	public boolean runMacroTool(String name) {
+	public void runMacroTool(String name) {
 		for (int i=0; i<macroNames.size(); i++) {
 			if (macroNames.get(i).startsWith(name)) {
 				if (macroToolThread!=null && macroToolThread.getName().indexOf(name)!=-1 && macroToolThread.isAlive())
-					return false; // do nothing if this tool is already running
+					return; // do nothing if this tool is already running
 				MacroRunner mw = new MacroRunner(pgm, macroStarts.get(i), name, (String)null);
 				macroToolThread = mw.getThread();
-				return true;
+				return;
 			}
 		}
-		return false;
 	}
 	
-	public boolean runMenuTool(String name, String command) {
+	public void runMenuTool(String name, String command) {
 		//IJ.log("runMenuTool: "+name+" "+command+" "+macroNames.size()+" "+instance);
 		for (int i=0; i<macroNames.size(); i++) {
 			//IJ.log("  "+i+" "+macroNames.get(i));
 			if (macroNames.get(i).startsWith(name)) {
 				Recorder.recordInMacros = true;
 				new MacroRunner(pgm, macroStarts.get(i), name, command);
-				return true;
+				return;
 			}
 		}
-		return false;
 	}
 
 	/** Runs a command in the Plugins/Macros submenu on the current thread. */
@@ -509,7 +503,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	}
 
 	public void runMacro(String name, Editor editor) {
-		if (anonymousName!=null && name.equals(anonymousName)) {
+		if (name.equals(anonymousName)) {
 			ImageJ.setCommandName(name);
 			new MacroRunner(pgm, 0, anonymousName, editor);
 			return;
@@ -538,7 +532,7 @@ public class MacroInstaller implements PlugIn, MacroConstants, ActionListener {
 	}
 
 	public void setFileName(String fileName) {
-		this.fileName = fileName;
+		MacroInstaller.fileName = fileName;
 		openingStartupMacrosInEditor = fileName.startsWith("StartupMacros");
 	}
 

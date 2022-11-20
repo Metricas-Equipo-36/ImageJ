@@ -4,8 +4,6 @@ package ij;
 import ij.process.*;
 import ij.gui.*;
 import ij.measure.Calibration;
-import java.awt.*;
-import java.awt.image.*;
 
 /** This class consists of static methods and
 	fields that implement ImageJ's Undo command. */
@@ -42,13 +40,9 @@ public class Undo {
 			return;
 		}
 		if (IJ.debugMode) IJ.log("Undo.setup: "+what+" "+imp);
-		if (what==FILTER && whatToUndo==COMPOUND_FILTER)
-				return;
-		if (what==COMPOUND_FILTER_DONE) {
-			if (whatToUndo==COMPOUND_FILTER)
-				whatToUndo = what;
+		if ((what==FILTER || what==COMPOUND_FILTER_DONE) && whatToUndo==COMPOUND_FILTER )
 			return;
-		}
+
 		whatToUndo = what;
 		imageID = imp.getID();
 		if (what==TYPE_CONVERSION) {
@@ -84,7 +78,6 @@ public class Undo {
 		} else {
 			ipCopy = null;
 			ImageProcessor ip = imp.getProcessor();
-			//lutCopy = (LUT)ip.getLut().clone();
 		}
 	}
 	

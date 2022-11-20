@@ -9,7 +9,7 @@ package ij.measure;
 */
 public class SplineFitter {
 	private double[] y2;
-	private static int EXTEND_BY = 7;
+	private static final int EXTEND_BY = 7;
 	private int extendBy;
 	private float[] xpoints, ypoints;
 	private int npoints;
@@ -110,7 +110,7 @@ public class SplineFitter {
 			return evalSpline(ixpoints, iypoints, npoints, xp);
 	}
 	
-	public double evalSpline(int x[], int y[], int n, double xp) {
+	public double evalSpline(int[] x, int[] y, int n, double xp) {
 		int klo,khi,k;
 		double h,b,a;
 		klo = 0;
@@ -131,7 +131,7 @@ public class SplineFitter {
 		return (a*y[klo] + b*y[khi] + ((a*a*a-a)*y2[klo] +(b*b*b-b)*y2[khi]) * (h*h) / 6.0);
 	}
 	
-	public double evalSpline(float x[], float y[], int n, double xp) {
+	public double evalSpline(float[] x, float[] y, int n, double xp) {
 		int klo,khi,k;
 		double h,b,a;
 		klo = 0;

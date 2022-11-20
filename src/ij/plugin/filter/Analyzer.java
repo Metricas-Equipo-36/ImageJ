@@ -1,6 +1,6 @@
 package ij.plugin.filter;
 import java.awt.*;
-import java.util.Vector;
+import java.util.Objects;
 import java.util.Properties;
 import ij.*;
 import ij.gui.*;
@@ -8,9 +8,7 @@ import ij.process.*;
 import ij.measure.*;
 import ij.text.*;
 import ij.plugin.MeasurementsWriter;
-import ij.plugin.Straightener;
 import ij.plugin.frame.RoiManager;
-import ij.util.Tools;
 import ij.macro.Interpreter;
 
 /** This plugin implements ImageJ's Analyze/Measure and Analyze/Set Measurements commands. */
@@ -20,7 +18,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 	private String arg;
 	private ImagePlus imp;
 	private ResultsTable rt;
-	private int measurements;
+	private final int measurements;
 	private StringBuffer min,max,mean,sd;
 	private boolean disableReset;
 	private boolean resultsUpdated;
@@ -192,9 +190,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 		labels[0]="Limit to threshold"; states[0]=(systemMeasurements&LIMIT)!=0;
 		labels[1]="Display label"; states[1]=(systemMeasurements&LABELS)!=0;
 		labels[2]="Invert Y coordinates"; states[2]=(systemMeasurements&INVERT_Y)!=0;
-		labels[3]="Scientific notation"; states[3]=(systemMeasurements&SCIENTIFIC_NOTATION)!=0;;
-		labels[4]="Add to overlay"; states[4]=(systemMeasurements&ADD_TO_OVERLAY)!=0;;
-		labels[5]="NaN empty cells"; states[5]=(systemMeasurements&NaN_EMPTY_CELLS)!=0;;
+		labels[3]="Scientific notation"; states[3]=(systemMeasurements&SCIENTIFIC_NOTATION)!=0;
+		labels[4]="Add to overlay"; states[4]=(systemMeasurements&ADD_TO_OVERLAY)!=0;
+		labels[5]="NaN empty cells"; states[5]=(systemMeasurements&NaN_EMPTY_CELLS)!=0;
 		gd.setInsets(0, 0, 0);
 		gd.addCheckboxGroup(3, 2, labels, states);
 		gd.setInsets(15, 0, 0);
@@ -241,7 +239,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 		if (rt!=null && rt.size()>1 && !IJ.isResultsWindow() && IJ.getInstance()!=null)
 			rt.reset();
 		if ((oldMeasurements&(~SCIENTIFIC_NOTATION))!=(systemMeasurements&(~SCIENTIFIC_NOTATION))&&IJ.isResultsWindow()) {
-				rt.setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
+				Objects.requireNonNull(rt).setPrecision((systemMeasurements&SCIENTIFIC_NOTATION)!=0?-precision:precision);
 				clearSummary();
 				rt.update(systemMeasurements, imp, null);
 		}
@@ -397,7 +395,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 				ip = stack.getProcessor(position);
 			else
 				ip = imp2.getProcessor();
-			ip.setRoi((int)Math.round(p.xpoints[i]), (int)Math.round(p.ypoints[i]), 1, 1);
+			ip.setRoi(Math.round(p.xpoints[i]), Math.round(p.ypoints[i]), 1, 1);
 			ImageStatistics stats = ImageStatistics.getStatistics(ip, measurements, imp2.getCalibration());
 			stats.xCenterOfMass = p.xpoints[i];
 			stats.yCenterOfMass = p.ypoints[i];
@@ -468,7 +466,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 			return;
 		}
 		boolean straightLine = roi.getType()==Roi.LINE;
-		int lineWidth = (int)Math.round(roi.getStrokeWidth());
+		int lineWidth = Math.round(roi.getStrokeWidth());
 		ImageProcessor ip2 = imp2.getProcessor();
 		double minThreshold = ip2.getMinThreshold();
 		double maxThreshold = ip2.getMaxThreshold();
@@ -511,11 +509,9 @@ public class Analyzer implements PlugInFilter, Measurements {
 			FloatPolygon p = ((Line)roi).getFloatPoints();
 			stats.xCentroid = p.xpoints[0] + (p.xpoints[1]-p.xpoints[0])/2.0;
 			stats.yCentroid = p.ypoints[0] + (p.ypoints[1]-p.ypoints[0])/2.0;
-			if (imp2!=null) {
-				Calibration cal = imp.getCalibration();
-				stats.xCentroid = cal.getX(stats.xCentroid);
-				stats.yCentroid = cal.getY(stats.yCentroid, imp2.getHeight());
-			}
+			Calibration cal = imp.getCalibration();
+			stats.xCentroid = cal.getX(stats.xCentroid);
+			stats.yCentroid = cal.getY(stats.yCentroid, imp2.getHeight());
 		}
 		saveResults(stats, roi);
 		if (globalCal!=null && localCal!=null) {
@@ -687,7 +683,7 @@ public class Analyzer implements PlugInFilter, Measurements {
 					rt.addValue("Angle", line.getFloatAngle(line.x1d,line.y1d,line.x2d,line.y2d));
 				}
 			} else if (roi.getType()==Roi.ANGLE) {
-				double angle = ((PolygonRoi)roi).getAngle();
+				double angle = roi.getAngle();
 				if (Prefs.reflexAngle) angle = 360.0-angle;
 				rt.addValue("Angle", angle);
 			} else if (roi instanceof PointRoi)
@@ -909,12 +905,12 @@ public class Analyzer implements PlugInFilter, Measurements {
 				sum2[col]+=v*v;
 			}
 		}
-		rt.incrementCounter(); rt.setLabel("Mean", n+0);
+		rt.incrementCounter(); rt.setLabel("Mean", n);
 		rt.incrementCounter(); rt.setLabel("SD", n+1);
 		rt.incrementCounter(); rt.setLabel("Min", n+2);
 		rt.incrementCounter(); rt.setLabel("Max", n+3);
 		for (int col=first; col<columns; col++) {
-			rt.setValue(headings[col], n+0, sum[col]/n);
+			rt.setValue(headings[col], n, sum[col]/n);
 			rt.setValue(headings[col], n+1, Math.sqrt((sum2[col]-sum[col]*sum[col]/n)/(n-1)));
 			rt.setValue(headings[col], n+2, min[col]);
 			rt.setValue(headings[col], n+3, max[col]);

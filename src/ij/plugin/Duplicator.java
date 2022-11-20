@@ -1,6 +1,7 @@
 package ij.plugin;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.Objects;
 import java.util.Vector;
 import ij.*;
 import ij.process.*;
@@ -66,7 +67,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 				}								
 				return;
 			} else
-				newTitle = showDialog(imp, "Duplicate...", "Title: ");
+				newTitle = showDialog(imp);
 		}
 		if (newTitle==null) {
 			if (isRotatedRect)
@@ -251,7 +252,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		}
 		IJ.showProgress(1.0);
 		ImagePlus imp2 = imp.createImagePlus();
-		imp2.setStack("DUP_"+imp.getTitle(), stack2);
+		imp2.setStack("DUP_"+imp.getTitle(), Objects.requireNonNull(stack2));
 		String info = (String)imp.getProperty("Info");
 		if (info!=null)
 			imp2.setProperty("Info", info);
@@ -364,7 +365,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		}
 		IJ.showProgress(1.0);
 		ImagePlus imp2 = imp.createImagePlus();
-		imp2.setStack("DUP_"+imp.getTitle(), stack2);
+		imp2.setStack("DUP_"+imp.getTitle(), Objects.requireNonNull(stack2));
 		String info = (String)imp.getProperty("Info");
 		if (info!=null)
 			imp2.setProperty("Info", info);
@@ -412,7 +413,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			}
 		}
 		ImagePlus imp2 = imp.createImagePlus();
-		imp2.setStack("DUP_"+imp.getTitle(), stack2);
+		imp2.setStack("DUP_"+imp.getTitle(), Objects.requireNonNull(stack2));
 		imp2.setDimensions(lastC-firstC+1, lastZ-firstZ+1, lastT-firstT+1);
 		if (imp.isComposite()) {
 			int mode =imp.getDisplayMode();
@@ -427,8 +428,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 					boolean[] active = ((CompositeImage)imp).getActiveChannels();
 					boolean[] active2 = ((CompositeImage)imp2).getActiveChannels();
 					if (active!=null && active2!=null && active.length==active2.length) {
-						for (int i=0; i<active.length; i++)
-							active2[i] = active[i];
+						System.arraycopy(active, 0, active2, 0, active.length);
 					}
 				}
 			} else if (firstC==lastC) {
@@ -461,7 +461,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		return imp2;
 	}
 
-	String showDialog(ImagePlus imp, String dialogTitle, String prompt) {
+	String showDialog(ImagePlus imp) {
 		int stackSize = imp.getStackSize();
 		String options = Macro.getOptions();
 		boolean isRoi = imp.getRoi()!=null;
@@ -470,9 +470,9 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 		legacyMacro = options!=null && (options.contains("duplicate")||!options.contains("use"));
 		String title = getNewTitle();
 		if (title==null) title=defaultTitle;
-		GenericDialog gd = new GenericDialog(dialogTitle);
+		GenericDialog gd = new GenericDialog("Duplicate...");
 		this.gd = gd;
-		gd.addStringField(prompt, title, 15);
+		gd.addStringField("Title: ", title, 15);
 		if (isRoi)
 			gd.addCheckbox("Ignore selection", ignoreSelection);
 		if (stackSize>1) {
@@ -501,7 +501,7 @@ public class Duplicator implements PlugIn, TextListener, ItemListener {
 			if (duplicateStack) {
 				String[] range = Tools.split(gd.getNextString(), " -");
 				double d1=1, d2=stackSize;
-				if (range!=null && range.length>0) {
+				if (range.length>0) {
 					d1 = gd.parseDouble(range[0]);
 					d2 = range.length==2?gd.parseDouble(range[1]):Double.NaN;
 				}

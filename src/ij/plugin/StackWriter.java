@@ -1,7 +1,6 @@
 package ij.plugin;
 import java.awt.*;
 import java.io.*;
-import java.text.DecimalFormat;	
 import java.util.*;
 import ij.*;
 import ij.io.*;
@@ -9,14 +8,13 @@ import ij.gui.*;
 import ij.measure.Calibration;
 import ij.process.*;
 import ij.plugin.frame.Recorder;
-import ij.macro.Interpreter;
 import ij.util.Tools;
 
 /** This plugin, which saves the images in a stack as separate files, 
 	implements the File/Save As/Image Sequence command. */
 public class StackWriter implements PlugIn {
 	private static final String DIR_KEY = "save.sequence.dir";
-	private static String[] choices = {"BMP",  "FITS", "GIF", "JPEG", "PGM", "PNG", "Raw", "Text", "TIFF",  "ZIP"};
+	private static final String[] choices = {"BMP",  "FITS", "GIF", "JPEG", "PGM", "PNG", "Raw", "Text", "TIFF",  "ZIP"};
 	private static String staticFileType = "TIFF";
 	private String fileType = "TIFF";
 	private int ndigits = 4;
@@ -45,7 +43,7 @@ public class StackWriter implements PlugIn {
 	public void run(String arg) {
 		if (imp==null)
 			imp = WindowManager.getCurrentImage();
-		if (imp==null || (imp!=null && imp.getStackSize()<2&&!IJ.isMacro())) {
+		if (imp == null || imp.getStackSize() < 2 && !IJ.isMacro()) {
 			IJ.error("Stack Writer", "This command requires a stack.");
 			return;
 		}
@@ -63,7 +61,7 @@ public class StackWriter implements PlugIn {
 		if (hyperstack) {
 			dim = imp.getDimensions();
 			if (imp.isComposite())
-				luts = ((CompositeImage)imp).getLuts();
+				luts = imp.getLuts();
 			if (firstTime && ndigits==4) {
 				ndigits = 3;
 				firstTime = false;
@@ -76,7 +74,7 @@ public class StackWriter implements PlugIn {
 				return;
 		}		
 		File d = new File(directory);
-		if (d==null || !d.isDirectory()) {
+		if (!d.isDirectory()) {
 			IJ.error("File>Save As>Image Sequence", "Directory not found: "+directory);
 			return;
 		}
@@ -89,7 +87,7 @@ public class StackWriter implements PlugIn {
 				+" digits are required to generate \nunique file names for "+stackSize+" images.");
 			return;			
 		}
-		if (format.equals("fits") && !FileSaver.okForFits(imp))
+		if (format.equals("fits") && FileSaver.okForFits(imp))
 			return;			
 		if (format.equals("text"))
 			format = "text image";
@@ -127,7 +125,7 @@ public class StackWriter implements PlugIn {
 				if (label2.contains("\n"))
 					imp2.setProperty("Info", label2);
 				else
-					imp2.setProp("Slice_Label", label2);;
+					imp2.setProp("Slice_Label", label2);
 			} else {
 				Properties props = imp2.getProperties();
 				if (props!=null) props.remove("Info");

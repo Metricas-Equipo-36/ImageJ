@@ -5,12 +5,10 @@ import ij.process.*;
 import ij.measure.*;
 import ij.io.*;
 import ij.util.Tools;
-import ij.plugin.frame.Editor;
 import ij.plugin.filter.Analyzer;
 import ij.text.TextWindow;
 import ij.macro.Interpreter;
 import java.awt.*;
-import java.util.*;
 import java.lang.reflect.*;
 import java.awt.geom.Rectangle2D;
 
@@ -33,7 +31,7 @@ public class ImageInfo implements PlugIn {
 	}
 
 	private void showInfo() {
-		String s = new String("");
+		String s = "";
 		if (IJ.getInstance()!=null)
 			s += IJ.getInstance().getInfo()+"\n \n";
 		s += "No images are open\n";
@@ -123,7 +121,7 @@ public class ImageInfo implements PlugIn {
 	}
 
 	private String getInfo(ImagePlus imp, ImageProcessor ip) {
-		String s = new String("");
+		String s = "";
 		if (IJ.getInstance()!=null)
 			s += IJ.getInstance().getInfo()+"\n \n";
 		s += "Title: " + imp.getTitle() + "\n";
@@ -471,15 +469,15 @@ public class ImageInfo implements PlugIn {
 		LUT[] luts = imp.getLuts();
 		if (luts==null)
 			return "";
-		String s = "Display ranges\n";
+		StringBuilder s = new StringBuilder("Display ranges\n");
 		int n = luts.length;
 		if (n>7) n=7;
 		for (int i=0; i<n; i++) {
 			double min = luts[i].min;
 			double max = luts[i].max;
-			s += "  " + (i+1) + ": " + d2s(min) + "-" + d2s(max) + "\n";
+			s.append("  ").append(i + 1).append(": ").append(d2s(min)).append("-").append(d2s(max)).append("\n");
 		}
-		return s;
+		return s.toString();
 	}
 
 	// returns a Y coordinate based on the "Invert Y Coodinates" flag
@@ -504,7 +502,7 @@ public class ImageInfo implements PlugIn {
     }
     
     private String getImageProperties(ImagePlus imp) {
-    	String s = "";
+    	StringBuilder s = new StringBuilder();
     	String[] props = imp.getPropertiesAsArray();
     	if (props==null)
     		return null;
@@ -515,12 +513,12 @@ public class ImageInfo implements PlugIn {
 				continue;
 			if (key!=null && value!=null && !(key.equals("ShowInfo")||key.equals("Slice_Label"))) {
 				if (value.length()<80)
-					s += key + ": " + value + "\n";
+					s.append(key).append(": ").append(value).append("\n");
 				else
-					s += key + ": <" + value.length() + " characters>\n";
+					s.append(key).append(": <").append(value.length()).append(" characters>\n");
 			}
 		}
-		return  (s.length()>0)?s:null;
+		return  (s.length()>0)? s.toString() :null;
     }
 
 }

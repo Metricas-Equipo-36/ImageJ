@@ -1,16 +1,9 @@
 package ij.measure;
 import ij.*;
-import ij.gui.*;
-import ij.macro.*;
-import ij.gui.Roi;
-import ij.gui.PolygonRoi;
-import ij.gui.Line;
-import ij.util.Tools;
-import ij.plugin.frame.RoiManager;
+
 import java.util.Random;
 import java.util.Arrays;
 import java.util.Vector;
-import java.util.Hashtable;
 
 /** Minimizer based on Nelder-Mead simplex method (also known as polytope method),
  *  including the 'outside contraction' as described in:
@@ -195,7 +188,7 @@ public class Minimizer {
                 final int seed = randomSeed+1000000+i;
                 final Thread thread = new Thread(
                     new Runnable() {
-                        final public void run() {
+                        public void run() {
                             minimizeOnce(initialParams, initialParamVariations, seed);
                         }
                     }, "Minimizer-1"
@@ -211,7 +204,7 @@ public class Minimizer {
             if (resultsVector.size() == 0 && result==null)
                 return status;
             if (result==null)
-                result = (double[])resultsVector.get(0);
+                result = resultsVector.get(0);
             for (double[] r : resultsVector)        // find best result so far
                 if (value(r) < value(result))
                     result = r;
@@ -220,7 +213,7 @@ public class Minimizer {
             if (totalNumIter >= maxIter)
                 return MAX_ITERATIONS_EXCEEDED;     // no more tries if too many iterations
             for (int ir=0; ir<resultsVector.size(); ir++)
-                if (!belowErrorLimit(value((double[])resultsVector.get(ir)), value(result), 1.0)) {
+                if (!belowErrorLimit(value(resultsVector.get(ir)), value(result), 1.0)) {
                     resultsVector.remove(ir);       // discard results that are significantly worse
                     ir --;
                 }
@@ -630,7 +623,7 @@ public class Minimizer {
         if (initializeSimplex(simp, initialParamVariations, random))
             return simp;
         else {
-            if (IJ.debugMode) showSimplex(simp, "Error: Could not make simplex vertices not yielding NaN");
+            if (IJ.debugMode) showSimplex(simp);
             return null;
         }
     }
@@ -832,18 +825,18 @@ public class Minimizer {
     }
 
     // Display simplex [Iteration: s0(p1, p2....), s1(),....] in Log window
-    private synchronized void showSimplex(double[][] simp, String heading) {
-        IJ.log("Minimizer: "+heading);
+    private synchronized void showSimplex(double[][] simp) {
+        IJ.log("Minimizer: "+ "Error: Could not make simplex vertices not yielding NaN");
         for (int i = 0; i < numVertices; i++)
             showVertex(simp[i], null);
     }
     private synchronized void showVertex(double[] vertex, String heading) {
         if (heading != null)
             IJ.log(heading);
-        String s = "";
+        StringBuilder s = new StringBuilder();
         for (int j=0; j < numParams; j++)
-            s += "  " + IJ.d2s(vertex[j], 8,12);
-        s += " -> " +  IJ.d2s(value(vertex), 8,12);
-        IJ.log(s);
+            s.append("  ").append(IJ.d2s(vertex[j], 8, 12));
+        s.append(" -> ").append(IJ.d2s(value(vertex), 8, 12));
+        IJ.log(s.toString());
     }
 }

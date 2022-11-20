@@ -4,8 +4,6 @@ import ij.gui.*;
 import ij.process.*;
 import ij.measure.*;
 import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
 
 /** Implements the Image/Stacks/Make Montage command. */
 public class MontageMaker implements PlugIn {
@@ -212,7 +210,7 @@ public class MontageMaker implements PlugIn {
 			x += width + borderWidth;
 			if (x>=montageWidth) {
 				x = 0;
-				y += height + borderWidth;;
+				y += height + borderWidth;
 				if (y>=montageHeight)
 					break;
 			}
@@ -274,7 +272,7 @@ public class MontageMaker implements PlugIn {
 	}
 	
 	public void setFontSize(int fontSize) {
-		this.fontSize = fontSize;
+		MontageMaker.fontSize = fontSize;
 	}
 	
 }

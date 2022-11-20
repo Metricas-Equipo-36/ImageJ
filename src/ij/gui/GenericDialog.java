@@ -2,7 +2,6 @@ package ij.gui;
 import ij.*;
 import ij.plugin.frame.Recorder;
 import ij.plugin.ScreenGrabber;
-import ij.plugin.filter.PlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import ij.util.Tools;
 import ij.macro.*;
@@ -48,20 +47,19 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	protected TextArea textArea1, textArea2;
 	protected Vector defaultValues,defaultText,defaultStrings,defaultChoiceIndexes;
 	protected Component theLabel;
-	private Button okay;
-	private Button cancel;
+	private final Button okay;
+	private final Button cancel;
 	private Button no, help;
 	private String helpLabel = "Help";
 	private boolean wasCanceled, wasOKed;
 	private int nfIndex, sfIndex, cbIndex, choiceIndex, textAreaIndex, radioButtonIndex;
-	private GridBagConstraints c;
+	private final GridBagConstraints c;
 	private boolean firstNumericField=true;
-	private boolean firstSlider=true;
 	private boolean invalidNumber;
 	private String errorMessage;
 	private Hashtable labels;
-	private boolean macro;
-	private String macroOptions;
+	private final boolean macro;
+	private final String macroOptions;
 	private boolean addToSameRow;
 	private boolean addToSameRowCalled;
 	private int topInset, leftInset, bottomInset;
@@ -97,9 +95,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		this(title, null);
 	}
 
-	private static Frame getParentFrame() {
-		return null;
-	}
 
 	/** Creates a new GenericDialog using the specified title and parent frame. */
 	public GenericDialog(String title, Frame parent) {
@@ -112,8 +107,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			setForeground(SystemColor.controlText);
 			setBackground(SystemColor.control);
 		}
-		//if (IJ.isMacOSX() && System.getProperty("java.vendor").contains("Azul"))
-		//	setForeground(Color.black);	 // work around bug on Azul Java 8 on Apple Silicon
 		GridBagLayout grid = new GridBagLayout();
 		c = new GridBagConstraints();
 		setLayout(grid);
@@ -164,9 +157,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		} else {
 			c.gridx = 0; c.gridy++;
 			if (firstNumericField)
-				c.insets = getInsets(5, 0, 3, 0); // top, left, bottom, right
+				c.insets = getInsets(5, 0, 3); // top, left, bottom, right
 			else
-				c.insets = getInsets(0, 0, 3, 0);
+				c.insets = getInsets(0, 0, 3);
 		}
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
@@ -277,9 +270,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		} else {
 			c.gridx = 0; c.gridy++;
 			if (stringField==null)
-				c.insets = getInsets(5, 0, 5, 0); // top, left, bottom, right
+				c.insets = getInsets(5, 0, 5); // top, left, bottom, right
 			else
-				c.insets = getInsets(0, 0, 5, 0);
+				c.insets = getInsets(0, 0, 5);
 		}
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
@@ -309,11 +302,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		new DropTarget(tf, new TextDropTarget(tf));
 		if (Recorder.record || macro)
 			saveLabel(tf, label);
-	}
-
-	/** Sets the echo character for the next string field. */
-	public void setEchoChar(char echoChar) {
-		this.echoChar = echoChar;
 	}
 
 	/** Adds a directory text field and "Browse" button, where the
@@ -457,10 +445,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	 * @param enumClass the enum type
 	 * @return the selected item
 	 */
-	public <E extends Enum<E>> E getNextEnumChoice(Class<E> enumClass) {
-		String choiceString = this.getNextChoice();
-		return Enum.valueOf(enumClass, choiceString);
-	}
 
 	/** Adds a checkbox.
 	* @param label			the label
@@ -485,9 +469,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		} else {
 			c.gridx = 0; c.gridy++;
 			if (checkbox==null)
-				c.insets = getInsets(15, 20, 0, 0);	 // top, left, bottom, right
+				c.insets = getInsets(15, 20, 0);	 // top, left, bottom, right
 			else
-				c.insets = getInsets(0, 20, 0, 0);
+				c.insets = getInsets(0, 20, 0);
 		}
 		c.anchor = GridBagConstraints.WEST;
 		c.gridwidth = 2;
@@ -568,7 +552,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		Panel panel = new Panel();
 		int nRows = headings!=null?rows+1:rows;
 		panel.setLayout(new GridLayout(nRows, columns, 6, 0));
-		int startCBIndex = cbIndex;
 		if (checkbox==null)
 			checkbox = new Vector(12);
 		if (headings!=null) {
@@ -618,7 +601,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridx = 0; c.gridy++;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.WEST;
-		c.insets = getInsets(10, 0, 0, 0);
+		c.insets = getInsets(10, 0, 0);
 		addToSameRow = false;
 		add(panel, c);
 	}
@@ -636,15 +619,15 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		int n = items.length;
 		panel.setLayout(new GridLayout(rows, columns, 0, 0));
 		CheckboxGroup cg = new CheckboxGroup();
-		for (int i=0; i<n; i++) {
-			Checkbox cb = new Checkbox(items[i],cg,items[i].equals(defaultItem));
+		for (String item : items) {
+			Checkbox cb = new Checkbox(item, cg, item.equals(defaultItem));
 			cb.addItemListener(this);
 			panel.add(cb);
 		}
 		if (radioButtonGroups==null)
 			radioButtonGroups = new Vector();
 		radioButtonGroups.addElement(cg);
-		Insets insets = getInsets(5, 10, 0, 0);
+		Insets insets = getInsets(5, 10, 0);
 		if (label==null || label.equals("")) {
 			label = "rbg"+radioButtonGroups.size();
 			insets.top += 5;
@@ -680,9 +663,9 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		} else {
 			c.gridx = 0; c.gridy++;
 			if (choice==null)
-				c.insets = getInsets(5, 0, 5, 0);
+				c.insets = getInsets(5, 0, 5);
 			else
-				c.insets = getInsets(0, 0, 5, 0);
+				c.insets = getInsets(0, 0, 5);
 		}
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
@@ -694,12 +677,11 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		Choice thisChoice = new Choice();
 		thisChoice.addKeyListener(this);
 		thisChoice.addItemListener(this);
-		for (int i=0; i<items.length; i++)
-			thisChoice.addItem(items[i]);
-		if (defaultItem!=null)
-			thisChoice.select(defaultItem);
-		else
-			thisChoice.select(0);
+	   for (String item : items) thisChoice.addItem(item);
+		   if (defaultItem!=null)
+				thisChoice.select(defaultItem);
+		   else
+				thisChoice.select(0);
 		c.gridx = GridBagConstraints.RELATIVE;
 		c.anchor = GridBagConstraints.WEST;
 		add(thisChoice, c);
@@ -734,7 +716,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			addToSameRow = false;
 		} else {
 			c.gridx = 0; c.gridy++;
-			c.insets = getInsets("".equals(text)?0:10, 20, 0, 0); // top, left, bottom, right
+			c.insets = getInsets("".equals(text)?0:10, 20, 0); // top, left, bottom, right
 		}
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.WEST;
@@ -787,7 +769,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		c.gridx = 0; c.gridy++;
 		c.gridwidth = GridBagConstraints.REMAINDER;
 		c.anchor = GridBagConstraints.WEST;
-		c.insets = getInsets(15, 20, 0, 0);
+		c.insets = getInsets(15, 20, 0);
 		addToSameRow = false;
 		add(panel, c);
 	}
@@ -873,7 +855,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			addToSameRow = false;
 		} else {
 			c.gridx = 0; c.gridy++;
-			c.insets = getInsets(0, 0, 3, 0); // top, left, bottom, right
+			c.insets = getInsets(0, 0, 3); // top, left, bottom, right
 		}
 		c.anchor = GridBagConstraints.EAST;
 		c.gridwidth = 1;
@@ -917,9 +899,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 		if (IJ.isWindows()) columns -= 2;
 		if (columns<1) columns = 1;
-		//IJ.log("scale=" + scale + ", columns=" + columns + ", digits=" + digits);
 		TextField tf = newTextField(IJ.d2s(defaultValue/scale,digits),columns);
-		//if (IJ.isLinux()) tf.setBackground(Color.white);
 		tf.addActionListener(this);
 		tf.addTextListener(this);
 		tf.addFocusListener(this);
@@ -931,7 +911,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		defaultValues.addElement(Double.valueOf(defaultValue/scale));
 		defaultText.addElement(tf.getText());
 		tf.setEditable(true);
-		firstSlider = false;
+		boolean firstSlider = false;
 
 		Panel panel = new Panel();
 		GridBagLayout pgrid = new GridBagLayout();
@@ -961,14 +941,14 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	
 	private TextField newTextField(String txt, int columns) {
 		if (IJ.isLinux())
-			return new TrimmedTextField(txt,columns);
+			return new TrimmedTextField(txt, columns);
 		else
 			return new TextField(txt,columns);
 	}
 
 	/** Adds a Panel to the dialog. */
 	public void addPanel(Panel panel) {
-		addPanel(panel, GridBagConstraints.WEST, addToSameRow ? c.insets : getInsets(5,0,0,0));
+		addPanel(panel, GridBagConstraints.WEST, addToSameRow ? c.insets : getInsets(5,0,0));
 	}
 
 	/** Adds a Panel to the dialog with custom contraint and insets. The
@@ -1081,12 +1061,12 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		hideCancelButton = true;
 	}
 
-	Insets getInsets(int top, int left, int bottom, int right) {
+	Insets getInsets(int top, int left, int bottom) {
 		if (customInsets) {
 			customInsets = false;
 			return new Insets(topInset, leftInset, bottomInset, 0);
 		} else
-			return new Insets(top, left, bottom, right);
+			return new Insets(top, left, bottom, 0);
 	}
 
 	/** Add an Object implementing the DialogListener interface. This object will
@@ -1125,7 +1105,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		String theText = tf.getText();
 		String label=null;
 		if (macro) {
-			label = (String)labels.get((Object)tf);
+			label = (String)labels.get(tf);
 			theText = Macro.getValue(macroOptions, label, theText);
 		}
 		String originalText = (String)defaultText.elementAt(nfIndex);
@@ -1179,7 +1159,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	private void recordCheckboxOption(Checkbox cb) {
-		String label = (String)labels.get((Object)cb);
+		String label = (String)labels.get(cb);
 		if (label!=null) {
 			if (cb.getState()) // checked
 				Recorder.recordOption(label);
@@ -1229,7 +1209,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			return "";
 		TextField tf = (TextField)(stringField.elementAt(sfIndex));
 		theText = tf.getText();
-		String label = labels!=null?(String)labels.get((Object)tf):"";
+		String label = labels!=null?(String)labels.get(tf):"";
 		boolean numberExpected = theText!=null && theText.length()>0
 			&& (Character.isDigit(theText.charAt(0))||theText.startsWith("-"));
 		if (macro) {
@@ -1246,8 +1226,8 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			String s = theText;
 			if (s!=null&&s.length()>=3&&Character.isLetter(s.charAt(0))&&s.charAt(1)==':'&&s.charAt(2)=='\\')
 				s = s.replaceAll("\\\\", "/");	// replace "\" with "/" in Windows file paths
-			s = Recorder.fixString(s);
-			if (!smartRecording || !s.equals((String)defaultStrings.elementAt(sfIndex)))
+			s = Recorder.fixString(Objects.requireNonNull(s));
+			if (!smartRecording || !s.equals(defaultStrings.elementAt(sfIndex)))
 				recordOption(tf, s);
 			else if (Recorder.getCommandOptions()==null)
 				Recorder.recordOption(" ");
@@ -1265,7 +1245,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			recordCheckboxOption(cb);
 		boolean state = cb.getState();
 		if (macro) {
-			String label = (String)labels.get((Object)cb);
+			String label = (String)labels.get(cb);
 			String key = Macro.trimKey(label);
 			state = isMatch(macroOptions, key+" ");
 		}
@@ -1307,13 +1287,13 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		Choice thisChoice = (Choice)(choice.elementAt(choiceIndex));
 		String item = thisChoice.getSelectedItem();
 		if (macro) {
-			String label = (String)labels.get((Object)thisChoice);
+			String label = (String)labels.get(thisChoice);
 			item = Macro.getValue(macroOptions, label, item);
 			if (item!=null && item.startsWith("&")) // value is macro variable
 				item = getChoiceVariable(item);
 		}
 		if (recorderOn)
-			recordOption(thisChoice, item);
+			recordOption(thisChoice, Objects.requireNonNull(item));
 		choiceIndex++;
 		return item;
 	}
@@ -1325,7 +1305,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		Choice thisChoice = (Choice)(choice.elementAt(choiceIndex));
 		int index = thisChoice.getSelectedIndex();
 		if (macro) {
-			String label = (String)labels.get((Object)thisChoice);
+			String label = (String)labels.get(thisChoice);
 			String oldItem = thisChoice.getSelectedItem();
 			int oldIndex = thisChoice.getSelectedIndex();
 			String item = Macro.getValue(macroOptions, label, oldItem);
@@ -1333,7 +1313,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				item = getChoiceVariable(item);
 			thisChoice.select(item);
 			index = thisChoice.getSelectedIndex();
-			if (index==oldIndex && !item.equals(oldItem)) {
+			if (index==oldIndex && !Objects.requireNonNull(item).equals(oldItem)) {
 				// is value a macro variable?
 				Interpreter interp = Interpreter.getInstance();
 				String s = interp!=null?interp.getStringVariable(item):null;
@@ -1344,7 +1324,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			}
 		}
 		if (recorderOn) {
-			int defaultIndex = ((Integer)(defaultChoiceIndexes.elementAt(choiceIndex))).intValue();
+			int defaultIndex = (Integer) (defaultChoiceIndexes.elementAt(choiceIndex));
 			if (!(smartRecording&&index==defaultIndex)) {
 				String item = thisChoice.getSelectedItem();
 				if (!(item.equals("*None*")&&getTitle().equals("Merge Channels")))
@@ -1366,7 +1346,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		if (checkbox!=null)
 			item = checkbox.getLabel();
 		if (macro) {
-			String label = (String)labels.get((Object)cg);
+			String label = (String)labels.get(cg);
 			item = Macro.getValue(macroOptions, label, item);
 		}
 		if (recorderOn)
@@ -1451,7 +1431,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			}
 			if (IJ.isWindows() || Prefs.dialogCancelButtonOnRight) {
 				buttons.add(okay);
-				if (no != null) buttons.add(no);;
+				if (no != null) buttons.add(no);
 				if (!hideCancelButton)
 					buttons.add(cancel);
 				if (addHelp) buttons.add(help);
@@ -1477,8 +1457,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				setFont(font.deriveFont((float)(font.getSize()*Prefs.getGuiScale())));
 			}
 			pack();
-			if (okay!=null && numberField==null && stringField==null && checkbox==null
-			&& choice==null && slider==null && radioButtonGroups==null && textArea1==null)
+			if (numberField == null && stringField == null && checkbox == null && choice == null && slider == null && radioButtonGroups == null && textArea1 == null)
 				okay.requestFocusInWindow();
 			setup();
 			if (centerDialog)
@@ -1546,11 +1525,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	/** Returns the Vector containing the sliders (Scrollbars). */
 	public Vector getSliders() {
 		return slider;
-	}
-
-	/** Returns the Vector that contains the RadioButtonGroups. */
-	public Vector getRadioButtonGroups() {
-		return radioButtonGroups;
 	}
 
 	/** Returns a reference to textArea1. */
@@ -1686,10 +1660,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 				sb.setValue(value-1);
 			for (int i=0; i<slider.size(); i++) {
 				if (sb==slider.elementAt(i)) {
-					int index = ((Integer)sliderIndexes.get(i)).intValue();
+					int index = (Integer) sliderIndexes.get(i);
 					TextField tf = (TextField)numberField.elementAt(index);
-					double scale = ((Double)sliderScales.get(i)).doubleValue();
-					int digits = ((Integer)sliderDigits.get(i)).intValue();
+					double scale = (Double) sliderScales.get(i);
+					int digits = (Integer) sliderDigits.get(i);
 					tf.setText(""+IJ.d2s(sb.getValue()/scale,digits));
 				}
 			}
@@ -1728,7 +1702,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		int flags = e.getModifiers();
 		boolean control = (flags & KeyEvent.CTRL_MASK) != 0;
 		boolean meta = (flags & KeyEvent.META_MASK) != 0;
-		boolean shift = (flags & e.SHIFT_MASK) != 0;
+		boolean shift = (flags & InputEvent.SHIFT_MASK) != 0;
 		if (keyCode==KeyEvent.VK_G && shift && (control||meta))
 			new ScreenGrabber().run("");
 	}
@@ -1745,10 +1719,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		for (int i=0; i<slider.size(); i++) {
 			if (source==slider.elementAt(i)) {
 				Scrollbar sb = (Scrollbar)source;
-				int index = ((Integer)sliderIndexes.get(i)).intValue();
+				int index = (Integer) sliderIndexes.get(i);
 				TextField tf = (TextField)numberField.elementAt(index);
-				double scale = ((Double)sliderScales.get(i)).doubleValue();
-				int digits = ((Integer)sliderDigits.get(i)).intValue();
+				double scale = (Double) sliderScales.get(i);
+				int digits = (Integer) sliderDigits.get(i);
 				tf.setText(""+IJ.d2s(sb.getValue()/scale,digits));
 			}
 		}
@@ -1904,7 +1878,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 			return null;
 		}
 
-		event.dropComplete(text != null);
+		event.dropComplete(true);
 		return text;
 	}
 
@@ -1914,7 +1888,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	}
 
 	static class TextDropTarget extends DropTargetAdapter {
-		TextField text;
+		final TextField text;
 		DataFlavor flavor = DataFlavor.stringFlavor;
 
 		public TextDropTarget(TextField text) {
@@ -1929,10 +1903,10 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		}
 	}
 	
-	private class BrowseButtonListener implements ActionListener {
-		private String label;
-		private TextField textField;
-		private String mode;	
+	private static class BrowseButtonListener implements ActionListener {
+		private final String label;
+		private final TextField textField;
+		private final String mode;
 		
 		public BrowseButtonListener(String label, TextField textField, String mode) {
 			this.label = label;
@@ -1957,7 +1931,7 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 	
 	}
 	
-	private class TrimmedTextField extends TextField {
+	private static class TrimmedTextField extends TextField {
 	
 		public TrimmedTextField(String text, int columns) {
 			super(text, columns);
@@ -1966,7 +1940,6 @@ FocusListener, ItemListener, KeyListener, AdjustmentListener, WindowListener {
 		public Dimension getMinimumSize() {
 			Dimension d = super.getMinimumSize();
 			if (d!=null) {
-				d.width = d.width;
 				d.height = d.height*3/4;
 			}
 			return d;

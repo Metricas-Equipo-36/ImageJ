@@ -1,13 +1,7 @@
 package ij;
-import ij.process.*;
-import ij.gui.*;
 import ij.io.*;
-import ij.measure.*;
-import ij.plugin.filter.*;
 import ij.macro.Interpreter;
-import java.awt.*;
-import java.awt.image.*;
-import java.io.*;
+
 import java.util.Locale;
 import java.util.Hashtable;
 
@@ -18,20 +12,16 @@ public class Macro {
 
 	// A table of Thread as keys and String as values, so  
 	// Macro options are local to each calling thread.
-	static private Hashtable table = new Hashtable();
+	static private final Hashtable table = new Hashtable();
 	static boolean abort;
 
 	public static boolean open(String path) {
 		if (path==null || path.equals("")) {
-			Opener o = new Opener();
 			return true;
 		}
 		Opener o = new Opener();
 		ImagePlus img = o.openImage(path);
-		if (img==null)
-			return false;
-		img.show();	
-		return true;
+		return img != null;
 	}
 
 	public static boolean saveAs(String path) {
@@ -122,7 +112,7 @@ public class Macro {
 			index = options.indexOf(key, ++index);
 			if (index<0) return defaultValue;
 		} while (index!=0&&Character.isLetter(options.charAt(index-1)));
-		options = options.substring(index+key.length(), options.length());
+		options = options.substring(index+key.length());
 		if (options.charAt(0)=='\'') {
 			index = options.indexOf("'",1);
 			if (index<0)
@@ -167,12 +157,13 @@ public class Macro {
 		return key;
 	}
 	
-	/** Evaluates 'code' and returns the output, or any error, 
-	 * as a String (e.g., Macro.eval("2+2") returns "4").	
-	*/
-	public static String eval(String code) {
-		return new Interpreter().eval(code);
-	}
+	/**
+     * Evaluates 'code' and returns the output, or any error,
+     * as a String (e.g., Macro.eval("2+2") returns "4").
+     */
+	public static void eval(String code) {
+        new Interpreter().eval(code);
+    }
 
 }
 

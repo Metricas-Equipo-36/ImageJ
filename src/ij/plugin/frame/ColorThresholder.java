@@ -4,7 +4,6 @@ import ij.process.*;
 import ij.gui.*;
 import java.awt.*;
 import java.awt.image.*;
-import java.util.*;
 import java.awt.event.*;
 import ij.measure.*;
 import ij.plugin.*;
@@ -54,10 +53,10 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	private Thread thread;
 	private static Frame instance;
 
-	private BandPlot plot = new BandPlot();
-	private BandPlot splot = new BandPlot();
-	private BandPlot bplot = new BandPlot();
-	private int sliderRange = 256;
+	private final BandPlot plot = new BandPlot();
+	private final BandPlot splot = new BandPlot();
+	private final BandPlot bplot = new BandPlot();
+	private final int sliderRange = 256;
 	private Panel panel, panelt;
 	private Button  originalB, filteredB, stackB, helpB, sampleB, resetallB, newB, macroB, selectB;
 	private Checkbox bandPassH, bandPassS, bandPassB, darkBackground;
@@ -75,9 +74,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	private boolean applyingStack;
 
 	private static final int DEFAULT = 0;
-	private static String[] methodNames = AutoThresholder.getMethods();
+	private static final String[] methodNames = AutoThresholder.getMethods();
 	private static String method = methodNames[DEFAULT];
-	private static AutoThresholder thresholder = new AutoThresholder();
+	private static final AutoThresholder thresholder = new AutoThresholder();
 	private static final int RED=0, WHITE=1, BLACK=2, BLACK_AND_WHITE=3;
 	private static final String[] modes = {"Red", "White", "Black", "B&W"};
 	private static int mode = RED;	
@@ -123,8 +122,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridx = 0;
 		c.gridy = y;
 		c.gridwidth = 1;
-		c.fill = c.BOTH;
-		c.anchor = c.CENTER;
+		c.fill = GridBagConstraints.BOTH;
+		c.anchor = GridBagConstraints.CENTER;
 		c.insets = new Insets(0, 5, 0, 0);
 		add(plot, c);
 
@@ -145,7 +144,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridy = y++;
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?90:100;
-		c.fill = c.HORIZONTAL;
+		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(5, 5, 0, 0);
 
 		add(minSlider, c);
@@ -196,8 +195,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridx = 0;
 		c.gridy = y;
 		c.gridwidth = 1;
-		c.fill = c.BOTH;
-		c.anchor = c.CENTER;
+		c.fill = GridBagConstraints.BOTH;
+		c.anchor = GridBagConstraints.CENTER;
 		c.insets = new Insets(0, 5, 0, 0);
 		add(splot, c);
 
@@ -218,7 +217,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridy = y++;
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?90:100;
-		c.fill = c.HORIZONTAL;
+		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(5, 5, 0, 0);
 		add(minSlider2, c);
 		minSlider2.addAdjustmentListener(this);
@@ -266,8 +265,8 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridx = 0;
 		c.gridwidth = 1;
 		c.gridy = y;
-		c.fill = c.BOTH;
-		c.anchor = c.CENTER;
+		c.fill = GridBagConstraints.BOTH;
+		c.anchor = GridBagConstraints.CENTER;
 		c.insets = new Insets(0, 5, 0, 0);
 		add(bplot, c);
 
@@ -288,7 +287,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		c.gridy = y++;
 		c.gridwidth = 1;
 		c.weightx = IJ.isMacintosh()?90:100;
-		c.fill = c.HORIZONTAL;
+		c.fill = GridBagConstraints.HORIZONTAL;
 		c.insets = new Insets(5, 5, 0, 0);
 		add(minSlider3, c);
 		minSlider3.addAdjustmentListener(this);
@@ -487,17 +486,17 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
     	if (IJ.debugMode) IJ.log("ColorThresholder.adjustmentValueChanged ");
 		if (!checkImage()) return;
 		if (e.getSource() == minSlider)
-			adjustMinHue((int) minSlider.getValue());
+			adjustMinHue(minSlider.getValue());
 		else if (e.getSource() == maxSlider)
-			adjustMaxHue((int) maxSlider.getValue());
+			adjustMaxHue(maxSlider.getValue());
 		else if (e.getSource() == minSlider2)
-			adjustMinSat((int) minSlider2.getValue());
+			adjustMinSat(minSlider2.getValue());
 		else if (e.getSource() == maxSlider2)
-			adjustMaxSat((int) maxSlider2.getValue());
+			adjustMaxSat(maxSlider2.getValue());
 		else if (e.getSource() == minSlider3)
-			adjustMinBri((int) minSlider3.getValue());
+			adjustMinBri(minSlider3.getValue());
 		else if (e.getSource() == maxSlider3)
-			adjustMaxBri((int) maxSlider3.getValue());
+			adjustMaxBri(maxSlider3.getValue());
 		//originalB.setEnabled(true);
 		updateLabels();
 		updatePlot();
@@ -729,7 +728,6 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			snumPixels = r.width*r.height;
 		}
 		else{
-			snumPixels=0;
 			for (j=0; j<r.height; j++) {
 				for (i=0; i<r.width; i++) {
 					if (mask.getPixel(i,j)!=0) {
@@ -795,7 +793,6 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			int gap=0, maxgap=0, maxgapst=-1, maxgapen=-1, gapst=0 ;
 
 			if (bin[0]==0){
-				gapst=0;
 				gap=1;
 			}
 
@@ -1029,12 +1026,12 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	}
 
 	void updateLabels() {
-		label1.setText(""+((int)minHue));
-		label2.setText(""+((int)maxHue));
-		label3.setText(""+((int)minSat));
-		label4.setText(""+((int)maxSat));
-		label5.setText(""+((int)minBri));
-		label6.setText(""+((int)maxBri));
+		label1.setText(""+ minHue);
+		label2.setText(""+ maxHue);
+		label3.setText(""+ minSat);
+		label4.setText(""+ maxSat);
+		label5.setText(""+ minBri);
+		label6.setText(""+ maxBri);
 	}
 
 	void updateNames() {
@@ -1058,19 +1055,19 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 	}
 
 	void updateScrollBars() {
-		minSlider.setValue((int)minHue);
-		maxSlider.setValue((int)maxHue);
-		minSlider2.setValue((int)minSat);
-		maxSlider2.setValue((int)maxSat);
-		minSlider3.setValue((int)minBri);
-		maxSlider3.setValue((int)maxBri);
+		minSlider.setValue(minHue);
+		maxSlider.setValue(maxHue);
+		minSlider2.setValue(minSat);
+		maxSlider2.setValue(maxSat);
+		minSlider3.setValue(minBri);
+		maxSlider3.setValue(maxBri);
 	}
 
 	void adjustMinHue(int value) {
 		minHue = value;
 		if (maxHue<minHue) {
 			maxHue = minHue;
-			maxSlider.setValue((int)maxHue);
+			maxSlider.setValue(maxHue);
 		}
 	}
 
@@ -1078,7 +1075,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		maxHue = value;
 		if (minHue>maxHue) {
 			minHue = maxHue;
-			minSlider.setValue((int)minHue);
+			minSlider.setValue(minHue);
 		}
 	}
 
@@ -1086,7 +1083,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		minSat = value;
 		if (maxSat<minSat) {
 			maxSat = minSat;
-			maxSlider2.setValue((int)maxSat);
+			maxSlider2.setValue(maxSat);
 		}
 	}
 
@@ -1094,7 +1091,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		maxSat = value;
 		if (minSat>maxSat) {
 			minSat = maxSat;
-			minSlider2.setValue((int)minSat);
+			minSlider2.setValue(minSat);
 		}
 	}
 
@@ -1102,7 +1099,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		minBri = value;
 		if (maxBri<minBri) {
 			maxBri = minBri;
-			maxSlider3.setValue((int)maxBri);
+			maxSlider3.setValue(maxBri);
 		}
 	}
 
@@ -1110,7 +1107,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		maxBri = value;
 		if (minBri>maxBri) {
 			minBri = maxBri;
-			minSlider3.setValue((int)minBri);
+			minSlider3.setValue(minBri);
 		}
 	}
 
@@ -1259,8 +1256,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 		if (originalImage.getBitDepth()==24) {
 			int[] restore = (int[])originalImage.getProcessor().getPixels();
 			int[] pixels = (int[])ip.getPixels();
-			for (int i=0; i<numPixels; i++)
-				pixels[i] = restore[i];
+			if (numPixels >= 0) System.arraycopy(restore, 0, pixels, 0, numPixels);
 		}
 	}
 
@@ -1296,9 +1292,9 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			int L1 = (int) (values[0] * 2.55);
 			int a1 = (int) (Math.floor((1.0625 * values[1] + 128) + 0.5));
 			int b1 = (int) (Math.floor((1.0625 * values[2] + 128) + 0.5));
-			L[i] = (byte)((int)(L1<0?0:(L1>255?255:L1)) & 0xff);
-			a[i] = (byte)((int)(a1<0?0:(a1>255?255:a1)) & 0xff);
-			b[i] = (byte)((int)(b1<0?0:(b1>255?255:b1)) & 0xff);
+			L[i] = (byte)((L1<0?0:(L1>255?255:L1)) & 0xff);
+			a[i] = (byte)((a1<0?0:(a1>255?255:a1)) & 0xff);
+			b[i] = (byte)((b1<0?0:(b1>255?255:b1)) & 0xff);
 		}
 	}
 		
@@ -1459,15 +1455,15 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 			if (colorSpace==RGB){
 				if (j==0){
 					for (int i=0; i<256; i++)
-						hColors[i] = new Color(i&255, 0&255, 0&255);
+						hColors[i] = new Color(i&255, 0, 0);
 					}
 				else if (j==1){
 					for (int i=0; i<256; i++)
-						hColors[i] = new Color(0&255, i&255, 0&255);
+						hColors[i] = new Color(0, i&255, 0);
 				}
 				else if (j==2){
 					for (int i=0; i<256; i++)
-						hColors[i] = new Color(0&255, 0&255, i&255);
+						hColors[i] = new Color(0, 0, i&255);
 				}
 			}
 			else if (colorSpace==HSB){
@@ -1477,7 +1473,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				}
 				else if (j==1){
 					for (int i=0; i<256; i++)
-						hColors[i] = new Color(255&255, 255-i&255, 255-i&255);
+						hColors[i] = new Color(255, 255-i&255, 255-i&255);
 						//hColors[i] = new Color(192-i/4&255, 192+i/4&255, 192-i/4&255);
 				}
 				else if (j==2){
@@ -1493,7 +1489,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 				}
 				else if (j==1){
 					for (int i=0; i<256; i++)
-						hColors[i] = new Color(i&255, 255-i&255, 0&255);
+						hColors[i] = new Color(i&255, 255-i&255, 0);
 				}
 				else if (j==2){
 					for (int i=0; i<256; i++)
@@ -1536,7 +1532,7 @@ public class ColorThresholder extends PlugInFrame implements PlugIn, Measurement
 					osg.fillRect(0, 0, WIDTH, HEIGHT);
 					for (int i = 0; i < WIDTH; i++) {
 						if (hColors!=null) osg.setColor(hColors[i]);
-						hHist=HEIGHT - ((int)(HEIGHT * histogram[i])/hmax)-6;
+						hHist=HEIGHT - ((HEIGHT * histogram[i]) /hmax)-6;
 						osg.drawLine(i, HEIGHT, i, hHist);
 						osg.setColor(Color.black);
 						osg.drawLine(i, hHist, i, hHist);

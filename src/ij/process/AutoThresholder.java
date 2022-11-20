@@ -1,6 +1,5 @@
 package ij.process;
 import ij.IJ;
-import java.util.Arrays;
 
 /** Autothresholding methods (limited to 256 bin histograms) from the Auto_Threshold plugin 
     (http://fiji.sc/Auto_Threshold) by G.Landini at bham dot ac dot uk). */
@@ -25,7 +24,7 @@ public class AutoThresholder {
 		Shanbhag, 
 		Triangle, 
 		Yen
-	};
+	}
 
 	public static String[] getMethods() {
 		if (mStrings==null) {
@@ -128,11 +127,10 @@ public class AutoThresholder {
 			sum_pix += (double)ih * data[ih];
 			num_pix += data[ih];
 			/* NUM_PIX cannot be zero ! */
-			mu_1[ih - 1] = sum_pix / ( double ) num_pix;
+			mu_1[ih - 1] = sum_pix / num_pix;
 		}
 
 		/* Determine the threshold that minimizes the fuzzy entropy */
-		threshold = -1;
 		min_ent = Double.MAX_VALUE;
 		for ( it = 0; it < 256; it++ ){
 			ent = 0.0;
@@ -171,12 +169,12 @@ public class AutoThresholder {
 			if (y[k-1] < y[k] && y[k+1] < y[k]) {
 				modes++;
 				if (modes>2)
-					return false;
+					return true;
 			}
 		}
 		if (modes == 2)
 			b = true;
-		return b;
+		return !b;
 	}
 
 	int Intermodes(int[] data ) {
@@ -206,7 +204,7 @@ public class AutoThresholder {
 			
 		int iter = 0;
 		int threshold=-1;
-		while (!bimodalTest(hist) ) {
+		while (bimodalTest(hist)) {
 			 //smooth with a 3 point running mean filter
 			double previous=0, current=0, next=hist[0];
 			for (int i=0; i<length-1; i++) {
@@ -218,7 +216,6 @@ public class AutoThresholder {
 			hist[length-1] = (current+next)/3;
 			iter++;
 			if (iter>10000) {
-				threshold = -1;
 				IJ.log("Intermodes Threshold not found after 10000 iterations.");
 				return threshold;
 			}
@@ -396,7 +393,7 @@ public class AutoThresholder {
 
 		/* Calculate the mean gray-level */
 		mean = 0.0;
-		for (int ih = 0 + 1; ih < 256; ih++ ) //0 + 1?
+		for (int ih = 1; ih < 256; ih++ ) //0 + 1?
 			mean += (double)ih * data[ih];
 		mean /= num_pixels;
 		/* Initial estimate */
@@ -413,7 +410,7 @@ public class AutoThresholder {
 				sum_back += (double)ih * data[ih];
 				num_back += data[ih];
 			}
-			mean_back = ( num_back == 0 ? 0.0 : ( sum_back / ( double ) num_back ) );
+			mean_back = ( num_back == 0 ? 0.0 : ( sum_back / num_back) );
 			/* Object */
 			sum_obj = 0;
 			num_obj = 0;
@@ -421,7 +418,7 @@ public class AutoThresholder {
 				sum_obj += (double)ih * data[ih];
 				num_obj += data[ih];
 			}
-			mean_obj = ( num_obj == 0 ? 0.0 : ( sum_obj / ( double ) num_obj ) );
+			mean_obj = ( num_obj == 0 ? 0.0 : ( sum_obj / num_obj) );
 
 			/* Calculate the new threshold: Equation (7) in Ref. 2 */
 			//new_thresh = simple_round ( ( mean_back - mean_obj ) / ( Math.log ( mean_back ) - Math.log ( mean_obj ) ) );
@@ -581,8 +578,8 @@ public class AutoThresholder {
 			Tprev = threshold;
 			temp = (w1+Math.sqrt(sqterm))/w0;
 
-			if (Double.isNaN(temp))
-				threshold = Tprev;
+			if (Double.isNaN(temp)) {
+			}
 			else
 				threshold =(int) Math.floor(temp);
 		}
@@ -630,10 +627,10 @@ public class AutoThresholder {
 		int threshold = -1;
 		double [] iHisto = new double [256];
 		for (int i=0; i<256; i++)
-			iHisto[i]=(double) data[i];
+			iHisto[i]= data[i];
 		double [] tHisto = new double[iHisto.length] ;
 
-		while (!bimodalTest(iHisto) ) {
+		while (bimodalTest(iHisto)) {
 			 //smooth with a 3 point running mean filter
 			for (int i=1; i<255; i++)
 				tHisto[i]= (iHisto[i-1] + iHisto[i] +iHisto[i+1])/3;
@@ -642,7 +639,6 @@ public class AutoThresholder {
 			System.arraycopy(tHisto, 0, iHisto, 0, iHisto.length) ;
 			iter++;
 			if (iter>10000) {
-				threshold = -1;
 				IJ.log("Minimum: threshold not found after 10000 iterations.");
 				return threshold;
 			}
@@ -676,7 +672,7 @@ public class AutoThresholder {
 			total+=data[i];
 
 		for (int i=0; i<256; i++)
-			histo[i]=(double)(data[i]/total); //normalised histogram
+			histo[i]= data[i]/total; //normalised histogram
 
 		/* Calculate the first, second, and third order moments */
 		for ( int i = 0; i < 256; i++ ) {
@@ -742,11 +738,11 @@ public class AutoThresholder {
 
 			// The float casting here is to avoid compiler warning about loss of precision and
 			// will prevent overflow in the case of large saturated images
-			denom = (double)( N1) * (N - N1); // Maximum value of denom is (N^2)/4 =  approx. 3E10
+			denom = N1 * (N - N1); // Maximum value of denom is (N^2)/4 =  approx. 3E10
 
 			if (denom != 0 ){
 				// Float here is to avoid loss of precision when dividing
-				num = ( (double)N1 / N ) * S - Sk; 	// Maximum value of num =  255*N = approx 8E7
+				num = ( N1 / N ) * S - Sk; 	// Maximum value of num =  255*N = approx 8E7
 				BCV = (num * num) / denom;
 			}
 			else

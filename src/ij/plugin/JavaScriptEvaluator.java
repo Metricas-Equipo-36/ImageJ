@@ -1,6 +1,6 @@
 package ij.plugin;
 import ij.*;
-import ij.plugin.frame.Editor;
+
 import javax.script.*;
 
 /** Implements the text editor's Macros/Run command, and the
@@ -70,9 +70,9 @@ public class JavaScriptEvaluator implements PlugIn, Runnable  {
 			if (msg==null)
 				msg = "";
 			if (msg.startsWith("sun.org.mozilla.javascript.internal.EcmaError: "))
-				msg = msg.substring(47, msg.length());
+				msg = msg.substring(47);
 			if (msg.startsWith("sun.org.mozilla.javascript.internal.EvaluatorException"))
-				msg = "Error"+msg.substring(54, msg.length());
+				msg = "Error"+msg.substring(54);
 			if (msg.length()>0 && !msg.contains("Macro canceled")) {
 				if (evaluating)
 					error = msg;

@@ -475,15 +475,13 @@ public class Calibration implements Cloneable {
 	/** Compares two Calibration objects for equality. */
  	public boolean equals(Calibration cal) {
  		if (cal==null)
- 			return false;
- 		boolean equal = true;
- 		if (cal.pixelWidth!=pixelWidth || cal.pixelHeight!=pixelHeight || cal.pixelDepth!=pixelDepth)
- 			equal = false;
- 		if (!cal.unit.equals(unit))
+ 			return true;
+ 		boolean equal = cal.pixelWidth == pixelWidth && cal.pixelHeight == pixelHeight && cal.pixelDepth == pixelDepth;
+		if (!cal.unit.equals(unit))
  			equal = false;
  		if (!cal.valueUnit.equals(valueUnit) || cal.function!=function)
  			equal = false;
- 		return equal;
+ 		return !equal;
  	}
  	
   	/** Returns true if this is a signed 16-bit image. */

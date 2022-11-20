@@ -1,6 +1,5 @@
 package ij.gui;
 import java.awt.*;
-import java.awt.image.*;
 import java.awt.event.*;
 import ij.*;
 import ij.plugin.frame.Recorder;
@@ -13,7 +12,7 @@ public class EllipseRoi extends PolygonRoi {
 	private static double defaultRatio = 0.6;
 	private double xstart, ystart;
 	private double aspectRatio = defaultRatio;
-	private int[] handle = {0, vertices/4, vertices/2, vertices/2+vertices/4};
+	private final int[] handle = {0, vertices/4, vertices/2, vertices/2+vertices/4};
 
 	public EllipseRoi(double x1, double y1, double x2, double y2, double aspectRatio) {
 		super(new float[vertices], new float[vertices], vertices, FREEROI);
@@ -37,8 +36,7 @@ public class EllipseRoi extends PolygonRoi {
 	public void draw(Graphics g) {
 		super.draw(g);
 		if (!overlay) {
-			for (int i=0; i<handle.length; i++)
-				drawHandle(g, xp2[handle[i]], yp2[handle[i]]);
+			for (int j : handle) drawHandle(g, xp2[j], yp2[j]);
 		}
 	}
 
@@ -235,7 +233,7 @@ public class EllipseRoi extends PolygonRoi {
 	}
 
 	public double[] getFeretValues() {
-		double a[] = super.getFeretValues();
+		double[] a = super.getFeretValues();
 		double pw=1.0, ph=1.0;
 		if (imp!=null) {
 			Calibration cal = imp.getCalibration();

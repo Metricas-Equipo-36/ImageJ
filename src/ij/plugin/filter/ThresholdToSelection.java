@@ -11,8 +11,6 @@ import ij.gui.ShapeRoi;
 import ij.process.*;
 
 import java.awt.Polygon;
-import java.awt.Rectangle;
-import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
 
@@ -193,17 +191,17 @@ public class ThresholdToSelection implements PlugInFilter {
 		}
 
 		public String toString() {
-			String res = "[first:" + first + ",last:" + last +
-				",reserved:" + reserved + ":";
+			StringBuilder res = new StringBuilder("[first:" + first + ",last:" + last +
+                    ",reserved:" + reserved + ":");
 			if (last > x.length) System.err.println("ERROR!");
 			int nmax = 10;	//don't print more coordinates than this
 			for (int i = first; i < last && i < x.length; i++) {
 				if (last-first > nmax && i-first > nmax/2) {
 					i = last - nmax/2;
-					res += "...";
+					res.append("...");
 					nmax = last-first; //dont check again
 				} else
-					res += "(" + x[i] + "," + y[i] + ")";
+					res.append("(").append(x[i]).append(",").append(y[i]).append(")");
 				}
 			return res + "]";
 		}
@@ -246,7 +244,7 @@ public class ThresholdToSelection implements PlugInFilter {
 			boolean[] b = prevRow; prevRow = thisRow; thisRow = b;
 			int xAfterLowerRightCorner = -1;	   //x at right of 8-connected (not 4-connected) pixels NW-SE
 			Outline oAfterLowerRightCorner = null; //there, continue this outline towards south
-			thisRow[1] = y < h ? selected(0, y) : false;
+			thisRow[1] = y < h && selected(0, y);
 			for (int x = 0; x <= w; x++) {
 				if (y < h && x < w - 1)
 					thisRow[x + 2] = selected(x + 1, y);  //we need to read one pixel ahead
@@ -409,7 +407,7 @@ public class ThresholdToSelection implements PlugInFilter {
 		}
 
 		ShapeRoi shape = new ShapeRoi(path);
-		Roi roi = shape!=null ? shape.trySimplify():null; // try to convert to non-composite ROI
+		Roi roi = shape.trySimplify(); // try to convert to non-composite ROI
 		if (showStatus)
 			IJ.showProgress(1.0);
 		return roi;

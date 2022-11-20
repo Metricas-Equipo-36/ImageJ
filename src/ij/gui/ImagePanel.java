@@ -4,8 +4,9 @@ import ij.*;
 
 /** This class is used by GenericDialog to add images to dialogs. */
 public class ImagePanel extends Panel {
-	private ImagePlus img;
-	private int width, height;
+	private final ImagePlus img;
+	private final int width;
+	private final int height;
 	 
 	ImagePanel(ImagePlus img) {
 		this.img = img;

@@ -56,7 +56,8 @@ public class PasteController extends PlugInFrame implements PlugIn, ItemListener
 		int index = pasteMode.getSelectedIndex();
 		int mode = Blitter.COPY;
 		switch (index) {
-			case 0: mode = Blitter.COPY; break;
+			case 0:
+                break;
 			case 1: mode = Blitter.AVERAGE; break;
 			case 2: mode = Blitter.DIFFERENCE; break;
 			case 3: mode = Blitter.COPY_TRANSPARENT; break;

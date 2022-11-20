@@ -1,5 +1,4 @@
 package ij.util;
-import java.text.*;
 import java.awt.*;
 
 /** This class contains static utility methods for replacing fonts that are not available on the
@@ -24,7 +23,7 @@ public class FontUtil {
 	 *	E.g. if fontNames = {"Times New Roman", "Serif" and the system has no "Times New Roman", but finds "Serif",
 	 *	it would return a "Serif" font with suitable style and size */
 	private static Font getFont(String[] fontNames, int style, int size) {
-		int iSize = (int)size;
+		int iSize = size;
 		Font font = null;
 		for (String fontName : fontNames) {
 			font = new Font(fontName, style, iSize);

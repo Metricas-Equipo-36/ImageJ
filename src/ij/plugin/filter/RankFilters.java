@@ -5,8 +5,7 @@ import ij.process.*;
 import ij.plugin.ContrastEnhancer;
 import ij.util.ThreadUtil;
 import java.awt.*;
-import java.awt.event.*;
-import java.util.Arrays;
+import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.*;
 
@@ -26,7 +25,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 			OPEN=8, CLOSE=9, TOP_HAT=10; //when adding a new filter, set HIGHEST_FILTER below.
 	public static final int BRIGHT_OUTLIERS = 0, DARK_OUTLIERS = 1;
 	private static final String[] outlierStrings = {"Bright","Dark"};
-	private static int HIGHEST_FILTER = TOP_HAT;
+	private static final int HIGHEST_FILTER = TOP_HAT;
 	// Filter parameters
 	private int filterType;
 	private double radius;
@@ -35,7 +34,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	private boolean lightBackground = Prefs.get("bs.background", true); //this and the next for top hat only
 	private boolean dontSubtract;
 	// Remember filter parameters for the next time
-	private static double[] lastRadius = new double[HIGHEST_FILTER+1]; //separate for each filter type
+	private static final double[] lastRadius = new double[HIGHEST_FILTER+1]; //separate for each filter type
 	private static double lastThreshold = 50.;
 	private static int lastWhichOutliers = BRIGHT_OUTLIERS;
 	private static boolean lastLightBackground = false;
@@ -54,9 +53,9 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 	// Thus, stack parallelization must be done ONLY with one thread for the image
 	// (not using these class variables).
 	// Atomic objects are used to avoid caching (i.e., to ensure that always the current state of the variable is read).
-	private AtomicInteger highestYinCache = new AtomicInteger(Integer.MIN_VALUE);	// the highest line read into the cache so far
-	private AtomicInteger nThreadsWaiting = new AtomicInteger(0);			// number of threads waiting until they may read data
-	private AtomicBoolean copyingToCache  = new AtomicBoolean(false);		// whether a thread is currently copying data to the cache
+	private final AtomicInteger highestYinCache = new AtomicInteger(Integer.MIN_VALUE);	// the highest line read into the cache so far
+	private final AtomicInteger nThreadsWaiting = new AtomicInteger(0);			// number of threads waiting until they may read data
+	private final AtomicBoolean copyingToCache  = new AtomicBoolean(false);		// whether a thread is currently copying data to the cache
 
 	/** OPEN, CLOSE, TOPHAT need more than one run of the underlying filter */
 	private boolean isMultiStepFilter(int filterType) {
@@ -159,7 +158,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 				Rectangle roiRect = roi.getBounds();
 				size = roiRect.width * roiRect.height;
 			}
-			double workToDo = size*(double)radius;	//estimate computing time (arb. units)
+			double workToDo = size* radius;	//estimate computing time (arb. units)
 			if (filterType==MEAN || filterType==VARIANCE) workToDo *= 0.5;
 			else if (filterType==MEDIAN) workToDo *= radius*0.5;
 			if (workToDo < 1e6 && imp.getImageStackSize()>=2*numThreads) {
@@ -283,7 +282,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 				int filterType2 = (minMaxOutliersSign == -1f) ? MAX : MIN;
 				doFiltering(ip, lineRadii, filterType2, -minMaxOutliersSign, threshold, ch, nextY);
 				if (isImagePart)
-					resetRoiBoundary(ip, roi, roi1);
+					resetRoiBoundary(ip, roi, Objects.requireNonNull(roi1));
 			}
 			if (nextY.get() < 0) break;
 
@@ -335,7 +334,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		for (int i=0; i<numThreads-1; i++) {
 			final int threadNumber = i+1; // number 0 is reserved for main thread
 			callables[i] = new Callable<Void>() {
-				final public Void call() {
+				public Void call() {
 					doFiltering(ip, lineRadii, cache, cacheWidth, cacheHeight,
 							filterType, minMaxOutliersSign, threshold, colorChannel,
 							yForThread, threadNumber, nextY);
@@ -651,7 +650,7 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		} else {	//RGB
 			int[] cPixels = (int[])pixels;
 			int shift = 16 - 8*colorChannel;
-			int resetMask = 0xffffffff^(0xff<<shift);
+			int resetMask = ~(0xff << shift);
 			for (int i=0, p=pixelP; i<length; i++,p++)
 				cPixels[p] = (cPixels[p]&resetMask) | (((int)(values[i] + 0.5f))<<shift);
 		}
@@ -697,7 +696,6 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		}
 		sums[0] = sum;
 		sums[1] = sum2;
-		return;
 	}
 
 	/** Add all values and values squared at the right border inside minus at the left border outside the kernal area.
@@ -715,7 +713,6 @@ public class RankFilters implements ExtendedPlugInFilter, DialogListener {
 		}
 		sums[0] += sum;
 		sums[1] += sum2;
-		return;
 	}
 
 	/** Get median of values within kernel-sized neighborhood. Kernel size kNPoints should be odd.

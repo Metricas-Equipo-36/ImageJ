@@ -1,13 +1,10 @@
 package ij.plugin.frame;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.*;
+
 import ij.*;
 import ij.plugin.*;
-import ij.process.*;
 import ij.gui.*;
-import ij.measure.*;
-import ij.plugin.frame.Recorder;
 import ij.util.Tools;
 
 /** Adjusts the width of line selections.  */
@@ -15,7 +12,7 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 	Runnable, AdjustmentListener, TextListener, ItemListener {
 
 	public static final String LOC_KEY = "line.loc";
-	int sliderRange = 300;
+	final int sliderRange = 300;
 	Scrollbar slider;
 	int value;
 	boolean setText;
@@ -167,14 +164,14 @@ public class LineWidthAdjuster extends PlugInFrame implements PlugIn,
 		boolean selected = e.getStateChange()==ItemEvent.SELECTED;
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null)
-			{checkbox.setState(false); return;};
+			{checkbox.setState(false); return;}
 		Roi roi = imp.getRoi();
 		int type = roi!=null ? roi.getType() : -1;
 
 		if (roi==null || !(roi instanceof PolygonRoi) || type==Roi.FREEROI || type==Roi.FREELINE || type==Roi.ANGLE) {
 			checkbox.setState(false);
 			return;
-		};
+		}
 		PolygonRoi poly = (PolygonRoi)roi;
 		boolean splineFit = poly.isSplineFit();
 		if (selected && !splineFit) {

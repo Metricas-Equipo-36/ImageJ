@@ -1,7 +1,6 @@
 package ij.plugin;
 import ij.*;
 import ij.gui.GenericDialog;
-import ij.process.*;
 import ij.measure.Calibration;
 
 /** Implements the Image/Stacks/Tools/Grouped Z Project command. */
@@ -27,8 +26,7 @@ public class GroupedZProjector implements PlugIn {
 		imp2.setCalibration(imp.getCalibration());
 		Calibration cal = imp2.getCalibration();
 		cal.pixelDepth *= groupSize;
-		if (imp!=null)
-			imp2.show();
+		imp2.show();
 	}
 	
 	public ImagePlus groupZProject(ImagePlus imp, int method, int groupSize) {
@@ -62,11 +60,11 @@ public class GroupedZProjector implements PlugIn {
 		GenericDialog gd = new GenericDialog("Z Project");
 		gd.addChoice("Projection method:", ZProjector.METHODS, ZProjector.METHODS[method]);
 		gd.addNumericField("Group size:", size, 0);
-		String factors = "Valid factors: ";
+		StringBuilder factors = new StringBuilder("Valid factors: ");
 		int i = 1, count = 0;
 		while (i <= size && count<10) {
 			if (size % i == 0) {
-				count++; factors +=	 " "+ i +",";
+				count++; factors.append(" ").append(i).append(",");
 			}
 			i++;
 		}

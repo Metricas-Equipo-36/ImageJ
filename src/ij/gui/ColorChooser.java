@@ -1,6 +1,5 @@
 package ij.gui;
 import ij.*;
-import ij.process.*;
 import ij.util.*;
 import ij.plugin.Colors;
 import java.awt.*;
@@ -12,12 +11,14 @@ import java.awt.event.*;
 public class ColorChooser implements TextListener, AdjustmentListener {
 	Vector colors, sliders;
 	ColorPanel panel;
-	Color initialColor;
-	int red, green, blue;
-	boolean useHSB;
-	String title;
-	Frame frame;
-	double scale = Prefs.getGuiScale();
+	final Color initialColor;
+	final int red;
+     final int green;
+     final int blue;
+	final boolean useHSB;
+	final String title;
+	final Frame frame;
+	final double scale = Prefs.getGuiScale();
 
 	/** Constructs a ColorChooser using the specified title and initial color. */
 	public ColorChooser(String title, Color initialColor, boolean useHSB) {
@@ -82,7 +83,7 @@ public class ColorChooser implements TextListener, AdjustmentListener {
 
 class ColorPanel extends Panel {
 	private int width=150, height=50;
-	private Font font;
+	private final Font font;
 	private Color c;
 	 
 	ColorPanel(Color c, double scale) {

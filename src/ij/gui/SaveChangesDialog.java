@@ -6,7 +6,9 @@ import java.awt.event.*;
 /** A modal dialog box with a one line message and
 	"Don't Save", "Cancel" and "Save" buttons. */
 public class SaveChangesDialog extends Dialog implements ActionListener, KeyListener {
-	private Button dontSave, cancel, save;
+	private final Button dontSave;
+    private final Button cancel;
+    private final Button save;
 	private boolean cancelPressed, savePressed;
 
 	public SaveChangesDialog(Frame parent, String fileName) {

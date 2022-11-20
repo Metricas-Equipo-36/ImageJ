@@ -8,16 +8,16 @@ import ij.text.TextWindow;
 import ij.util.Java2;
 import ij.measure.ResultsTable;
 import ij.macro.Interpreter;
-import ij.util.Tools;
+
 import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
-import java.net.URL;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.zip.*;
 import javax.swing.*;
-import javax.swing.filechooser.*;
 import java.awt.event.KeyEvent;
 import javax.imageio.ImageIO;
 import java.lang.reflect.Method;
@@ -32,7 +32,7 @@ public class Opener {
 		TIFF_AND_DICOM=14,CUSTOM=15, AVI=16, OJJ=17, TABLE=18, RAW=19; // don't forget to also update 'types'
 	public static final String[] types = {"unknown","tif","dcm","fits","pgm",
 		"jpg","gif","lut","bmp","zip","java/txt","roi","txt","png","t&d","custom","ojj","table","raw"};
-	private static String defaultDirectory = null;
+	private static final String defaultDirectory = null;
 	private int fileType;
 	private boolean error;
 	private boolean isRGB48;
@@ -40,7 +40,7 @@ public class Opener {
 	private String omDirectory;
 	private File[] omFiles;
 	private static boolean openUsingPlugins;
-	private static boolean bioformats;
+	private static final boolean bioformats;
 	private String url;
 	private boolean useHandleExtraFileTypes;
 
@@ -137,7 +137,7 @@ public class Opener {
 					}
 					if (size<maxSize) {
 						Editor ed = new Editor(path);
-						if (ed!=null) ed.open(getDir(path), getName(path));
+						ed.open(getDir(path), getName(path));
 					} else
 						new TextWindow(path,400,450);
 					break;
@@ -154,13 +154,11 @@ public class Opener {
 					File f = new File(path);
 					String msg = (f.exists()) ?
 						"Format not supported or reader plugin not found:"
-						: "File not found:";					
-					if (path!=null) {
-						if (path.length()>64)
-							path = (new File(path)).getName();
-						if (path.length()<=64)
-								msg += " \n"+path;
-					}
+						: "File not found:";
+					if (path.length()>64)
+						path = (new File(path)).getName();
+					if (path.length()<=64)
+							msg += " \n"+path;
 					if (openUsingPlugins && msg.length()>20)
 						msg += "\n \nNOTE: The \"OpenUsingPlugins\" option is set.";
 					IJ.wait(IJ.isMacro()?500:100); // work around for OS X thread deadlock problem
@@ -272,7 +270,7 @@ public class Opener {
 	
 	public static String makeFullPath(String path) {
 		if (path==null)
-			return path;
+			return null;
 		if (!isFullPath(path)) {
 			String defaultDir = OpenDialog.getDefaultDirectory();
 			if (defaultDir!=null)
@@ -298,19 +296,17 @@ public class Opener {
 		int lastSlash = path.lastIndexOf("/");
 		if (lastSlash==-1) lastSlash = 0;
 		int lastDot = path.lastIndexOf(".");
-		if (lastDot==-1 || lastDot<lastSlash || (path.length()-lastDot)>6)
-			return true;  // no extension
-		else
-			return false;
+		return lastDot == -1 || lastDot < lastSlash || (path.length() - lastDot) > 6;  // no extension
 	}
 	
-	/** Opens the specified file and adds it to the File/Open Recent menu.
-		Returns true if the file was opened successfully.  */
-	public boolean openAndAddToRecent(String path) {
+	/**
+	 * Opens the specified file and adds it to the File/Open Recent menu.
+	 * Returns true if the file was opened successfully.
+	 */
+	public void openAndAddToRecent(String path) {
 		open(path);
 		if (!error)
 			Menus.addOpenRecentItem(path);
-		return error;
 	}
 
 	/**
@@ -526,7 +522,7 @@ public class Opener {
 		if (url.endsWith(".pdf")||url.endsWith(".zip"))
 			return;
 		String text = IJ.openUrlAsString(url);
-		if (text!=null && text.startsWith("<Error: ")) {
+		if (text.startsWith("<Error: ")) {
 			IJ.error("Open Text URL", text);
 			return;
 		}
@@ -684,7 +680,7 @@ public class Opener {
 			if (imp.getType()==ImagePlus.COLOR_RGB)
 				convertGrayJpegTo8Bits(imp);
 			FileInfo fi = new FileInfo();
-			fi.fileFormat = fi.GIF_OR_JPG;
+			fi.fileFormat = FileInfo.GIF_OR_JPG;
 			fi.fileName = name;
 			fi.directory = dir;
 			imp.setFileInfo(fi);
@@ -746,7 +742,7 @@ public class Opener {
 		}
 		imp = new ImagePlus(f.getName(), img);
 		FileInfo fi = new FileInfo();
-		fi.fileFormat = fi.IMAGEIO;
+		fi.fileFormat = FileInfo.IMAGEIO;
 		fi.fileName = f.getName();
 		String parent = f.getParent();
 		if (parent!=null)
@@ -774,7 +770,7 @@ public class Opener {
 			sameSizeAndType &= info[i].fileType==info[0].fileType
 				&& info[i].width==info[0].width
 				&& info[i].height==info[0].height;
-			contiguous &= info[i].getOffset()==startingOffset+i*size;
+			contiguous &= info[i].getOffset()==startingOffset+ (long) i *size;
 		}
 		if (contiguous &&  info[0].fileType!=FileInfo.RGB48)
 			info[0].nImages = info.length;
@@ -835,7 +831,7 @@ public class Opener {
 					} else 
 						pixels = reader.readPixels(is, skip);
 					if (pixels==null && channels==null) break;
-					loc += imageSize*nChannels+skip;
+					loc += (long) imageSize *nChannels+skip;
 					if (i<(info.length-1)) {
 						skip = info[i+1].getOffset()-loc;
 						if (info[i+1].compression>=FileInfo.LZW) skip = 0;
@@ -846,7 +842,7 @@ public class Opener {
 					}
 					if (fi.fileType==FileInfo.RGB48) {
 						Object[] pixels2 = (Object[])pixels;
-						stack.addSlice(null, pixels2[0]);					
+						stack.addSlice(null, Objects.requireNonNull(pixels2)[0]);
 						stack.addSlice(null, pixels2[1]);					
 						stack.addSlice(null, pixels2[2]);
 						isRGB48 = true;					
@@ -935,7 +931,7 @@ public class Opener {
 		if (info.length==1 && fi.nImages>1) {
 			if (n<1 || n>fi.nImages)
 				throw new IllegalArgumentException("N out of 1-"+fi.nImages+" range");
-			long size = fi.width*fi.height*fi.getBytesPerPixel();
+			long size = (long) fi.width *fi.height*fi.getBytesPerPixel();
 			fi.longOffset = fi.getOffset() + (n-1)*(size+fi.getGap());
 			fi.offset = 0;
 			fi.nImages = 1;
@@ -997,7 +993,7 @@ public class Opener {
 	public ImagePlus openZip(String path) {
 		ImagePlus imp = null;
 		try {
-			ZipInputStream zis = new ZipInputStream(new FileInputStream(path));
+			ZipInputStream zis = new ZipInputStream(Files.newInputStream(Paths.get(path)));
 			ZipEntry entry = zis.getNextEntry();
 			if (entry==null) {
 				zis.close();
@@ -1277,7 +1273,7 @@ public class Opener {
 		InputStream is;
 		byte[] buf = new byte[132];
 		try {
-			is = new FileInputStream(file);
+			is = Files.newInputStream(file.toPath());
 			is.read(buf, 0, 132);
 			is.close();
 		} catch (IOException e) {
@@ -1394,17 +1390,17 @@ public class Opener {
 	}
 
 	/** Returns an InputStream for the image described by this FileInfo. */
-	InputStream createInputStream(FileInfo fi) throws IOException, MalformedURLException {
+	InputStream createInputStream(FileInfo fi) throws IOException {
 		if (fi.inputStream!=null)
 			return fi.inputStream;
 		else if (fi.url!=null && !fi.url.equals(""))
 			return new URL(fi.url+fi.fileName).openStream();
 		else {
 			File f = new File(fi.getFilePath());
-			if (f==null || f.isDirectory())
+			if (f.isDirectory())
 				return null;
 			else {
-				InputStream is = new FileInputStream(f);
+				InputStream is = Files.newInputStream(f.toPath());
 				if (fi.compression>=FileInfo.LZW || (fi.stripOffsets!=null&&fi.stripOffsets.length>1))
 					is = new RandomAccessStream(is);
 				return is;

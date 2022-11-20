@@ -1,5 +1,4 @@
 package ij.io;
-import ij.IJ;
 import java.io.*;
 import java.util.Vector;
 
@@ -57,7 +56,7 @@ public final class RandomAccessStream extends InputStream {
         long l = pointer + 1L;
         long l1 = readUntil(l);
         if (l1>=l) {
-            byte abyte0[] = (byte[])data.elementAt((int)(pointer>>BLOCK_SHIFT));
+            byte[] abyte0 = (byte[])data.elementAt((int)(pointer>>BLOCK_SHIFT));
             return abyte0[(int)(pointer++ & BLOCK_MASK)] & 0xff;
         } else
             return -1;
@@ -76,7 +75,7 @@ public final class RandomAccessStream extends InputStream {
         if (l<=pointer)
             return -1;
         else {
-            byte abyte1[] = (byte[])data.elementAt((int)(pointer >> BLOCK_SHIFT));
+            byte[] abyte1 = (byte[])data.elementAt((int)(pointer >> BLOCK_SHIFT));
             int k = Math.min(len, BLOCK_SIZE - (int)(pointer & BLOCK_MASK));
             System.arraycopy(abyte1, (int)(pointer & BLOCK_MASK), bytes, off, k);
             pointer += k;
@@ -84,11 +83,11 @@ public final class RandomAccessStream extends InputStream {
         }
     }
 
-    public final void readFully(byte[] bytes) throws IOException {
+    public void readFully(byte[] bytes) throws IOException {
         readFully(bytes, bytes.length);
     }
 
-    public final void readFully(byte[] bytes, int len) throws IOException {
+    public void readFully(byte[] bytes, int len) throws IOException {
    		int read = 0;
         do {
             int l = read(bytes, read, len - read);
@@ -105,7 +104,7 @@ public final class RandomAccessStream extends InputStream {
         int i = (int)(l>>BLOCK_SHIFT);
         int j = (int)(length>>BLOCK_SHIFT);
         for (int k=j; k<=i; k++) {
-            byte abyte0[] = new byte[BLOCK_SIZE];
+            byte[] abyte0 = new byte[BLOCK_SIZE];
             data.addElement(abyte0);
             int i1 = BLOCK_SIZE;
             int j1 = 0;
@@ -140,13 +139,10 @@ public final class RandomAccessStream extends InputStream {
 			ras.seek(lloc);
 			return;
 		}
-		if (lloc<0L)
-			pointer = 0L;
-		else
-			pointer = lloc;
+        pointer = lloc;
 	}
 
-    public final int readInt() throws IOException {
+    public int readInt() throws IOException {
         int i = read();
         int j = read();
         int k = read();
@@ -157,15 +153,15 @@ public final class RandomAccessStream extends InputStream {
             return (i << 24) + (j << 16) + (k << 8) + l;
     }
 
-    public final long readLong() throws IOException {
+    public long readLong() throws IOException {
         return ((long)readInt()<<32) + ((long)readInt()&0xffffffffL);
     }
 
-    public final double readDouble() throws IOException {
+    public double readDouble() throws IOException {
         return Double.longBitsToDouble(readLong());
     }
 
-    public final short readShort() throws IOException {
+    public short readShort() throws IOException {
         int i = read();
         int j = read();
         if ((i | j) < 0)
@@ -174,7 +170,7 @@ public final class RandomAccessStream extends InputStream {
             return (short)((i<<8) + j);
     }
 
-    public final float readFloat() throws IOException {
+    public float readFloat() throws IOException {
         return Float.intBitsToFloat(readInt());
     }
     

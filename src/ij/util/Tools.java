@@ -3,7 +3,6 @@ import ij.process.*;
 import java.awt.Color;
 import java.util.*;
 import java.io.*;
-import java.util.Comparator;
 import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.security.MessageDigest;
@@ -244,7 +243,7 @@ import java.security.MessageDigest;
 			br.close();
 		} catch(Exception e) { }
 		String[] lines = new String[v.size()];
-		v.copyInto((String[])lines);
+		v.copyInto(lines);
 		return lines;
 	}
 
@@ -340,9 +339,9 @@ import java.security.MessageDigest;
 			FileChannel channel1 = stream1.getChannel();
 			FileOutputStream stream2 = new FileOutputStream(f2);
 			final FileChannel channel2 = stream2.getChannel();
-			if (channel2!=null && channel1!=null )
+			if (channel1 != null)
 				channel2.transferFrom(channel1, 0, channel1.size());
-			channel1.close();
+			Objects.requireNonNull(channel1).close();
 			stream1.close();
 			channel2.close();
 			stream2.close();
@@ -393,8 +392,6 @@ import java.security.MessageDigest;
 		boolean hasQuotes = quote == '\'' || quote == '\"';
 		if (hasQuotes) start++;
 		String str = decodeEscaped(list.substring(start), hasQuotes ? quote : (char)-2);
-		if (str==null)
-			str = defaultValue;
 		return str;
 	}
 

@@ -9,8 +9,8 @@ import ij.plugin.frame.Recorder;
 
 /** This class converts an ImagePlus object to a different type. */
 public class ImageConverter {
-	private ImagePlus imp;
-	private int type;
+	private final ImagePlus imp;
+	private final int type;
 	//private static boolean doScaling = Prefs.getBoolean(Prefs.SCALE_CONVERSIONS,true);
 	private static boolean doScaling = true;
 
@@ -68,7 +68,7 @@ public class ImageConverter {
 	
 	private void record() {
 		if (Recorder.record) {
-			Boolean state = ImageConverter.getDoScaling();
+			boolean state = ImageConverter.getDoScaling();
 			if (Recorder.scriptMode())
 				Recorder.recordCall("ImageConverter.setDoScaling("+state+");", true);
 			else
@@ -144,7 +144,7 @@ public class ImageConverter {
 	/** Converts an RGB image to a HSB (hue, saturation and brightness) stack. */
 	public void convertToHSB() {
 		if (type!=ImagePlus.COLOR_RGB)
-			throw new IllegalArgumentException("Image must be RGB");;
+			throw new IllegalArgumentException("Image must be RGB");
 		ColorProcessor cp;
 		if (imp.getType()==ImagePlus.COLOR_RGB)
 			cp = (ColorProcessor)imp.getProcessor();
@@ -159,7 +159,7 @@ public class ImageConverter {
 	/** Converts an RGB image to a 32-bit HSB (hue, saturation and brightness) stack. */
 	public void convertToHSB32() {
 		if (type!=ImagePlus.COLOR_RGB)
-			throw new IllegalArgumentException("Image must be RGB");;
+			throw new IllegalArgumentException("Image must be RGB");
 		ColorProcessor cp;
 		if (imp.getType()==ImagePlus.COLOR_RGB)
 			cp = (ColorProcessor)imp.getProcessor();

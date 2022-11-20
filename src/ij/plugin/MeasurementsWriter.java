@@ -3,7 +3,7 @@ import ij.*;
 import ij.text.*;
 import ij.measure.ResultsTable;
 import ij.io.*;
-import java.io.*;
+
 import java.awt.Frame;
 
 /** Saves a table as a csv or tab-delimited text file. */
@@ -21,8 +21,7 @@ public class MeasurementsWriter implements PlugIn {
 		} else if (IJ.isResultsWindow()) {
 			TextPanel tp = IJ.getTextPanel();
 			if (tp!=null) {
-				if (!tp.saveAs(path))
-					return false;
+				return tp.saveAs(path);
 			}
 		} else {
 			ResultsTable rt = ResultsTable.getResultsTable();

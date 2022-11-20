@@ -1,13 +1,12 @@
 package ij.io;
 import ij.*;
-import ij.gui.*;
 import ij.plugin.frame.Recorder;
 import ij.util.Java2;
 import ij.macro.Interpreter;
 import java.awt.*;
 import java.io.*;
+import java.util.Objects;
 import javax.swing.*;
-import javax.swing.filechooser.*;
 
 /** This class displays a dialog window from 
  * which the user can select an input file.
@@ -65,7 +64,7 @@ public class OpenDialog {
 		String path = null;
 		String macroOptions = Macro.getOptions();
 		if (macroOptions!=null)
-			path = Macro.getValue(macroOptions, title, path);
+			path = Macro.getValue(macroOptions, title, null);
 		if (path!=null)
 			decodePath(path);
 		else {
@@ -146,7 +145,7 @@ public class OpenDialog {
 				File file = fc.getSelectedFile();
 				if (file==null && isMacro)
 					{Interpreter.abort(); return;}
-				name = file.getName();
+				name = Objects.requireNonNull(file).getName();
 				dir = fc.getCurrentDirectory().getPath()+File.separator;
 				}
 			});

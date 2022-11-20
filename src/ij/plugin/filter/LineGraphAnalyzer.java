@@ -2,7 +2,6 @@ package ij.plugin.filter;  //##
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.plugin.filter.ParticleAnalyzer;
 import ij.measure.*;
 import ij.util.*;
 import java.awt.Rectangle;
@@ -224,7 +223,7 @@ public class LineGraphAnalyzer implements PlugInFilter, Measurements  {
 	/** Extrapolator class.
 	 *  Extrapolation is based on the first point added and the slope of a
 	 *  linear regression over all points added to the Extrapolator. */
-	class Extrapolator {
+	static class Extrapolator {
 		int counter = 0;
 		double sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
 		double firstX, firstY = Double.NaN;

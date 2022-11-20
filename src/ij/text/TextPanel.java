@@ -35,19 +35,20 @@ public class TextPanel extends Panel implements AdjustmentListener,
 	int iColCount,iRowCount;
 	int iRowHeight,iFirstRow;
 	// scrolling
-	Scrollbar sbHoriz,sbVert;
+	final Scrollbar sbHoriz;
+	final Scrollbar sbVert;
 	int iSbWidth,iSbHeight;
 	boolean bDrag;
 	int iXDrag,iColDrag;
 
-	boolean headings = true;
+	final boolean headings = true;
 	String title = "";
 	String labels;
 	KeyListener keyListener;
-	Cursor resizeCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
-  	Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
+	final Cursor resizeCursor = new Cursor(Cursor.E_RESIZE_CURSOR);
+  	final Cursor defaultCursor = new Cursor(Cursor.DEFAULT_CURSOR);
 	int selStart=-1, selEnd=-1,selOrigin=-1, selLine=-1;
-	TextCanvas tc;
+	final TextCanvas tc;
 	PopupMenu pm;
 	boolean columnsManuallyAdjusted;
 	long mouseDownTime;
@@ -307,14 +308,14 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			char[] chars = (char[])(vData.elementAt(selStart));
 			String s = new String(chars);
 			if (overlayList) {
-				String owner = title.substring(20, title.length());
+				String owner = title.substring(20);
 				String[] titles = WindowManager.getImageTitles();
 				for (int i=0; i<titles.length; i++) {
 					String t = titles[i];
 					if (titles[i].equals(owner)) {
 						ImagePlus imp = WindowManager.getImage(owner);
 						WindowManager.setTempCurrentImage(imp);//?
-						Frame frame = imp.getWindow();
+						Frame frame = Objects.requireNonNull(imp).getWindow();
 						frame.toFront();
 						if (frame.getState()==Frame.ICONIFIED)
 							frame.setState(Frame.NORMAL);
@@ -713,14 +714,16 @@ public class TextPanel extends Panel implements AdjustmentListener,
     }
 
 	/**
-	Copies the current selection to the system clipboard.
-	Returns the number of characters copied.
-	*/
-	public int copySelection() {
+	 * Copies the current selection to the system clipboard.
+	 * Returns the number of characters copied.
+	 */
+	public void copySelection() {
 		if (Recorder.record && title.equals("Results"))
 			Recorder.record("String.copyResults");
-		if (selStart==-1 || selEnd==-1)
-			return copyAll();
+		if (selStart==-1 || selEnd==-1) {
+			copyAll();
+			return;
+		}
 		StringBuffer sb = new StringBuffer();
 		ResultsTable rt2 = getResultsTable();
 		boolean hasRowNumers = rt2!=null && rt2.showRowNumbers();
@@ -729,7 +732,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 				String s = labels;
 				int index = s.indexOf("\t");
 				if (index!=-1)
-					s = s.substring(index+1, s.length());
+					s = s.substring(index+1);
 				sb.append(s);
 			} else
 				sb.append(labels);
@@ -743,7 +746,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			if (hasRowNumers && Prefs.noRowNumbers && labels!=null && !labels.equals("")) {
 				int index = s.indexOf("\t");
 				if (index!=-1)
-					s = s.substring(index+1, s.length());
+					s = s.substring(index+1);
 				sb.append(s);
 			} else
 				sb.append(s);
@@ -751,7 +754,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		}
 		String s = new String(sb);
 		Clipboard clip = getToolkit().getSystemClipboard();
-		if (clip==null) return 0;
+		if (clip==null) return;
 		StringSelection cont = new StringSelection(s);
 		clip.setContents(cont,this);
 		if (s.length()>0) {
@@ -759,7 +762,6 @@ public class TextPanel extends Panel implements AdjustmentListener,
 			if (this.getParent() instanceof ImageJ)
 				Analyzer.setUnsavedMeasurements(false);
 		}
-		return s.length();
 	}
 
 	int copyAll() {
@@ -1163,8 +1165,7 @@ public class TextPanel extends Panel implements AdjustmentListener,
 		String[] headers2 = headers;
 		if (headers[0].equals("Label")) {
 			headers = new String[headers.length-1];
-			for (int i=0; i<headers.length; i++)
-				headers[i] = headers2[i+1];
+			System.arraycopy(headers2, 1, headers, 0, headers.length);
 		}
 		GenericDialog gd = new GenericDialog("Sort Table");
 		gd.addChoice ("Column: ", headers, headers[0]);

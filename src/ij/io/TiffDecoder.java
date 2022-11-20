@@ -3,7 +3,6 @@ import ij.util.Tools;
 import ij.IJ;
 import java.io.*;
 import java.util.*;
-import java.net.*;
 
 /**
 Decodes single and multi-image TIFF files. The LZW decompression
@@ -64,8 +63,8 @@ public class TiffDecoder {
 	static final int OVERLAY = 0x6f766572; // "over" (overlay)
 	static final int PROPERTIES = 0x70726f70; // "prop" (properties)
 	
-	private String directory;
-	private String name;
+	private final String directory;
+	private final String name;
 	private String url;
 	protected RandomAccessStream in;
 	protected boolean debugMode;
@@ -97,7 +96,7 @@ public class TiffDecoder {
 		int b3 = in.read();
 		int b4 = in.read();
 		if (littleEndian)
-			return ((b4 << 24) + (b3 << 16) + (b2 << 8) + (b1 << 0));
+			return ((b4 << 24) + (b3 << 16) + (b2 << 8) + (b1));
 		else
 			return ((b1 << 24) + (b2 << 16) + (b3 << 8) + b4);
 	}
@@ -587,7 +586,7 @@ public class TiffDecoder {
 						return null;
 			}
 		}
-		fi.fileFormat = fi.TIFF;
+		fi.fileFormat = FileInfo.TIFF;
 		fi.fileName = name;
 		fi.directory = directory;
 		if (url!=null)
@@ -832,7 +831,7 @@ public class TiffDecoder {
 			in.close();
 			return null;
 		} else {
-			FileInfo[] info = (FileInfo[])list.toArray(new FileInfo[list.size()]);
+			FileInfo[] info = (FileInfo[])list.toArray(new FileInfo[0]);
 			if (debugMode) info[0].debugInfo = dInfo;
 			if (url!=null) {
 				in.seek(0);
@@ -864,7 +863,7 @@ public class TiffDecoder {
 			if (gap<minGap) minGap = gap;
 			if (gap>maxGap) maxGap = gap;
 		}
-		long imageSize = fi[0].width*fi[0].height*fi[0].getBytesPerPixel();
+		long imageSize = (long) fi[0].width *fi[0].height*fi[0].getBytesPerPixel();
 		minGap -= imageSize;
 		maxGap -= imageSize;
 		if (minGap==maxGap)

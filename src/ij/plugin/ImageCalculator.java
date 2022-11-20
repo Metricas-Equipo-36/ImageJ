@@ -7,6 +7,8 @@ import ij.measure.Calibration;
 import ij.plugin.frame.Recorder;
 import ij.macro.Interpreter;
 
+import java.util.Objects;
+
 /** This plugin implements the Process/Image Calculator command.
 <pre>
    // test script
@@ -18,8 +20,8 @@ import ij.macro.Interpreter;
 */
 public class ImageCalculator implements PlugIn {
 
-	private static String[] operators = {"Add","Subtract","Multiply","Divide", "AND", "OR", "XOR", "Min", "Max", "Average", "Difference", "Copy", "Transparent-zero"};
-	private static String[] lcOperators = {"add","sub","mul","div", "and", "or", "xor", "min", "max", "ave", "diff", "copy", "zero"};
+	private static final String[] operators = {"Add","Subtract","Multiply","Divide", "AND", "OR", "XOR", "Min", "Max", "Average", "Difference", "Copy", "Transparent-zero"};
+	private static final String[] lcOperators = {"add","sub","mul","div", "and", "or", "xor", "min", "max", "ave", "diff", "copy", "zero"};
 	private static int operator;
 	private static String title1 = "";
 	private static String title2 = "";
@@ -73,7 +75,7 @@ public class ImageCalculator implements PlugIn {
 		title2 = titles[index2];
 		ImagePlus img1 = WindowManager.getImage(wList[index1]);
 		ImagePlus img2 = WindowManager.getImage(wList[index2]);
-		ImagePlus img3 = calculate(img1, img2, false);
+		ImagePlus img3 = calculate(Objects.requireNonNull(img1), img2, false);
 		if (img3!=null) img3.show();
 	}
 	
@@ -301,7 +303,8 @@ public class ImageCalculator implements PlugIn {
 			case 8: mode = Blitter.MAX; break;
 			case 9: mode = Blitter.AVERAGE; break;
 			case 10: mode = Blitter.DIFFERENCE; break;
-			case 11: mode = Blitter.COPY; break;
+			case 11:
+				break;
 			case 12: mode = Blitter.COPY_ZERO_TRANSPARENT; break;
 		}
 		return mode;

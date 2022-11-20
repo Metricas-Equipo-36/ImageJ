@@ -2,23 +2,21 @@ package ij.plugin;
 import ij.*;
 import ij.gui.*;
 import ij.process.*;
-import ij.io.*;
-import ij.plugin.filter.*;
 import ij.plugin.frame.*;
 import ij.measure.Calibration;
 import java.awt.*;
 
 /** This plugin implements the Edit/Options/Appearance command. */
 public class AppearanceOptions implements PlugIn, DialogListener {
-	private boolean interpolate = Prefs.interpolateScaledImages;
-	private boolean open100 = Prefs.open100Percent;
-	private boolean black = Prefs.blackCanvas;
-	private boolean noBorder = Prefs.noBorder;
-	private boolean inverting = Prefs.useInvertingLut;
-	private int rangeIndex = ContrastAdjuster.get16bitRangeIndex();
-	private LUT[] luts = getLuts();
+	private final boolean interpolate = Prefs.interpolateScaledImages;
+	private final boolean open100 = Prefs.open100Percent;
+	private final boolean black = Prefs.blackCanvas;
+	private final boolean noBorder = Prefs.noBorder;
+	private final boolean inverting = Prefs.useInvertingLut;
+	private final int rangeIndex = ContrastAdjuster.get16bitRangeIndex();
+	private final LUT[] luts = getLuts();
 	private int menuFontSize = Menus.getFontSize();
-	private double saveScale = Prefs.getGuiScale();
+	private final double saveScale = Prefs.getGuiScale();
 	private boolean redrawn, repainted;
 
  	public void run(String arg) {
@@ -158,7 +156,7 @@ public class AppearanceOptions implements PlugIn, DialogListener {
 		ImagePlus imp = WindowManager.getCurrentImage();
 		if (imp==null || imp.getBitDepth()!=16 || !imp.isComposite())
 			return null;
-		return ((CompositeImage)imp).getLuts();
+		return imp.getLuts();
     }
     
     void draw() {

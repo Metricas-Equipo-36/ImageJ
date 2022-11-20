@@ -51,29 +51,33 @@ package ij.util;
 		return get(size-1);
 	}
 
-	/** Replaces the element at the specified position with the value given. 
-	 *  @return the value previously at the specified position.
-	 *  @throws IndexOutOfBoundsException - if index is out of range (<code>index < 0 || index >= size()</code>). */
-	public float set(int index, float value) {
+	/**
+     * Replaces the element at the specified position with the value given.
+     *
+     * @throws IndexOutOfBoundsException - if index is out of range (<code>index < 0 || index >= size()</code>).
+     */
+	public void set(int index, float value) {
 		if (index<0 || index>= size) throw new IndexOutOfBoundsException("FloatArray Index out of Bounds: "+index);
 		float previousValue = data[index];
 		data[index] = value;
-		return previousValue;
-	}
+    }
 
-	/** Appends the specified value to the end of this FloatArray. Returns the number of elements after adding. */
-	public int add(float value) {
+	/**
+     * Appends the specified value to the end of this FloatArray. Returns the number of elements after adding.
+     */
+	public void add(float value) {
 		if (size >= data.length) {
 			float[] newData = new float[size*2 + 50];
 			System.arraycopy(data, 0, newData, 0, size);
 			data = newData;
 		}
 		data[size++] = value;
-		return size;
-	}
+    }
 
-	/** Appends the first n values from the specified array to this FloatArray. Returns the number of elements after adding. */
-	public int add(float[] a, int n) {
+	/**
+     * Appends the first n values from the specified array to this FloatArray. Returns the number of elements after adding.
+     */
+	public void add(float[] a, int n) {
 		if (size + n > data.length) {
 			float[] newData = new float[size*2 + n + 50];
 			System.arraycopy(data, 0, newData, 0, size);
@@ -81,8 +85,7 @@ package ij.util;
 		}
 		System.arraycopy(a, 0, data, size, n);
 		size += n;
-		return size;
-	}
+    }
 
 	/** Deletes the last <code>n</code> element from this FloatArray. <code>n</code> may be larger than the number of elements; in that
 	 *  case, all elements are removed. */

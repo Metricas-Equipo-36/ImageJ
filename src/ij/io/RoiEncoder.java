@@ -3,9 +3,8 @@ import ij.gui.*;
 import ij.process.FloatPolygon;
 import java.awt.*;
 import java.io.*;
-import java.util.*;
-import java.net.*;
-import java.awt.geom.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 
 /** Saves an ROI to a file or stream. RoiDecoder.java has a description of the file format.
@@ -55,7 +54,7 @@ public class RoiEncoder {
 		if (f!=null) {
 			write(roi, f);
 		} else {
-			f = new FileOutputStream(path);
+			f = Files.newOutputStream(Paths.get(path));
 			write(roi, f);
 			f.close();
 		}
@@ -107,9 +106,11 @@ public class RoiEncoder {
 			case Roi.POLYLINE: type=polyline; break;
 			case Roi.FREELINE: type=freeline; break;
 			case Roi.ANGLE: type=angle; break;
-			case Roi.COMPOSITE: type=rect; break; // shape array size (36-39) will be >0 to indicate composite type
+			case Roi.COMPOSITE:
+				break; // shape array size (36-39) will be >0 to indicate composite type
 			case Roi.POINT: type=point; break;
-			default: type = rect; break;
+			default:
+				break;
 		}
 		
 		if (roiType==Roi.COMPOSITE) {

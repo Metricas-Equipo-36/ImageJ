@@ -3,9 +3,8 @@
 import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
-import ij.gui.*;
 
-/** ShortProcessors contain a 16-bit unsigned image
+ /** ShortProcessors contain a 16-bit unsigned image
 	and methods that operate on that image. */
 public class ShortProcessor extends ImageProcessor {
 
@@ -192,7 +191,7 @@ public class ShortProcessor extends ImageProcessor {
 		snapshotHeight=height;
 		snapshotMin=(int)getMin();
 		snapshotMax=(int)getMax();
-		if (snapshotPixels==null || (snapshotPixels!=null && snapshotPixels.length!=pixels.length))
+		if (snapshotPixels == null || snapshotPixels.length != pixels.length)
 			snapshotPixels = new short[width * height];
 		System.arraycopy(pixels, 0, snapshotPixels, 0, width*height);
 	}
@@ -411,7 +410,7 @@ public class ShortProcessor extends ImageProcessor {
 		pixel data. To avoid sign extension, the pixel values must be
 		accessed using a mask (e.g. int i = pixels[j]&0xffff). */
  	public Object getPixels() {
-		return (Object)pixels;
+		return pixels;
 	}
 
 	/** Returns a copy of the pixel data. Or returns a reference to the
@@ -543,7 +542,7 @@ public class ShortProcessor extends ImageProcessor {
 						v2 = (int)Math.sqrt(v1);
 						break;
 					case ABS:
-						v2 = (int)Math.abs(v1);
+						v2 = Math.abs(v1);
 						break;
 					case MINIMUM:
 						if (v1<value)

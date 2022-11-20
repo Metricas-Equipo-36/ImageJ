@@ -1,7 +1,7 @@
 package ij.process;
 
 import java.awt.*;
-import java.awt.image.*;
+
 import ij.*;
 import ij.gui.*;
 import ij.measure.*;
@@ -9,8 +9,11 @@ import ij.plugin.RGBStackConverter;
 
 /** This class does stack type conversions. */
 public class StackConverter {
-	ImagePlus imp;
-	int type, nSlices, width, height;
+	final ImagePlus imp;
+	final int type;
+    final int nSlices;
+    int width;
+    int height;
 
 	public StackConverter(ImagePlus imp) {
 		this.imp = imp;
@@ -50,7 +53,7 @@ public class StackConverter {
 		double max = ip.getMax();
 	    int inc = nSlices/20;
 	    if (inc<1) inc = 1;
-	    LUT[] luts = composite?((CompositeImage)imp).getLuts():null;
+	    LUT[] luts = composite? imp.getLuts():null;
 		for(int i=1; i<=nSlices; i++) {
 			label = stack1.getSliceLabel(1);
 			ip = stack1.getProcessor(1);
@@ -82,7 +85,7 @@ public class StackConverter {
 	void convertRGBToGray8() {
 		ImageStack stack1 = imp.getStack();
 		if (stack1 instanceof PlotVirtualStack) {
-			((PlotVirtualStack)stack1).setBitDepth(8);
+			stack1.setBitDepth(8);
 			imp.setStack(stack1);
 			return;
 		}
@@ -195,7 +198,7 @@ public class StackConverter {
 		}
 		ImageStack stack1 = imp.getStack();
 		if (stack1 instanceof PlotVirtualStack) {
-			((PlotVirtualStack)stack1).setBitDepth(24);
+			stack1.setBitDepth(24);
 			imp.setStack(stack1);
 			return;
 		}

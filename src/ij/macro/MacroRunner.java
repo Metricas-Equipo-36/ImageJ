@@ -1,7 +1,5 @@
 package ij.macro;
 import ij.*;
-import ij.text.*;
-import ij.util.*;
 import ij.gui.ImageCanvas;
 import java.io.*;
 import java.awt.*;
@@ -59,7 +57,7 @@ public class MacroRunner implements Runnable {
 				if (s==null)
 					break;
 				else
-					sb.append(s+"\n");
+					sb.append(s).append("\n");
 			}
 			r.close();
 			macro = new String(sb);

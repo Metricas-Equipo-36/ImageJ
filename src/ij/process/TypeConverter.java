@@ -1,18 +1,15 @@
 package ij.process;
-import java.awt.*;
 import java.awt.image.*;
-import ij.*;
-import ij.gui.*;
-import ij.measure.*;
 
 /** This class converts an ImageProcessor to another data type. */
 public class TypeConverter {
 
 	private static final int BYTE=0, SHORT=1, FLOAT=2, RGB=3;
 	private ImageProcessor ip;
-	private int type;
+	private final int type;
 	boolean doScaling = true;
-	int width, height;
+	final int width;
+    final int height;
 
 	public TypeConverter(ImageProcessor ip, boolean doScaling) {
 		this.ip = ip;

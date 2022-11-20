@@ -1,18 +1,18 @@
 package ij.io;
-import java.awt.*;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Objects;
 import java.util.zip.*;
 import ij.*;
 import ij.process.*;
 import ij.measure.Calibration;
 import ij.plugin.filter.Analyzer;
-import ij.plugin.frame.Recorder;
 import ij.plugin.JpegWriter;
 import ij.plugin.Orthogonal_Views;
 import ij.gui.*;
 import ij.measure.Measurements;
 import ij.util.Tools;
-import javax.imageio.*;
 
 /** Saves images in tiff, gif, jpeg, raw, zip and text format. */
 public class FileSaver {
@@ -23,7 +23,7 @@ public class FileSaver {
 	
     static {setJpegQuality(ij.Prefs.getInt(ij.Prefs.JPEG, DEFAULT_JPEG_QUALITY));}
 
-	private static String defaultDirectory = null;
+	private static final String defaultDirectory = null;
 	private ImagePlus imp;
 	private FileInfo fi;
 	private String name;
@@ -48,7 +48,7 @@ public class FileSaver {
             directory = ofi.directory;
 			String path = directory+name;
 			File f = new File(path);
-			if (f==null || !f.exists())
+			if (!f.exists())
 				return saveAsTiff();
 			if (!IJ.isMacro()) {
 				GenericDialog gd = new GenericDialog("Save as TIFF");
@@ -117,7 +117,7 @@ public class FileSaver {
 		DataOutputStream out = null;
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
-			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path),bsize));
+			out = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(Paths.get(path)),bsize));
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
@@ -209,7 +209,7 @@ public class FileSaver {
 		DataOutputStream out = null;
 		try {
 			TiffEncoder file = new TiffEncoder(fi);
-			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path),bsize));
+			out = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(Paths.get(path)),bsize));
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
@@ -276,14 +276,17 @@ public class FileSaver {
 		}	
 	}
 
-	/** Uses a save file dialog to save the image or stack as a TIFF
-		in a ZIP archive. Returns false if the user selects cancel. */
-	public boolean saveAsZip() {
+	/**
+	 * Uses a save file dialog to save the image or stack as a TIFF
+	 * in a ZIP archive. Returns false if the user selects cancel.
+	 */
+	public void saveAsZip() {
 		String path = getPath("TIFF/ZIP", ".zip");
-		if (path==null)
-			return false;
-		else
-			return saveAsZip(path);
+		if (path==null) {
+		}
+		else {
+			saveAsZip(path);
+		}
 	}
 	
 	/** Save the image or stack in TIFF/ZIP format using the specified path. */
@@ -313,7 +316,7 @@ public class FileSaver {
 			fi.virtualStack = (VirtualStack)imp.getStack();
 		DataOutputStream out = null;
 		try {
-			ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(path));
+			ZipOutputStream zos = new ZipOutputStream(Files.newOutputStream(Paths.get(path)));
 			out = new DataOutputStream(new BufferedOutputStream(zos,bsize));
         	zos.putNextEntry(new ZipEntry(name));
 			TiffEncoder te = new TiffEncoder(fi);
@@ -332,21 +335,21 @@ public class FileSaver {
 	}
 
 	public static boolean okForGif(ImagePlus imp) {
-		if (imp.getType()==ImagePlus.COLOR_RGB)
-			return false;
-		else
-			return true;
+		return imp.getType() != ImagePlus.COLOR_RGB;
 	}
 
-	/** Save the image in GIF format using a save file
-		dialog. Returns false if the user selects cancel
-		or the image is not 8-bits. */
-	public boolean saveAsGif() {
+	/**
+	 * Save the image in GIF format using a save file
+	 * dialog. Returns false if the user selects cancel
+	 * or the image is not 8-bits.
+	 */
+	public void saveAsGif() {
 		String path = getPath("GIF", ".gif");
-		if (path==null)
-			return false;
-		else
-			return saveAsGif(path);
+		if (path==null) {
+		}
+		else {
+			saveAsGif(path);
+		}
 	}
 	
 	/** Save the image in Gif format using the specified path. Returns
@@ -362,18 +365,21 @@ public class FileSaver {
 		return true;
 	}
 
-	/** Save the image in JPEG format using a save file
-		dialog. Returns false if the user selects cancel.
-		@see #setJpegQuality
-		@see #getJpegQuality
-	*/
-	public boolean saveAsJpeg() {
+	/**
+	 * Save the image in JPEG format using a save file
+	 * dialog. Returns false if the user selects cancel.
+	 *
+	 * @see #setJpegQuality
+	 * @see #getJpegQuality
+	 */
+	public void saveAsJpeg() {
 		String type = "JPEG ("+getJpegQuality()+")";
 		String path = getPath(type, ".jpg");
-		if (path==null)
-			return false;
-		else
-			return saveAsJpeg(path);
+		if (path==null) {
+		}
+		else {
+			saveAsJpeg(path);
+		}
 	}
 
 	/** Save the image in JPEG format using the specified path.
@@ -387,14 +393,17 @@ public class FileSaver {
 		return true;
 	}
 
-	/** Save the image in BMP format using a save file dialog. 
-		Returns false if the user selects cancel. */
-	public boolean saveAsBmp() {
+	/**
+	 * Save the image in BMP format using a save file dialog.
+	 * Returns false if the user selects cancel.
+	 */
+	public void saveAsBmp() {
 		String path = getPath("BMP", ".bmp");
-		if (path==null)
-			return false;
-		else
-			return saveAsBmp(path);
+		if (path==null) {
+		}
+		else {
+			saveAsBmp(path);
+		}
 	}
 
 	/** Save the image in BMP format using the specified path. */
@@ -404,18 +413,20 @@ public class FileSaver {
 		return true;
 	}
 
-	/** Saves grayscale images in PGM (portable graymap) format 
-		and RGB images in PPM (portable pixmap) format,
-		using a save file dialog.
-		Returns false if the user selects cancel.
-	*/
-	public boolean saveAsPgm() {
+	/**
+	 * Saves grayscale images in PGM (portable graymap) format
+	 * and RGB images in PPM (portable pixmap) format,
+	 * using a save file dialog.
+	 * Returns false if the user selects cancel.
+	 */
+	public void saveAsPgm() {
 		String extension = imp.getBitDepth()==24?".pnm":".pgm";
 		String path = getPath("PGM", extension);
-		if (path==null)
-			return false;
-		else
-			return saveAsPgm(path);
+		if (path==null) {
+		}
+		else {
+			saveAsPgm(path);
+		}
 	}
 
 	/** Saves grayscale images in PGM (portable graymap) format 
@@ -427,14 +438,17 @@ public class FileSaver {
 		return true;
 	}
 
-	/** Save the image in PNG format using a save file dialog. 
-		Returns false if the user selects cancel. */
-	public boolean saveAsPng() {
+	/**
+	 * Save the image in PNG format using a save file dialog.
+	 * Returns false if the user selects cancel.
+	 */
+	public void saveAsPng() {
 		String path = getPath("PNG", ".png");
-		if (path==null)
-			return false;
-		else
-			return saveAsPng(path);
+		if (path==null) {
+		}
+		else {
+			saveAsPng(path);
+		}
 	}
 
 	/** Save the image in PNG format using the specified path. */
@@ -444,20 +458,23 @@ public class FileSaver {
 		return true;
 	}
 
-	/** Save the image in FITS format using a save file dialog. 
-		Returns false if the user selects cancel. */
-	public boolean saveAsFits() {
-		if (!okForFits(imp)) return false;
+	/**
+	 * Save the image in FITS format using a save file dialog.
+	 * Returns false if the user selects cancel.
+	 */
+	public void saveAsFits() {
+		if (okForFits(imp)) return;
 		String path = getPath("FITS", ".fits");
-		if (path==null)
-			return false;
-		else
-			return saveAsFits(path);
+		if (path==null) {
+		}
+		else {
+			saveAsFits(path);
+		}
 	}
 
 	/** Save the image in FITS format using the specified path. */
 	public boolean saveAsFits(String path) {
-		if (!okForFits(imp)) return false;
+		if (okForFits(imp)) return false;
 		IJ.runPlugIn(imp, "ij.plugin.FITS_Writer", path);
 		updateImp(fi, FileInfo.FITS);
 		return true;
@@ -466,21 +483,24 @@ public class FileSaver {
 	public static boolean okForFits(ImagePlus imp) {
 		if (imp.getBitDepth()==24) {
 			IJ.error("FITS Writer", "Grayscale image required");
-			return false;
-		} else
 			return true;
+		} else
+			return false;
 	}
 
-	/** Save the image or stack as raw data using a save file
-		dialog. Returns false if the user selects cancel. */
-	public boolean saveAsRaw() {
+	/**
+	 * Save the image or stack as raw data using a save file
+	 * dialog. Returns false if the user selects cancel.
+	 */
+	public void saveAsRaw() {
 		String path = getPath("Raw", ".raw");
 		if (path==null)
-			return false;
-		if (imp.getStackSize()==1)
-			return saveAsRaw(path);
-		else
-			return saveAsRawStack(path);
+			return;
+		if (imp.getStackSize()==1) {
+			saveAsRaw(path);
+		} else {
+			saveAsRawStack(path);
+		}
 	}
 	
 	/** Save the image as raw data using the specified path. */
@@ -500,7 +520,7 @@ public class FileSaver {
 					pixels[i] = (short)(pixels[i]-32768);
 			}
 			ImageWriter file = new ImageWriter(fi);
-			out = new BufferedOutputStream(new FileOutputStream(path),bsize);
+			out = new BufferedOutputStream(Files.newOutputStream(Paths.get(path)),bsize);
 			file.write(out);
 			out.close();
 		}
@@ -515,7 +535,7 @@ public class FileSaver {
 			for (int i=0; i<n; i++)
 			pixels[i] = (short)(pixels[i]+32768);
 		}
-		updateImp(fi, fi.RAW);
+		updateImp(fi, FileInfo.RAW);
 		return true;
 	}
 
@@ -545,7 +565,7 @@ public class FileSaver {
 				}
 			}
 			ImageWriter file = new ImageWriter(fi);
-			out = new BufferedOutputStream(new FileOutputStream(path),bsize);
+			out = new BufferedOutputStream(Files.newOutputStream(Paths.get(path)),bsize);
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
@@ -557,22 +577,24 @@ public class FileSaver {
 		}
 		if (signed16Bit) {
 			for (int slice=0; slice<fi.nImages; slice++) {
-				short[] pixels = (short[])stack[slice];
+				short[] pixels = (short[]) Objects.requireNonNull(stack)[slice];
 				for (int i=0; i<n; i++)
 					pixels[i] = (short)(pixels[i]+32768);
 			}
 		}
-		updateImp(fi, fi.RAW);
+		updateImp(fi, FileInfo.RAW);
 		return true;
 	}
 
-	/** Save the image as tab-delimited text using a save file
-		dialog. Returns false if the user selects cancel. */
-	public boolean saveAsText() {
+	/**
+	 * Save the image as tab-delimited text using a save file
+	 * dialog. Returns false if the user selects cancel.
+	 */
+	public void saveAsText() {
 		String path = getPath("Text", ".txt");
 		if (path==null)
-			return false;
-		return saveAsText(path);
+			return;
+		saveAsText(path);
 	}
 	
 	/** Save the image as tab-delimited text using the specified path. */
@@ -586,7 +608,7 @@ public class FileSaver {
 			if (scientificNotation)
 				precision = -precision;
 			TextEncoder file = new TextEncoder(imp.getProcessor(), cal, precision);
-			out = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(path)));
+			out = new DataOutputStream(new BufferedOutputStream(Files.newOutputStream(Paths.get(path))));
 			file.write(out);
 			out.close();
 		} catch (IOException e) {
@@ -599,17 +621,19 @@ public class FileSaver {
 		return true;
 	}
 
-	/** Save the current LUT using a save file
-		dialog. Returns false if the user selects cancel. */
-	public boolean saveAsLut() {
+	/**
+	 * Save the current LUT using a save file
+	 * dialog. Returns false if the user selects cancel.
+	 */
+	public void saveAsLut() {
 		if (imp.getType()==ImagePlus.COLOR_RGB) {
 			error("RGB Images do not have a LUT.");
-			return false;
+			return;
 		}
 		String path = getPath("LUT", ".lut");
 		if (path==null)
-			return false;
-		return saveAsLut(path);
+			return;
+		saveAsLut(path);
 	}
 	
 	/** Save the current LUT using the specified path. */
@@ -641,7 +665,7 @@ public class FileSaver {
 		OutputStream out = null;
 		try {
 			ImageWriter file = new ImageWriter(fi);
-			out = new FileOutputStream(path);
+			out = Files.newOutputStream(Paths.get(path));
 			file.write(out);
 			out.close();
 		}
@@ -710,30 +734,30 @@ public class FileSaver {
 		StringBuffer sb = new StringBuffer(100);
 		sb.append("ImageJ="+ImageJ.VERSION+"\n");
 		if (fi.nImages>1 && fi.fileType!=FileInfo.RGB48)
-			sb.append("images="+fi.nImages+"\n");
+			sb.append("images=").append(fi.nImages).append("\n");
 		int channels = imp.getNChannels();
 		if (channels>1)
-			sb.append("channels="+channels+"\n");
+			sb.append("channels=").append(channels).append("\n");
 		int slices = imp.getNSlices();
 		if (slices>1)
-			sb.append("slices="+slices+"\n");
+			sb.append("slices=").append(slices).append("\n");
 		int frames = imp.getNFrames();
 		if (frames>1)
-			sb.append("frames="+frames+"\n");
+			sb.append("frames=").append(frames).append("\n");
 		if (imp.isHyperStack()) sb.append("hyperstack=true\n");
 		if (imp.isComposite()) {
 			String mode = ((CompositeImage)imp).getModeAsString();
-			sb.append("mode="+mode+"\n");
+			sb.append("mode=").append(mode).append("\n");
 		}
 		if (fi.unit!=null)
 			appendEscapedLine(sb, "unit="+fi.unit);
 		int bitDepth = imp.getBitDepth();
 		if (fi.valueUnit!=null && (fi.calibrationFunction!=Calibration.CUSTOM||bitDepth==32)) {
 			if (bitDepth!=32) {
-				sb.append("cf="+fi.calibrationFunction+"\n");
+				sb.append("cf=").append(fi.calibrationFunction).append("\n");
 				if (fi.coefficients!=null) {
 					for (int i=0; i<fi.coefficients.length; i++)
-						sb.append("c"+i+"="+fi.coefficients[i]+"\n");
+						sb.append("c").append(i).append("=").append(fi.coefficients[i]).append("\n");
 				}
 			}
 			appendEscapedLine(sb, "vunit="+fi.valueUnit);
@@ -743,9 +767,9 @@ public class FileSaver {
 		// get stack z-spacing, more units and fps
 		if (cal.frameInterval!=0.0) {
 			if ((int)cal.frameInterval==cal.frameInterval)
-				sb.append("finterval="+(int)cal.frameInterval+"\n");
+				sb.append("finterval=").append((int) cal.frameInterval).append("\n");
 			else
-				sb.append("finterval="+cal.frameInterval+"\n");
+				sb.append("finterval=").append(cal.frameInterval).append("\n");
 		}
 		if (!cal.getTimeUnit().equals("sec"))
 			appendEscapedLine(sb, "tunit="+cal.getTimeUnit());
@@ -755,14 +779,14 @@ public class FileSaver {
 			appendEscapedLine(sb, "zunit="+cal.getZUnit());
 		if (fi.nImages>1) {
 			if (fi.pixelDepth!=1.0)
-				sb.append("spacing="+fi.pixelDepth+"\n");
+				sb.append("spacing=").append(fi.pixelDepth).append("\n");
 			if (cal.fps!=0.0) {
 				if ((int)cal.fps==cal.fps)
-					sb.append("fps="+(int)cal.fps+"\n");
+					sb.append("fps=").append((int) cal.fps).append("\n");
 				else
-					sb.append("fps="+cal.fps+"\n");
+					sb.append("fps=").append(cal.fps).append("\n");
 			}
-			sb.append("loop="+(cal.loop?"true":"false")+"\n");
+			sb.append("loop=").append(cal.loop ? "true" : "false").append("\n");
 		}
 
 		// get min and max display values
@@ -772,17 +796,17 @@ public class FileSaver {
 		int type = imp.getType();
 		boolean enhancedLut = (type==ImagePlus.GRAY8 || type==ImagePlus.COLOR_256) && (min!=0.0 || max !=255.0);
 		if (enhancedLut || type==ImagePlus.GRAY16 || type==ImagePlus.GRAY32) {
-			sb.append("min="+min+"\n");
-			sb.append("max="+max+"\n");
+			sb.append("min=").append(min).append("\n");
+			sb.append("max=").append(max).append("\n");
 		}
 		
 		// get non-zero origins
 		if (cal.xOrigin!=0.0)
-			sb.append("xorigin="+cal.xOrigin+"\n");
+			sb.append("xorigin=").append(cal.xOrigin).append("\n");
 		if (cal.yOrigin!=0.0)
-			sb.append("yorigin="+cal.yOrigin+"\n");
+			sb.append("yorigin=").append(cal.yOrigin).append("\n");
 		if (cal.zOrigin!=0.0)
-			sb.append("zorigin="+cal.zOrigin+"\n");
+			sb.append("zorigin=").append(cal.zOrigin).append("\n");
 		if (cal.info!=null && cal.info.length()<=64 && cal.info.indexOf('=')==-1 && cal.info.indexOf('\n')==-1)
 			appendEscapedLine(sb, "info="+cal.info);
 			
@@ -807,7 +831,7 @@ public class FileSaver {
 			char c = str.charAt(i);
 			if (c>=0x20 && c<0x7f && c!='\\')
 				sb.append(c);
-			else if (c<=0xffff) {   //(supplementary unicode characters >0xffff unsupported)
+			else {   //(supplementary unicode characters >0xffff unsupported)
 				sb.append("\\u");
 				sb.append(Tools.int2hex(c, 4));
 			}

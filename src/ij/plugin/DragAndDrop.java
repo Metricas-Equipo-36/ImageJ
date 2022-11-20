@@ -9,8 +9,6 @@ import java.awt.Point;
 import java.awt.datatransfer.*;
 import java.awt.dnd.*;
 import java.util.*;
-import java.util.Iterator;
-import java.util.ArrayList;
 
 /** This class opens images, roi's, luts and text files dragged and dropped on  the "ImageJ" window.
      It is based on the Draw_And_Drop plugin by Eric Kischell (keesh@ieee.org).
@@ -86,7 +84,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 			return;
 		}
 		dtde.dropComplete(true);
-		if (flavors==null || flavors.length==0) {
+		if (flavors.length == 0) {
 			if (IJ.isMacOSX())
 				IJ.error("First drag and drop ignored. Please try again. You can avoid this\n"
 				+"problem by dragging to the toolbar instead of the status bar.");
@@ -149,7 +147,7 @@ public class DragAndDrop implements PlugIn, DropTargetListener, Runnable {
 		while(iterator.hasNext()) {
 			Object obj = iterator.next();
 			String str = ""+obj;
-			if (str!=null && str.startsWith("https:/")) {
+			if (str.startsWith("https:/")) {
 				if (!str.startsWith("https://"))
 					str = str.replace("https:/", "https://");
 				obj = str;

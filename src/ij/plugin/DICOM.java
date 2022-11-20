@@ -1,5 +1,7 @@
 package ij.plugin;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 import java.net.URL;
 import ij.*;
@@ -268,7 +270,8 @@ class DicomDecoder {
 		
 	private static Properties dictionary;
 
-	private String directory, fileName;
+	private final String directory;
+	private final String fileName;
 	private static final int ID_OFFSET = 128;  //location of "DICM"
 	private static final String DICM = "DICM";
 	
@@ -279,10 +282,10 @@ class DicomDecoder {
 	private int elementLength;
 	private int vr;  // Value Representation
 	private static final int IMPLICIT_VR = 0x2D2D; // '--' 
-	private byte[] vrLetters = new byte[2];
+	private final byte[] vrLetters = new byte[2];
  	private int previousGroup;
  	private String previousInfo;
- 	private StringBuffer dicomInfo = new StringBuffer(1000);
+ 	private final StringBuffer dicomInfo = new StringBuffer(1000);
  	private boolean dicmFound; // "DICM" found at offset 128
  	private boolean oddLocations;  // one or more tags at odd locations
  	private boolean bigEndianTransferSyntax = false;
@@ -302,7 +305,7 @@ class DicomDecoder {
 			File f = new File(path);
 			if (f.exists()) try {
 				dictionary = new Properties();
-				InputStream is = new BufferedInputStream(new FileInputStream(f));
+				InputStream is = new BufferedInputStream(Files.newInputStream(f.toPath()));
 				dictionary.load(is);
 				is.close();
 				if (IJ.debugMode) IJ.log("DicomDecoder: using "+dictionary.size()+" tag dictionary at "+path);
@@ -523,7 +526,7 @@ class DicomDecoder {
 		long skipCount;
 		FileInfo fi = new FileInfo();
 		int bitsAllocated = 16;
-		fi.fileFormat = fi.RAW;
+		fi.fileFormat = FileInfo.RAW;
 		fi.fileName = fileName;
 		if (directory.indexOf("://")>0) { // is URL
 			URL u = new URL(directory+fileName);
@@ -548,7 +551,7 @@ class DicomDecoder {
 			f = inputStream;
 			f.mark(400000);
 		} else
-			f = new BufferedInputStream(new FileInputStream(directory + fileName));
+			f = new BufferedInputStream(Files.newInputStream(Paths.get(directory + fileName)));
 		if (IJ.debugMode) {
 			IJ.log("");
 			IJ.log("DicomDecoder: decoding "+fileName);
@@ -565,7 +568,7 @@ class DicomDecoder {
 			if (inputStream!=null)
 				f.reset();
 			else
-				f = new BufferedInputStream(new FileInputStream(directory + fileName));
+				f = new BufferedInputStream(Files.newInputStream(Paths.get(directory + fileName)));
 			location = 0;
 			if (IJ.debugMode) IJ.log(DICM + " not found at offset "+ID_OFFSET+"; reseting to offset 0");
 		} else {
@@ -774,7 +777,7 @@ class DicomDecoder {
 			//	dicomInfo.append("\n");
 			previousGroup = group;
 			previousInfo = info;
-			dicomInfo.append(tag2hex(tag)+info+"\n");
+			dicomInfo.append(tag2hex(tag)).append(info).append("\n");
 		}
 		if (IJ.debugMode) {
 			if (info==null) info = "";
@@ -803,7 +806,7 @@ class DicomDecoder {
 		//	key = '0' + key;
 		String id = (String)dictionary.get(key);
 		if (id!=null) {
-			if (vr==IMPLICIT_VR && id!=null)
+			if (vr == IMPLICIT_VR)
 				vr = (id.charAt(0)<<8) + id.charAt(1);
 			id = id.substring(2);
 		}
@@ -840,7 +843,7 @@ class DicomDecoder {
 					int n = elementLength/2;
 					StringBuilder sb = new StringBuilder();
 					for (int i=0; i<n; i++) {
-						sb.append(Integer.toString(getShort()));
+						sb.append(getShort());
 						sb.append(" ");
 					}
 					value = sb.toString();
@@ -853,7 +856,7 @@ class DicomDecoder {
 					int n = elementLength/2;
 					StringBuilder sb = new StringBuilder();
 					for (int i=0; i<n; i++) {
-						sb.append(Integer.toString(getSShort()));
+						sb.append(getSShort());
 						sb.append(" ");
 					}
 					value = sb.toString();
@@ -866,7 +869,7 @@ class DicomDecoder {
 					int n = elementLength/4;
 					StringBuilder sb = new StringBuilder();
 					for (int i=0; i<n; i++) {
-						sb.append(Long.toString(getUInt()));
+						sb.append(getUInt());
 						sb.append(" ");
 					}
 					value = sb.toString();
@@ -900,7 +903,7 @@ class DicomDecoder {
 					break;
 				// else fall through and skip icon image sequence or private sequence
 			default:
-				long skipCount = (long)elementLength;
+				long skipCount = elementLength;
 				while (skipCount > 0) skipCount -= f.skip(skipCount);
 				location += elementLength;
 				value = "";
@@ -913,7 +916,7 @@ class DicomDecoder {
 			return id+": "+value;
 	}
 
-	static char[] buf8 = new char[8];
+	static final char[] buf8 = new char[8];
 	
 	/** Converts an int to an 8 byte hex string. */
 	String i2hex(int i) {
@@ -986,7 +989,7 @@ class DicomDictionary {
 		return p;
 	}
 
-	String[] dict = {
+	final String[] dict = {
 		"00020002=UIMedia Storage SOP Class UID", 
 		"00020003=UIMedia Storage SOP Inst UID",
 		"00020010=UITransfer Syntax UID",

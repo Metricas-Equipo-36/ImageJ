@@ -8,24 +8,24 @@ public class TiffEncoder {
 	static final int BPS_DATA_SIZE = 6;
 	static final int SCALE_DATA_SIZE = 16;
 		
-	private FileInfo fi;
+	private final FileInfo fi;
 	private int bitsPerSample;
-	private int photoInterp;
+	private final int photoInterp;
 	private int samplesPerPixel;
 	private int nEntries;
-	private int ifdSize;
+	private final int ifdSize;
 	private long imageOffset;
-	private int imageSize;
-	private long stackSize;
+	private final int imageSize;
+	private final long stackSize;
 	private byte[] description;
 	private int metaDataSize;
 	private int nMetaDataTypes;
 	private int nMetaDataEntries;
 	private int nSliceLabels;
 	private int extraMetaDataEntries;
-	private int scaleSize;
-	private boolean littleEndian = ij.Prefs.intelByteOrder;
-	private byte buffer[] = new byte[8];
+	private final int scaleSize;
+	private final boolean littleEndian = ij.Prefs.intelByteOrder;
+	private final byte[] buffer = new byte[8];
 	private int colorMapSize = 0;
 
 		
@@ -85,7 +85,7 @@ public class TiffEncoder {
 		}
 		if (fi.unit!=null && fi.pixelWidth!=0 && fi.pixelHeight!=0)
 			nEntries += 3; // XResolution, YResolution and ResolutionUnit
-		if (fi.fileType==fi.GRAY32_FLOAT)
+		if (fi.fileType== FileInfo.GRAY32_FLOAT)
 			nEntries++; // SampleFormat tag
 		makeDescriptionString();
 		if (description!=null)
@@ -99,7 +99,7 @@ public class TiffEncoder {
 		ifdSize = 2 + nEntries*12 + 4;
 		int descriptionSize = description!=null?description.length:0;
 		scaleSize = fi.unit!=null && fi.pixelWidth!=0 && fi.pixelHeight!=0?SCALE_DATA_SIZE:0;
-		imageOffset = HDR_SIZE+ifdSize+bpsSize+descriptionSize+scaleSize+colorMapSize + nMetaDataEntries*4 + metaDataSize;
+		imageOffset = HDR_SIZE+ifdSize+bpsSize+descriptionSize+scaleSize+colorMapSize + nMetaDataEntries* 4L + metaDataSize;
 		fi.offset = (int)imageOffset;
 		//ij.IJ.log(imageOffset+", "+ifdSize+", "+bpsSize+", "+descriptionSize+", "+scaleSize+", "+colorMapSize+", "+nMetaDataEntries*4+", "+metaDataSize);
 	}
@@ -112,7 +112,7 @@ public class TiffEncoder {
 		long nextIFD = 0L;
 		if (fi.nImages>1)
 			nextIFD = imageOffset+stackSize;
-		boolean bigTiff = nextIFD+fi.nImages*ifdSize>=0xffffffffL;
+		boolean bigTiff = nextIFD+ (long) fi.nImages *ifdSize>=0xffffffffL;
 		if (bigTiff)
 			nextIFD = 0L;
 		writeIFD(out, (int)imageOffset, (int)nextIFD);
@@ -310,7 +310,7 @@ public class TiffEncoder {
 				unit = 3;
 			writeEntry(out, TiffDecoder.RESOLUTION_UNIT, 3, 1, unit);
 		}
-		if (fi.fileType==fi.GRAY32_FLOAT) {
+		if (fi.fileType== FileInfo.GRAY32_FLOAT) {
 			int format = TiffDecoder.FLOATING_POINT;
 			writeEntry(out, TiffDecoder.SAMPLE_FORMAT, 3, 1, format);
 		}

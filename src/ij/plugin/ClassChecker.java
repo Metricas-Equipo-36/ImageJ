@@ -22,8 +22,7 @@ public class ClassChecker implements PlugIn {
 		if (paths == null || paths.length < 2)
 			return;
 		String[] sortedNames = new String[names.length];
-		for (int i = 0; i < names.length; i++)
-			sortedNames[i] = names[i];
+        System.arraycopy(names, 0, sortedNames, 0, names.length);
 		StringSorter.sort(sortedNames);
 		for (int i = 0; i < sortedNames.length - 1; i++) {
 			if (sortedNames[i].equals(sortedNames[i + 1]))
@@ -44,8 +43,6 @@ public class ClassChecker implements PlugIn {
 			if (path1 != null && path2 != null) {
 				file1 = new File(path1);
 				file2 = new File(path2);
-				if (file1 == null || file2 == null)
-					return;
 				date1 = file1.lastModified();
 				date2 = file2.lastModified();
 				if (date1 < date2)

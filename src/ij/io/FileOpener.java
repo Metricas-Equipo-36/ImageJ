@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.image.*;
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import ij.gui.*;
@@ -31,7 +32,7 @@ import ij.plugin.frame.*;
  */
 public class FileOpener {
 
-	private FileInfo fi;
+	private final FileInfo fi;
 	private int width, height;
 	private static boolean showConflictMessage = true;
 	private double minValue, maxValue;
@@ -154,7 +155,7 @@ public class FileOpener {
         			IJ.run(imp, "Invert", "");
 				break;
 		}
-		imp.setFileInfo(fi);
+		Objects.requireNonNull(imp).setFileInfo(fi);
 		setCalibration(imp);
 		if (fi.info!=null)
 			imp.setProperty("Info", fi.info);
@@ -511,7 +512,7 @@ public class FileOpener {
 	}
 
 	/** Returns an InputStream for the image described by this FileInfo. */
-	public InputStream createInputStream(FileInfo fi) throws IOException, MalformedURLException {
+	public InputStream createInputStream(FileInfo fi) throws IOException {
 		InputStream is = null;
 		boolean gzip = fi.fileName!=null && (fi.fileName.endsWith(".gz")||fi.fileName.endsWith(".GZ"));
 		if (fi.inputStream!=null)
@@ -523,10 +524,10 @@ public class FileOpener {
 				fi.directory += Prefs.separator;
 		    File f = new File(fi.getFilePath());
 		    if (gzip) fi.compression = FileInfo.COMPRESSION_UNKNOWN;
-		    if (f==null || !f.exists() || f.isDirectory() || !validateFileInfo(f, fi))
-		    	is = null;
+		    if (!f.exists() || f.isDirectory() || !validateFileInfo(f, fi)) {
+			}
 		    else
-				is = new FileInputStream(f);
+				is = Files.newInputStream(f.toPath());
 		}
 		if (is!=null) {
 			if (fi.compression>=FileInfo.LZW)
@@ -553,7 +554,7 @@ public class FileOpener {
 		if (fi.fileType==FileInfo.BITMAP || fi.compression!=FileInfo.COMPRESSION_NONE)
 			return true;
 		length = f.length();
-		long size = fi.width*fi.height*fi.getBytesPerPixel();
+		long size = (long) fi.width *fi.height*fi.getBytesPerPixel();
 		size = fi.nImages>1?size:size/4;
 		if (fi.height==1) size = 0; // allows plugins to read info of unknown length at end of file
 		if (offset+size>length) {
@@ -603,7 +604,7 @@ public class FileOpener {
 		if (fi.description==null || fi.description.length()<7)
 			return null;
 		if (IJ.debugMode)
-			IJ.log("Image Description: " + new String(fi.description).replace('\n',' '));
+			IJ.log("Image Description: " + fi.description.replace('\n',' '));
 		if (!fi.description.startsWith("ImageJ"))
 			return null;
 		Properties props = new Properties();
@@ -618,7 +619,7 @@ public class FileOpener {
 		fi.unit = dsUnit;
 		Double n = getNumber(props,"cf");
 		if (n!=null) fi.calibrationFunction = n.intValue();
-		double c[] = new double[5];
+		double[] c = new double[5];
 		int count = 0;
 		for (int i=0; i<5; i++) {
 			n = getNumber(props,"c"+i);
@@ -628,8 +629,7 @@ public class FileOpener {
 		}
 		if (count>=2) {
 			fi.coefficients = new double[count];
-			for (int i=0; i<count; i++)
-				fi.coefficients[i] = c[i];			
+			System.arraycopy(c, 0, fi.coefficients, 0, count);
 		}
 		fi.valueUnit = props.getProperty("vunit");
 		n = getNumber(props,"images");
@@ -664,7 +664,7 @@ public class FileOpener {
 	
 	private boolean getBoolean(Properties props, String key) {
 		String s = props.getProperty(key);
-		return s!=null&&s.equals("true")?true:false;
+		return s != null && s.equals("true");
 	}
 	
 	public static void setShowConflictMessage(boolean b) {

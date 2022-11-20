@@ -85,7 +85,7 @@ class BMPDecoder {
         int scanLineSize;
         int actualColorsUsed;
 
-        byte r[], g[], b[];             // color palette
+        byte[] r, g, b;             // color palette
         int noOfEntries;
 
         byte[] byteData;                // Unpacked data
@@ -99,7 +99,7 @@ class BMPDecoder {
                 int b3 = is.read();
                 int b4 = is.read();
                 curPos += 4;
-                return ((b4 << 24) + (b3 << 16) + (b2 << 8) + (b1 << 0));
+                return ((b4 << 24) + (b3 << 16) + (b2 << 8) + (b1));
         }
 
 
@@ -111,7 +111,7 @@ class BMPDecoder {
         }
 
 
-        void getFileHeader()  throws IOException, Exception {
+        void getFileHeader()  throws Exception {
                 // Actual contents (14 bytes):
                 short fileType = 0x4d42;// always "BM"
                 int fileSize;                   // size of file in bytes
@@ -263,7 +263,7 @@ class BMPDecoder {
                 }
         }
 
-        void getPixelData() throws IOException, Exception {
+        void getPixelData() throws Exception {
                 byte[] rawData;                 // the raw unpacked data
 
                 // Skip to the start of the bitmap data (if we are not already there)
@@ -296,7 +296,7 @@ class BMPDecoder {
         }
 
 
-        public void read(InputStream is) throws IOException, Exception {
+        public void read(InputStream is) throws Exception {
                 this.is = is;
                 getFileHeader();
                 getBitmapHeader();

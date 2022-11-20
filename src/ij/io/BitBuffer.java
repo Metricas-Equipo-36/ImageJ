@@ -8,10 +8,10 @@ public class BitBuffer {
 
 	private int currentByte;
 	private int currentBit;
-	private byte[] byteBuffer;
-	private int eofByte;
-	private int[] backMask;
-	private int[] frontMask;
+	private final byte[] byteBuffer;
+	private final int eofByte;
+	private final int[] backMask;
+	private final int[] frontMask;
 	private boolean eofFlag;
 
 	public BitBuffer(byte[] byteBuffer) {
@@ -31,12 +31,12 @@ public class BitBuffer {
 		if (eofFlag)
 			return -1; // Already at end of file
 		int toStore = 0;
-		while(bitsToRead != 0  && !eofFlag) {
+		while(bitsToRead != 0) {
 			if (bitsToRead >= 8 - currentBit) {
 				if (currentBit == 0) { // special
 					toStore = toStore << 8;
-					int cb = ((int) byteBuffer[currentByte]);
-					toStore += (cb<0 ? (int) 256 + cb : (int) cb);
+					int cb = byteBuffer[currentByte];
+					toStore += (cb<0 ? 256 + cb : cb);
 					bitsToRead -= 8;
 					currentByte++;
 				} else {
@@ -48,8 +48,8 @@ public class BitBuffer {
 				}
 			} else {
 				toStore = toStore << bitsToRead;
-				int cb = ((int) byteBuffer[currentByte]);
-				cb = (cb<0 ? (int) 256 + cb : (int) cb);
+				int cb = byteBuffer[currentByte];
+				cb = (cb<0 ? 256 + cb : cb);
 				toStore += ((cb) & (0x00FF - frontMask[currentBit])) >> (8 - (currentBit + bitsToRead));
 				currentBit += bitsToRead;
 				bitsToRead = 0;

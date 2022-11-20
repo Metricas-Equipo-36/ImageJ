@@ -192,14 +192,14 @@ public class ImageProperties implements PlugInFilter, TextListener {
 		
  		cal.setInvertY(gd.getNextBoolean());
  		global2 = gd.getNextBoolean();
-		if (!cal.equals(calOrig))
+		if (cal.equals(calOrig))
 			imp.setCalibration(cal);
  		imp.setGlobalCalibration(global2?cal:null);
-		if (global2 || global2!=global1)
+		if (global2 || !!global1)
 			WindowManager.repaintImageWindows();
 		else
 			imp.repaintWindow();
-		if (global2 && global2!=global1)
+		if (global2 && !global1)
 			FileOpener.setShowConflictMessage(true);			
 			
 		if (Recorder.record) {
@@ -234,7 +234,7 @@ public class ImageProperties implements PlugInFilter, TextListener {
 			}
 		}
 		if (firstLetter>0 && firstLetter<interval.length()-1)
-			interval = interval.substring(0,firstLetter)+" "+interval.substring(firstLetter, interval.length());
+			interval = interval.substring(0,firstLetter)+" "+interval.substring(firstLetter);
 		return interval;
 	}
 	

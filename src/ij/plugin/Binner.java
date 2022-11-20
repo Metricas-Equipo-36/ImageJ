@@ -15,8 +15,12 @@ import java.awt.image.*;
  * @author Wayne Rasband
  */
 public class Binner implements PlugIn {
-	public static int AVERAGE=0, MEDIAN=1, MIN=2, MAX=3, SUM=4;
-	private static String[] methods = {"Average", "Median", "Min", "Max", "Sum"};
+	public static final int AVERAGE=0;
+    public static final int MEDIAN=1;
+    public static final int MIN=2;
+    public static final int MAX=3;
+    public static final int SUM=4;
+	private static final String[] methods = {"Average", "Median", "Min", "Max", "Sum"};
 	private int xshrink=2, yshrink=2, zshrink=1;
 	private int method = AVERAGE;
 	private float maxValue;
@@ -186,7 +190,7 @@ public class Binner implements PlugIn {
 			for (int x2=0;  x2<xshrink; x2++)
 				sum += ip.getf(x*xshrink+x2, y*yshrink+y2); 
 		}
-		return (float)(sum/(xshrink*yshrink));
+		return sum/(xshrink*yshrink);
 	}
 
 	private float getMedian(ImageProcessor ip, int x, int y) {

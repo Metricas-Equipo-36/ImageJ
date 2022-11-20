@@ -6,7 +6,7 @@ import ij.measure.*;
 import ij.plugin.ContrastEnhancer;
 import ij.plugin.frame.Recorder;
 import java.awt.*;
-import java.util.*;
+import java.util.Objects;
 
 
 /** This class implements the Process/FFT/Custom Filter command. */
@@ -21,7 +21,7 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 	private boolean padded;
 	private int originalWidth;
 	private int originalHeight;
-	private Rectangle rect = new Rectangle();
+	private final Rectangle rect = new Rectangle();
 
 	public int setup(String arg, ImagePlus imp) {
  		this.imp = imp;
@@ -45,7 +45,7 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 		FHT fht = newFHT(ip);
 		if (slice==1)
 			filter = resizeFilter(filter, fht.getWidth());
-		((FHT)fht).transform();
+		fht.transform();
 		customFilter(fht);		
 		doInverseTransform(fht, ip);
 		if (slice==1)
@@ -159,7 +159,7 @@ public class FFTCustomFilter implements  PlugInFilter, Measurements {
 			IJ.error("FFT", "The filter cannot be the same as the image being filtered.");
 			return null;
 		}		
-		if (filterImp.getStackSize()>1) {
+		if (Objects.requireNonNull(filterImp).getStackSize()>1) {
 			IJ.error("FFT", "The filter cannot be a stack.");
 			return null;
 		}		

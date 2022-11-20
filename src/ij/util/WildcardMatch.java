@@ -159,24 +159,24 @@ public class WildcardMatch {
 			}
 			return pat.substring(0, 1);
 		} else {
-			String s = "";
+			StringBuilder s = new StringBuilder();
 			int i = 0;
 			while (i < pat.length() && !isWildcard(pat.charAt(i), isEscaped)) {
 				if (pat.charAt(i) == ec) {
 					isEscaped = !isEscaped;
 					if (!isEscaped) {
-						s += pat.charAt(i);
+						s.append(pat.charAt(i));
 					}
 					escCnt++;
 				} else if (isWildcard(pat.charAt(i))) {
 					isEscaped = false;
-					s += pat.charAt(i);
+					s.append(pat.charAt(i));
 				} else {
-					s += pat.charAt(i);
+					s.append(pat.charAt(i));
 				}
 				i++;
 			}
-			return s;
+			return s.toString();
 		}
 	}
 

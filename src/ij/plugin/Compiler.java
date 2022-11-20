@@ -3,7 +3,6 @@ import ij.*;
 import ij.gui.*;
 import ij.io.*;
 import ij.plugin.frame.Editor;
-import ij.plugin.Macro_Runner;
 import ij.plugin.filter.PlugInFilter;
 import ij.plugin.filter.PlugInFilterRunner;
 import java.awt.Font;
@@ -36,7 +35,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		else if (arg.equals("options"))
 			showDialog();
 		else {
-			if (arg!=null && arg.length()>0 && !arg.endsWith(".java"))
+			if (arg.length() > 0 && !arg.endsWith(".java"))
 				IJ.error("Compiler", "File name must end with \".java\"");
 			else
 				compileAndRun(arg);
@@ -60,7 +59,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		if (!isJavac()) {
 			if (IJ.debugMode) IJ.log("Compiler: javac not found");
 			if (!checkForUpdateDone) {
-				checkForUpdate("/plugins/compiler/Compiler.jar", "1.48c");
+				checkForUpdate();
 				checkForUpdateDone = true;
 			}
 			Object compiler = IJ.runPlugIn("Compiler", dir+name);
@@ -75,21 +74,21 @@ public class Compiler implements PlugIn, FilenameFilter {
 			runPlugin(name);
 	}
 	
-	private void checkForUpdate(String plugin, String currentVersion) {
-		int slashIndex = plugin.lastIndexOf("/");
-		if (slashIndex==-1 || !plugin.endsWith(".jar"))
+	private void checkForUpdate() {
+		int slashIndex = "/plugins/compiler/Compiler.jar".lastIndexOf("/");
+		if (slashIndex==-1 || !"/plugins/compiler/Compiler.jar".endsWith(".jar"))
 			return;
-		String className = plugin.substring(slashIndex+1, plugin.length()-4);
+		String className = "/plugins/compiler/Compiler.jar".substring(slashIndex+1, "/plugins/compiler/Compiler.jar".length()-4);
 		File f = new File(Prefs.getImageJDir()+"plugins"+File.separator+"jars"+File.separator+className+".jar");
 		if (!f.exists() || !f.canWrite()) {
-			if (IJ.debugMode) IJ.log("checkForUpdate: jar not found ("+plugin+")");
+			if (IJ.debugMode) IJ.log("checkForUpdate: jar not found ("+ "/plugins/compiler/Compiler.jar" +")");
 			return;
 		}
 		String version = null;
 		try {
 			Class c = IJ.getClassLoader().loadClass("Compiler");
 			version = "0.00a";
-			Method m = c.getDeclaredMethod("getVersion", new Class[0]);
+			Method m = c.getDeclaredMethod("getVersion");
 			version = (String)m.invoke(null, new Object[0]);
 		}
 		catch (Exception e) {}
@@ -97,11 +96,11 @@ public class Compiler implements PlugIn, FilenameFilter {
 			if (IJ.debugMode) IJ.log("checkForUpdate: class not found ("+className+")");
 			return;
 		}
-		if (version.compareTo(currentVersion)>=0) {
+		if (version.compareTo("1.48c")>=0) {
 			if (IJ.debugMode) IJ.log("checkForUpdate: up to date ("+className+"  "+version+")");
 			return;
 		}
-		boolean ok = Macro_Runner.downloadJar(plugin);
+		boolean ok = Macro_Runner.downloadJar("/plugins/compiler/Compiler.jar");
 		if (IJ.debugMode) IJ.log("checkForUpdate: "+className+" "+version+" "+ok);
 	}
 	 
@@ -151,7 +150,6 @@ public class Compiler implements PlugIn, FilenameFilter {
 			errors = !compilerTool.compile(sources, options, outputWriter);
 			s = outputWriter.toString();
 		} else {
-			errors = true;
 		}
 		
 		if (errors)
@@ -169,8 +167,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 		StringBuffer sb = new StringBuffer();
 		sb.append(System.getProperty("java.class.path"));
 		File f = new File(path);
-		if (f!=null)  // add directory containing file to classpath
-			sb.append(File.pathSeparator + f.getParent());
+		 sb.append(File.pathSeparator).append(f.getParent());
 		String pluginsDir = Menus.getPlugInsPath();
 		if (pluginsDir!=null)
 			addJars(pluginsDir, sb);
@@ -192,7 +189,7 @@ public class Compiler implements PlugIn, FilenameFilter {
 			if (f2.isDirectory())
 				addJars(path+list[i], sb);
 			else if (list[i].endsWith(".jar")&&(!list[i].contains("_")||isJarsFolder)) {
-				sb.append(File.pathSeparator+path+list[i]);
+				sb.append(File.pathSeparator).append(path).append(list[i]);
 				//IJ.log("javac classpath: "+path+list[i]);
 			}
 		}
@@ -300,8 +297,8 @@ public class Compiler implements PlugIn, FilenameFilter {
 }
 
 class PlugInExecuter implements Runnable {
-	private String plugin;
-	private Thread thread;
+	private final String plugin;
+	private final Thread thread;
 
 	/** Create a new object that runs the specified plugin
 		in a separate thread. */
@@ -410,7 +407,7 @@ abstract class CompilerTool {
 				Object javac = getJavac();
 				Class[] compileTypes = new Class[] { String[].class, PrintWriter.class };
 				Method compile = javacC.getMethod("compile", compileTypes);
-				Object result = compile.invoke(javac, new Object[] { args, printer });
+				Object result = compile.invoke(javac, args, printer);
 				printer.flush();
 				return Integer.valueOf(0).equals(result);
 			} catch (Exception e) {

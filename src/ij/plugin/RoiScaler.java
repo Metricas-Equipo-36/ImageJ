@@ -104,9 +104,7 @@ public class RoiScaler implements PlugIn {
 		else {
 			if (type==Roi.RECTANGLE)
 				type = Roi.POLYGON;
-			if (type==Roi.RECTANGLE && poly.npoints>4) // rounded rectangle
-				type = Roi.FREEROI;
-			if (type==Roi.OVAL||type==Roi.TRACED_ROI)
+            if (type==Roi.OVAL||type==Roi.TRACED_ROI)
 				type = Roi.FREEROI;
 			roi2 = new PolygonRoi(poly.xpoints, poly.ypoints,poly.npoints, type);
 		}
@@ -127,8 +125,8 @@ public class RoiScaler implements PlugIn {
 		Shape shape2 = at.createTransformedShape(shape);
 		Roi roi2 = new ShapeRoi(shape2);
 		if (centered) {
-			int xbase = (int)(centered?r.x-(r.width*xscale-r.width)/2.0:r.x);
-			int ybase = (int)(centered?r.y-(r.height*yscale-r.height)/2.0:r.y);
+			int xbase = (int)(r.x-(r.width*xscale-r.width)/2.0);
+			int ybase = (int)(r.y-(r.height*yscale-r.height)/2.0);
 			roi2.setLocation(xbase, ybase);
 		}
 		roi2.copyAttributes(roi);

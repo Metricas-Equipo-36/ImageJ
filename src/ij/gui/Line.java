@@ -6,7 +6,6 @@ import ij.plugin.Straightener;
 import ij.plugin.frame.Recorder;
 import ij.plugin.CalibrationBar;
 import java.awt.*;
-import java.awt.image.*;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.awt.event.*;
@@ -25,7 +24,7 @@ public class Line extends Roi {
 	/** Creates a new straight line selection using the specified
 		starting and ending offscreen integer coordinates. */
 	public Line(int ox1, int oy1, int ox2, int oy2) {
-		this((double)ox1, (double)oy1, (double)ox2, (double)oy2);
+		this(ox1, oy1, ox2, (double)oy2);
 	}
 
 	/** Creates a new straight line selection using the specified
@@ -640,7 +639,7 @@ public class Line extends Roi {
 	}
 
 	public void setLocation(int x, int y) {
-		setLocation((double)x, (double)y);
+		setLocation(x, (double)y);
 	}
 
 	/** Sets the x coordinate of the leftmost and y coordinate of the topmost end point */
@@ -666,7 +665,8 @@ public class Line extends Roi {
 	 * Author: Wilhelm Burger (04/2017)
 	*/
 	public static class PointIterator implements Iterator<Point> {
-		private double x1, y1;
+		private final double x1;
+		private final double y1;
 		private final int n;
 		private final double xinc, yinc;
 		private double x, y;

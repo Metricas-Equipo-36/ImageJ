@@ -1,10 +1,8 @@
 package ij.plugin.frame;
 import ij.*;
 import ij.gui.*;
-import ij.process.*;
+
 import java.awt.*;
-import java.awt.image.*;
-import java.awt.event.*;
 
 /** This plugin continuously plots ImageJ's memory utilization. 
 	Click on the plot to force the JVM to do garbage collection. */
@@ -20,9 +18,9 @@ public class MemoryMonitor extends PlugInFrame {
 	private double[] mem;
 	private int index;
 	private long value;
- 	private double defaultMax = 20*1024*1024; // 20MB
+ 	private final double defaultMax = 20*1024*1024; // 20MB
 	private double max = defaultMax;
-	private long maxMemory = IJ.maxMemory();
+	private final long maxMemory = IJ.maxMemory();
 	private boolean done;
 
 	public MemoryMonitor() {

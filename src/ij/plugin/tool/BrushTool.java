@@ -15,9 +15,9 @@ import java.util.Vector;
 public class BrushTool extends PlugInTool implements Runnable {
 	
 	private final static int UNCONSTRAINED=0, HORIZONTAL=1, VERTICAL=2, RESIZING=3, RESIZED=4, IDLE=5; //mode flags
-	private static String BRUSH_WIDTH_KEY = "brush.width";
-	private static String PENCIL_WIDTH_KEY = "pencil.width";
-	private static String CIRCLE_NAME = "brush-tool-overlay";
+	private static final String BRUSH_WIDTH_KEY = "brush.width";
+	private static final String PENCIL_WIDTH_KEY = "pencil.width";
+	private static final String CIRCLE_NAME = "brush-tool-overlay";
 	private static final String LOC_KEY = "brush.loc";
 	private static final String OVERLAY_KEY = "brush.overlay";
 	

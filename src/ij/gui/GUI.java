@@ -9,14 +9,13 @@ import javax.swing.UIManager;
 /** This class consists of static GUI utility methods. */
 public class GUI {
 	private static final Font DEFAULT_FONT = IJ.font12;
-	private static Color lightGray = new Color(240,240,240);
-	private static boolean isWindows8;
-	private static Color scrollbarBackground = new Color(245,245,245);
+	private static final Color lightGray = new Color(240,240,240);
+	private static final Color scrollbarBackground = new Color(245,245,245);
 
 	static {
 		if (IJ.isWindows()) {
 			String osname = System.getProperty("os.name");
-			isWindows8 = osname.contains("unknown") || osname.contains("8");
+			boolean isWindows8 = osname.contains("unknown") || osname.contains("8");
 		}
 	}
 
@@ -120,40 +119,8 @@ public class GUI {
 		shrunk.height -= insets.top + insets.bottom;
 		return shrunk;
 	}
-	
-	public static Rectangle getZeroBasedMaxBounds() {
-		for (GraphicsConfiguration config : getScreenConfigs()) {
-			Rectangle bounds = config.getBounds();
-			if (bounds != null && bounds.x == 0 && bounds.y == 0)
-				return bounds;
-		}
-		return null;
-	}
-	
-	public static Rectangle getUnionOfBounds() {
-		Rectangle unionOfBounds = new Rectangle();
-		for (GraphicsConfiguration config : getScreenConfigs()) {
-			unionOfBounds = unionOfBounds.union(config.getBounds());
-		}
-		return unionOfBounds;
-	}
-	
-    static private Frame frame;
-    
-    /** Obsolete */
-    public static Image createBlankImage(int width, int height) {
-        if (width==0 || height==0)
-            throw new IllegalArgumentException("");
-		if (frame==null) {
-			frame = new Frame();
-			frame.pack();
-			frame.setBackground(Color.white);
-		}
-        Image img = frame.createImage(width, height);
-        return img;
-    }
-    
-    /** Lightens overly dark scrollbar background on Windows 8. */
+
+	/** Lightens overly dark scrollbar background on Windows 8. */
     public static void fix(Scrollbar sb) {
     }
     
@@ -210,28 +177,27 @@ public class GUI {
 	}
 	
 	/**
-	 * Tries to detect if a Swing component is unscaled and scales it it according
-	 * to {@link #getGuiScale()}.
-	 * <p>
-	 * This is mainly relevant to linux: Swing components scale automatically on
-	 * most platforms, specially since Java 8. However there are still exceptions to
-	 * this on linux: e.g., In Ubuntu, Swing components do scale, but only under the
-	 * GTK L&F. (On the other hand AWT components do not scale <i>at all</i> on
-	 * hiDPI screens on linux).
-	 * </p>
-	 * <p>
-	 * This method tries to avoid exaggerated font sizes by detecting if a component
-	 * has been already scaled by the UIManager, applying only
-	 * {@link #getGuiScale()} to the component's font if not.
-	 * </p>
-	 *
-	 * @param component the component to be scaled
-	 * @return true, if component's font was resized
-	 */
-	public static boolean scale(final JComponent component) {
+     * Tries to detect if a Swing component is unscaled and scales it it according
+     * to {@link #getGuiScale()}.
+     * <p>
+     * This is mainly relevant to linux: Swing components scale automatically on
+     * most platforms, specially since Java 8. However there are still exceptions to
+     * this on linux: e.g., In Ubuntu, Swing components do scale, but only under the
+     * GTK L&F. (On the other hand AWT components do not scale <i>at all</i> on
+     * hiDPI screens on linux).
+     * </p>
+     * <p>
+     * This method tries to avoid exaggerated font sizes by detecting if a component
+     * has been already scaled by the UIManager, applying only
+     * {@link #getGuiScale()} to the component's font if not.
+     * </p>
+     *
+     * @param component the component to be scaled
+     */
+	public static void scale(final JComponent component) {
 		final double guiScale = Prefs.getGuiScale();
 		if (guiScale == 1d)
-			return false;
+			return;
 		Font font = component.getFont();
 		if (font == null && component instanceof JList)
 			font = UIManager.getFont("List.font");
@@ -240,14 +206,13 @@ public class GUI {
 		else if (font == null)
 			font = UIManager.getFont("Label.font");
 		if (font.getSize() > DEFAULT_FONT.getSize())
-			return false;
+			return;
 		if (component instanceof JTable)
 			((JTable) component).setRowHeight((int) (((JTable) component).getRowHeight() * guiScale * 0.9));
 		else if (component instanceof JList)
 			((JList<?>) component).setFixedCellHeight((int) (((JList<?>) component).getFixedCellHeight() * guiScale * 0.9));
 		component.setFont(font.deriveFont((float) guiScale * font.getSize()));
-		return true;
-	}
+    }
 	
 	/** Works around an OpenJDK bug on Windows that
 	 * causes the scrollbar thumb color and background

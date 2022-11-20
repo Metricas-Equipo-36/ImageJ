@@ -58,7 +58,7 @@ public class RectToolOptions implements PlugIn, DialogListener {
 		Color strokeColor2 = Colors.decode(strokec2, defaultStrokeColor);
 		if (roi!=null && (roi.getType()==Roi.RECTANGLE)) {
 			roi.setStrokeWidth((int)strokeWidth2);
-			roi.setCornerDiameter((int)(cornerDiameter2));
+			roi.setCornerDiameter(cornerDiameter2);
 			strokeColor2 = Colors.decode(strokec2, roi.getStrokeColor());
 			Color fillColor = Colors.decode(fillc2, roi.getFillColor());
 			roi.setStrokeColor(strokeColor2);

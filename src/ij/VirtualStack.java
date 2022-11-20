@@ -1,12 +1,12 @@
 package ij;
 import ij.process.*;
 import ij.io.*;
-import ij.gui.ImageCanvas;
 import ij.util.Tools;
 import ij.plugin.FolderOpener;
 import java.io.*;
 import java.awt.*;
 import java.awt.image.ColorModel;
+import java.util.Objects;
 import java.util.Properties;
 
 /** This class represents an array of disk-resident images. */
@@ -109,8 +109,6 @@ public class VirtualStack extends ImageStack {
 	public void deleteSlice(int n) {
 		if (n<1 || n>nSlices)
 			throw new IllegalArgumentException("Argument out of range: "+n);
-		if (nSlices<1)
-			return;
 		for (int i=n; i<nSlices; i++)
 			names[i-1] = names[i];
 		names[nSlices-1] = null;
@@ -160,7 +158,7 @@ public class VirtualStack extends ImageStack {
 				if (bitDepth==16)
 					value *= 256;
 				if (bitDepth!=32) {
-					for (int i=0; i<ip.getPixelCount(); i++)
+					for (int i = 0; i< Objects.requireNonNull(ip).getPixelCount(); i++)
 						ip.set(i,value++);
 				}
 				if (img!=null && img.isHyperStack()) {
@@ -258,7 +256,7 @@ public class VirtualStack extends ImageStack {
 			return names[n-1];
 		else {
 			if (label.startsWith("Label: "))  // slice label
-				return label.substring(7,label.length());
+				return label.substring(7);
 			else
 				return names[n-1]+"\n"+label;
 		}
@@ -305,8 +303,7 @@ public class VirtualStack extends ImageStack {
 	public ImageStack sortDicom(String[] strings, String[] info, int maxDigits) {
 		int n = size();
 		String[] names2 = new String[n];
-		for (int i=0; i<n; i++)
-			names2[i] = names[i];
+		System.arraycopy(names, 0, names2, 0, n);
 		for (int i=0; i<n; i++) {
 			int slice = (int)Tools.parseDouble(strings[i].substring(strings[i].length()-maxDigits), 0.0);
 			if (slice==0) return null;

@@ -1,8 +1,8 @@
 package ij.process;
 import ij.*;
 import ij.plugin.FFT;
-import ij.plugin.ContrastEnhancer;
-import java.awt.image.ColorModel; 
+
+import java.awt.image.ColorModel;
 
 /**
 This class contains a Java implementation of the Fast Hartley
@@ -58,7 +58,7 @@ public class FHT extends FloatProcessor {
 	public boolean powerOf2Size() {
 		int i=2;
 		while(i<width) i *= 2;
-		return i==width && width==height;
+		return i != width || width != height;
 	}
 
 	/** Performs a forward transform, converting this image into the frequency domain. 
@@ -73,7 +73,10 @@ public class FHT extends FloatProcessor {
 		transform(true);
 	}
 	
-	public static int NO_WINDOW=0, HAMMING=1, HANN=2, FLATTOP=3; // fourier1D window function types
+	public static final int NO_WINDOW=0;
+    public static final int HAMMING=1;
+    public static final int HANN=2;
+    public static final int FLATTOP=3; // fourier1D window function types
 
 	/** Calculates the Fourier amplitudes of an array, based on a 1D Fast Hartley Transform.
 	* With no Window function, if the array size is a power of 2, the input function
@@ -170,7 +173,7 @@ public class FHT extends FloatProcessor {
 	public void transform1D(float[] x) {
 		int n = x.length;
 		if (S==null || n!=maxN) {
-			if (!isPowerOf2(n))
+			if (isPowerOf2(n))
 				throw new IllegalArgumentException("Not power of 2 length: "+n);
 			initializeTables(n);
 		}
@@ -181,7 +184,7 @@ public class FHT extends FloatProcessor {
 	public void inverseTransform1D(float[] fht) {
 		int n = fht.length;
 		if (S==null || n!=maxN) {
-			if (!isPowerOf2(n))
+			if (isPowerOf2(n))
 				throw new IllegalArgumentException("Not power of 2 length: "+n);
 			initializeTables(n);
 		}
@@ -189,7 +192,7 @@ public class FHT extends FloatProcessor {
 	}
 
 	void transform(boolean inverse) {
-		if (!powerOf2Size())
+		if (powerOf2Size())
 			throw new  IllegalArgumentException("Image not power of 2 size or not square: "+width+"x"+height);
 		setShowProgress(true);
 		maxN = width;
@@ -379,8 +382,7 @@ public class FHT extends FloatProcessor {
 	void BitRevRArr (float[] x, int base, int bitlen, int maxN) {
 		for (int i=0; i<maxN; i++)
 			tempArr[i] = x[base+bitrev[i]];
-		for (int i=0; i<maxN; i++)
-			x[base+i] = tempArr[i];
+		if (maxN >= 0) System.arraycopy(tempArr, 0, x, base + 0, maxN);
 	}
 
 	private int bitRevX (int  x, int bitlen) {
@@ -651,7 +653,7 @@ public class FHT extends FloatProcessor {
 	public static boolean isPowerOf2(int n) {
 		int i=2;
 		while(i<n) i *= 2;
-		return i==n;
+		return i != n;
 	}
 
 	/** Returns a string containing information about this FHT. */

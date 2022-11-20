@@ -3,10 +3,8 @@ import ij.*;
 import ij.process.*;
 import ij.measure.*;
 import ij.plugin.frame.*;
-import ij.util.Tools;
-import ij.util.FloatArray;
+
 import java.awt.*;
-import java.awt.image.*;
 import java.awt.geom.*;
 import java.awt.event.*;
 
@@ -301,7 +299,7 @@ public class PolygonRoi extends Roi {
 	public void drawPixels(ImageProcessor ip) {
 		int saveWidth = ip.getLineWidth();
 		if (getStrokeWidth()>1f)
-			ip.setLineWidth((int)Math.round(getStrokeWidth()));
+			ip.setLineWidth(Math.round(getStrokeWidth()));
 		double xbase = getXBase();
 		double ybase = getYBase();
 		if (xSpline!=null) {
@@ -344,8 +342,8 @@ public class PolygonRoi extends Roi {
 				float xbase = (float)getXBase();
 				float ybase = (float)getYBase();
 				for (int i=0; i<nPoints; i++) {
-					xp2[i] = (int)Math.round(xpf[i]+xbase);
-					yp2[i] = (int)Math.round(ypf[i]+ybase);
+					xp2[i] = Math.round(xpf[i]+xbase);
+					yp2[i] = Math.round(ypf[i]+ybase);
 				}
 			} else {
 				for (int i=0; i<nPoints; i++) {
@@ -992,7 +990,7 @@ public class PolygonRoi extends Roi {
 		if (ic!=null) {
 			double mag = ic.getMagnification();
 			if (mag<1.0)
-				evaluationPoints *= mag;;
+				evaluationPoints *= mag;
 		}
 		if (evaluationPoints<100)
 			evaluationPoints = 100;
@@ -1109,7 +1107,6 @@ public class PolygonRoi extends Roi {
 				nPoints--;
 				addOffset();
 				finishPolygon();
-				return;
 			}
 		} else if (!samePoint) {
 			mouseUpTime = System.currentTimeMillis();
@@ -1427,7 +1424,7 @@ public class PolygonRoi extends Roi {
 				if ((xpf[i]!=(int)xpf[i])||(ypf[i]!=(int)ypf[i]))
 					return false;
 			}
-			xp = toInt(xpf, xp, nPoints);
+			xp = toInt(xpf, null, nPoints);
 			yp = toInt(ypf, yp, nPoints);
 		}
 		for (int i=0; i<nPoints; i++) {

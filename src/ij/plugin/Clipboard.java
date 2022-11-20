@@ -1,15 +1,13 @@
 package ij.plugin; 
 import java.awt.*;
-import java.awt.event.*;
 import java.awt.datatransfer.*;
 import java.awt.image.*;
-import java.io.*;
+
 import ij.*;
 import ij.process.*;
 import ij.gui.*;
 import ij.plugin.frame.Editor;
 import ij.plugin.frame.Recorder;
-import ij.text.TextWindow;
 import ij.util.Tools;
 	
 /**	Copies/pastes images to/from the system clipboard. */
@@ -44,7 +42,7 @@ public class Clipboard implements PlugIn, Transferable {
 		cplugin.gImp = imp;
 		cplugin.setup();
 		try {
-			cplugin.clipboard.setContents(cplugin, null);
+			clipboard.setContents(cplugin, null);
 		} catch (Throwable t) {}
 	}
 	
@@ -118,11 +116,6 @@ public class Clipboard implements PlugIn, Transferable {
 			boolean textSupported = transferable.isDataFlavorSupported(DataFlavor.stringFlavor);
 			if (imageSupported) {
 				Image img = (Image)transferable.getTransferData(DataFlavor.imageFlavor);
-				if (img==null) {
-					IJ.error("Unable to convert image on system clipboard");
-					IJ.showStatus("");
-					return;
-				}
 				int width = img.getWidth(null);
 				int height = img.getHeight(null);
 				BufferedImage   bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
@@ -167,7 +160,7 @@ public class Clipboard implements PlugIn, Transferable {
 				imp = imp.crop();
 		}
 		boolean overlay = imp.getOverlay()!=null && !imp.getHideOverlay();
-		if (overlay && !imp.tempOverlay())
+		if (overlay && imp.tempOverlay())
 			imp = imp.flatten(); 
 		return imp.getImage();
 	}

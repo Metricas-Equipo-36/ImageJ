@@ -5,7 +5,6 @@ import ij.process.*;
 import ij.gui.*;
 import java.awt.*;
 import java.awt.image.*;
-import java.math.*;
 import java.util.*;
 import ij.measure.*;
 
@@ -13,7 +12,7 @@ import ij.measure.*;
 public class SurfacePlotter implements PlugIn {
 
 	static final int fontSize = 14;
-	static int plotWidth = 350;
+	static final int plotWidth = 350;
 	static int polygonMultiplier = 100;
 	static boolean oneToOne;
 	static boolean firstTime = true;
@@ -28,11 +27,11 @@ public class SurfacePlotter implements PlugIn {
 	ImagePlus img;
 	int[] x,y;
 	boolean invertedLut;
-	double angleInDegrees = 35;
+	final double angleInDegrees = 35;
 	double angle = (angleInDegrees/360.0)*2.0*Math.PI;
-	double angle2InDegrees = 15.0;
-	double angle2 = (angle2InDegrees/360.0)*2.0*Math.PI;
-	double yinc2 = Math.sin(angle2);
+	final double angle2InDegrees = 15.0;
+	final double angle2 = (angle2InDegrees/360.0)*2.0*Math.PI;
+	final double yinc2 = Math.sin(angle2);
 	double p1x, p1y;  // left bottom corner
 	double p2x, p2y;  // center bottom corner
 	double p3x, p3y;  // right  bottom corner
@@ -172,7 +171,7 @@ public class SurfacePlotter implements PlugIn {
 			windowHeight += 20;
 			p1x = xstart;
 			p1y = ystart+255;
-			p2x = xstart+xinc*height;;
+			p2x = xstart+xinc*height;
 			p2y = p1y+yinc*height;
 			p3x =  p2x+width-1;
 			p3y = p2y- yinc2*width;
@@ -276,7 +275,7 @@ public class SurfacePlotter implements PlugIn {
 		if (s.equals("Gray Value"))
 			s = "";
 		w =  ip2.getFontMetrics().stringWidth(s);
-		drawAxis(ip2, (int) p1x, (int) p1y-255, (int) p1x, (int) p1y , s, 10, -1, 0, 1);
+		drawAxis(ip2, (int) p1x, (int) p1y-255, (int) p1x, (int) p1y , s, -1, 0);
 		double min, max;
 		if (img.getBitDepth()==8) {
 			min = 0;
@@ -310,17 +309,17 @@ public class SurfacePlotter implements PlugIn {
 		String xunits = unitsMatch ? cal.getUnits() : cal.getYUnit(); // why swapped?
 		s = (double) Math.round(roi.height*cal.pixelHeight*10)/10+" "+xunits;
 		w =  ip2.getFontMetrics().stringWidth(s);
-		drawAxis(ip2, (int) p1x, (int) p1y, (int) p2x, (int) p2y, s, 10, -1, 1, 1);
+		drawAxis(ip2, (int) p1x, (int) p1y, (int) p2x, (int) p2y, s, -1, 1);
 
 		//y-axis
 		String yunits = unitsMatch ? cal.getUnits() : cal.getXUnit(); // why swapped?
 		s = (double) Math.round(roi.width*cal.pixelWidth*10)/10+" "+yunits;
 		w =  ip2.getFontMetrics().stringWidth(s);
-		drawAxis(ip2, (int) p2x, (int) p2y, (int) p3x, (int) p3y, s, 10, 1, -1, 1);
+		drawAxis(ip2, (int) p2x, (int) p2y, (int) p3x, (int) p3y, s, 1, -1);
 
 	}
 
-	void drawAxis(ImageProcessor ip, int x1, int y1, int x2, int y2, String label, int offset, int offsetXDirection, int offsetYDirection, int labelSide){
+	void drawAxis(ImageProcessor ip, int x1, int y1, int x2, int y2, String label, int offsetXDirection, int offsetYDirection){
 		if(blackFill)
 			ip.setColor(Color.white);
 		else
@@ -336,11 +335,11 @@ public class SurfacePlotter implements PlugIn {
 		int dy = -offsetXDirection * (int) ( 7*Math.sin(theta) );
 		int dx = -offsetXDirection * (int) ( 7*Math.cos(theta) );
 		
-		x1 += offsetXDirection * (int) ( offset*Math.cos(theta) );
-		x2 += offsetXDirection * (int) ( offset*Math.cos(theta) );
+		x1 += offsetXDirection * (int) ( 10 *Math.cos(theta) );
+		x2 += offsetXDirection * (int) ( 10 *Math.cos(theta) );
 		
-		y1 += offsetYDirection * (int) ( offset*Math.sin(theta) );
-		y2 += offsetYDirection * (int) ( offset*Math.sin(theta) );		
+		y1 += offsetYDirection * (int) ( 10 *Math.sin(theta) );
+		y2 += offsetYDirection * (int) ( 10 *Math.sin(theta) );
 		
 		ip.drawLine(x1, y1, x2, y2);
 		
@@ -357,12 +356,11 @@ public class SurfacePlotter implements PlugIn {
 			b = new ColorBlitter((ColorProcessor) ip);
 		Color c = blackFill?Color.black:Color.white;
 		b.setTransparentColor(c);
-		int xloc = (x1+x2)/2-ipText.getWidth()/2  + offsetXDirection*labelSide*(int)(15*Math.cos(theta));
-		int yloc = (y1+y2)/2-ipText.getHeight()/2 + offsetYDirection*labelSide*(int)(15*Math.sin(theta));
+		int xloc = (x1+x2)/2-ipText.getWidth()/2  + offsetXDirection* 1 *(int)(15*Math.cos(theta));
+		int yloc = (y1+y2)/2-ipText.getHeight()/2 + offsetYDirection* 1 *(int)(15*Math.sin(theta));
 		b.copyBits(ipText, xloc, yloc, Blitter.COPY_TRANSPARENT);
-				
-		return;						
-	}	
+
+	}
 	
 	ImageProcessor drawString(ImageProcessor ip, String s, int a){
 		int w =  ip.getFontMetrics().stringWidth(s);

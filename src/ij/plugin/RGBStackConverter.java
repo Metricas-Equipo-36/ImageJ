@@ -260,10 +260,7 @@ public class RGBStackConverter implements PlugIn, DialogListener {
 		gd.addCheckbox("Keep source", keep);
 		gd.addDialogListener(this);
 		gd.showDialog();
-		if (gd.wasCanceled())
-			return false;
-		else
-			return true;
+		return !gd.wasCanceled();
 	}
 
 	public boolean dialogItemChanged(GenericDialog gd, AWTEvent e) {

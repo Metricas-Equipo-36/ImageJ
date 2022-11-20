@@ -98,7 +98,7 @@ public class RoiEnlarger implements PlugIn, DialogListener {
 		Vector checkboxes = gd.getCheckboxes();
 		Checkbox usePixelsCbx = checkboxes == null ? null : (Checkbox)checkboxes.get(0);
 		double n = gd.getNextNumber();
-		boolean usePixels = cal.scaled() ? gd.getNextBoolean() : true; //getNextBoolean also needed for macro recorded
+		boolean usePixels = !cal.scaled() || gd.getNextBoolean(); //getNextBoolean also needed for macro recorded
 		if (e!=null && e.getSource() == usePixelsCbx) {
 			double pixelWidth = cal.pixelWidth;
 			int decimalPlaces = 0;

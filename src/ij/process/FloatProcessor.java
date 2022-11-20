@@ -3,7 +3,6 @@ package ij.process;
 import java.util.*;
 import java.awt.*;
 import java.awt.image.*;
-import ij.gui.*;
 
 /** This is an 32-bit floating-point image and methods that operate on that image. */
 public class FloatProcessor extends ImageProcessor {
@@ -245,7 +244,7 @@ public class FloatProcessor extends ImageProcessor {
 		snapshotHeight=height;
 		snapshotMin=(float)getMin();
 		snapshotMax=(float)getMax();
-		if (snapshotPixels==null || (snapshotPixels!=null && snapshotPixels.length!=pixels.length))
+		if (snapshotPixels == null || snapshotPixels.length != pixels.length)
 			snapshotPixels = new float[width * height];
 		System.arraycopy(pixels, 0, snapshotPixels, 0, width*height);
 	}
@@ -408,7 +407,7 @@ public class FloatProcessor extends ImageProcessor {
 	/** Returns a reference to the float array containing
 		this image's pixel data. */
 	public Object getPixels() {
-		return (Object)pixels;
+		return pixels;
 	}
 
 	/** Returns a copy of the pixel data. Or returns a reference to the
@@ -492,7 +491,7 @@ public class FloatProcessor extends ImageProcessor {
 							v2 = (float)Math.sqrt(v1);
 						break;
 					case ABS:
-							v2 = (float)Math.abs(v1);
+							v2 = Math.abs(v1);
 						break;
 					case MINIMUM:
 						if (v1<value)

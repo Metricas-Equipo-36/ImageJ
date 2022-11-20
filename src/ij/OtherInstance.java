@@ -1,9 +1,5 @@
 package ij;
 
-import ij.IJ;
-import ij.ImageJ;
-import ij.Prefs;
-
 import ij.io.OpenDialog;
 import ij.io.Opener;
 
@@ -18,6 +14,7 @@ import java.io.ObjectOutputStream;
 
 import java.lang.reflect.Method;
 
+import java.nio.file.Files;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -55,7 +52,7 @@ public class OtherInstance {
 				int index = name2.indexOf(DELIMETER);
 				if (index!=-1) {
 					name = name2.substring(0, index);
-					arg = name2.substring(index+DELIMETER.length(), name2.length());
+					arg = name2.substring(index+DELIMETER.length());
 				}
 				IJ.runMacroFile(name, arg);
 			} else if (cmd.startsWith("run "))
@@ -202,16 +199,14 @@ public class OtherInstance {
 		if (System.getProperty("os.name").startsWith("Mac"))
 			return true;
 		Properties ijProps = loadPrefs();
-		if (ijProps==null)
-			return true;
-		int options = getInt(ijProps, OPTIONS);
+		int options = getInt(ijProps);
 		if (options==-1)
 			return true;
 		return (options&RUN_SOCKET_LISTENER)!=0;
 	}
 	
-	protected static int getInt(Properties props, String key) {
-		String s = props.getProperty(key);
+	protected static int getInt(Properties props) {
+		String s = props.getProperty(OtherInstance.OPTIONS);
 		if (s!=null) {
 			try {
 				return Integer.decode(s).intValue();
@@ -224,7 +219,7 @@ public class OtherInstance {
 		Properties result = new Properties();
 		File file = new File(getPrefsDirectory(), "IJ_Prefs.txt");
 		try {
-			InputStream in = new BufferedInputStream(new FileInputStream(file));
+			InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()));
 			result.load(in);
 			in.close();
 		} catch (IOException e) { /* ignore */ }

@@ -1,11 +1,8 @@
 package ij.plugin;
 import java.awt.*;
-import java.awt.event.*;
 import java.util.*;
 import ij.*;
 import ij.gui.*;
-import ij.process.*;
-import ij.util.Tools;
 import ij.measure.Calibration;
 
 /**
@@ -48,7 +45,7 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		Roi roi = imp.getRoi();
 		Calibration cal = imp.getCalibration();
 		if (roi!=null) {
-			boolean rectOrOval = roi!=null && (roi.getType()==Roi.RECTANGLE||roi.getType()==Roi.OVAL);
+			boolean rectOrOval = roi.getType() == Roi.RECTANGLE || roi.getType() == Roi.OVAL;
 			oval = rectOrOval && (roi.getType()==Roi.OVAL); // Handle existing oval ROI
 			Rectangle r = roi.getBounds();
 			width = r.width;
@@ -80,9 +77,7 @@ public class SpecifyROI implements PlugIn, DialogListener {
 		double pw=cal.pixelWidth, ph=cal.pixelHeight;
 		if (width/pw<1 || height/ph<1)
 			return false;
-		if (xRoi/pw>imp.getWidth() || yRoi/ph>imp.getHeight())
-			return false;
-		return true;
+		return !(xRoi / pw > imp.getWidth()) && !(yRoi / ph > imp.getHeight());
 	}
 
 	/**

@@ -7,8 +7,8 @@ import java.util.*;
 public class MultiLineLabel extends Canvas {
 	String[] lines;
 	int num_lines;
-	int margin_width = 6;
-	int margin_height = 6;
+	final int margin_width = 6;
+	final int margin_height = 6;
 	int line_height;
 	int line_ascent;
 	int[] line_widths;

@@ -25,7 +25,7 @@ public class RoiRotationTool extends PlugInTool {
 	ImagePlus imp2;
 	
 	static final int UPDOWNROTATION=0, CIRCULARROTATION=1;
-	int defaultRotationMode = CIRCULARROTATION;
+	final int defaultRotationMode = CIRCULARROTATION;
 	
 	public void mousePressed(ImagePlus imp, MouseEvent e) {
 		if (imp == null) return;

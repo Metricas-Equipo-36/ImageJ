@@ -30,7 +30,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
     boolean previewing;
     boolean escapePressed;
     int foreground, background;
-    int flags = DOES_8G | DOES_8C | SUPPORTS_MASKING | PARALLELIZE_STACKS | KEEP_PREVIEW | KEEP_THRESHOLD;
+    final int flags = DOES_8G | DOES_8C | SUPPORTS_MASKING | PARALLELIZE_STACKS | KEEP_PREVIEW | KEEP_THRESHOLD;
     int nPasses;
 
     public int setup(String arg, ImagePlus imp) {
@@ -41,7 +41,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
             if (imp == null) return NO_IMAGE_REQUIRED;  //options dialog does not need a (suitable) image
             ImageProcessor ip = imp.getProcessor();
             if (!(ip instanceof ByteProcessor)) return NO_IMAGE_REQUIRED;
-            if (!((ByteProcessor)ip).isBinary()) return NO_IMAGE_REQUIRED;
+            if (!ip.isBinary()) return NO_IMAGE_REQUIRED;
         }
         return flags;
     }
@@ -76,7 +76,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
             }
             return operation.equals(NO_OPERATION) ? DONE : IJ.setupDialog(imp, flags);
         } else {   //no dialog, 'arg' is operation type
-            if (!((ByteProcessor)imp.getProcessor()).isBinary()) {
+            if (!imp.getProcessor().isBinary()) {
                 IJ.error("8-bit binary (black and white only) image required.");
                 return DONE;
             }
@@ -125,7 +125,7 @@ public class Binary implements ExtendedPlugInFilter, DialogListener {
             ip.resetRoi();
             skeletonize(ip);
         } else if (arg.equals("erode") || arg.equals("dilate"))
-            doIterations((ByteProcessor)ip, arg);
+            doIterations(ip, arg);
         else if (arg.equals("open")) {
             doIterations(ip, "erode");
             doIterations(ip, "dilate");

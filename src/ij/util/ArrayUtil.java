@@ -3,7 +3,7 @@ import java.util.Arrays;
 
 public class ArrayUtil {
 	private int size;
-	float[] values;
+	final float[] values;
 	boolean sorted;
 
 	public void setSize(int si) {
@@ -35,17 +35,14 @@ public class ArrayUtil {
 	/**
 	 * put a value to a index
 	 *
-	 * @param pos position in the array
+	 * @param pos   position in the array
 	 * @param value value to put
-	 * @return false if position does not exist
 	 */
-	public boolean putValue(int pos, float value) {
+	public void putValue(int pos, float value) {
 		if (pos<size) {
 			values[pos] = value;
 			sorted = false;
-			return true;
 		} else {
-			return false;
 		}
 	}
 
@@ -144,7 +141,7 @@ public class ArrayUtil {
 			total2 += values[i] * values[i];
 		}
 
-		double var = (double) ((total2 - (total * total / size)) / (size - 1));
+		double var = (total2 - (total * total / size)) / (size - 1);
 		return var;
 	}
 	
@@ -155,9 +152,9 @@ public class ArrayUtil {
 	 * @return text
 	 */
 	public String toString() {
-		String str = "{" + values[0];
+		StringBuilder str = new StringBuilder("{" + values[0]);
 		for (int i = 1; i < size; i++) {
-			str = str + ", " + values[i];
+			str.append(", ").append(values[i]);
 		}
 		return str + "}";
 	}

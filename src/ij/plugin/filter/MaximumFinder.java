@@ -74,7 +74,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
     private static boolean lightBackground;
     private boolean   oldMacro = false;             // till 1.52m, "strict" was the same as "excludeOnEdges" and "prominence" was called "noise tolerance"
     private ImagePlus imp;                          // the ImagePlus of the setup call
-    private int flags = DOES_ALL|NO_CHANGES|NO_UNDO;// the flags (see interfaces PlugInFilter & ExtendedPlugInFilter)
+    private final int flags = DOES_ALL|NO_CHANGES|NO_UNDO;// the flags (see interfaces PlugInFilter & ExtendedPlugInFilter)
     private boolean   thresholded;                  // whether the input image has a threshold
     private boolean   roiSaved;                     // whether the filter has changed the roi and saved the original roi
     private boolean   previewing;                   // true while dialog is displayed (processing for preview)
@@ -129,7 +129,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         GenericDialog gd = new GenericDialog(command);
         String unit = (imp.getCalibration()!=null)?imp.getCalibration().getValueUnit():null;
         int digits = (ip instanceof FloatProcessor || unit != null) ? 2 : 0;
-        if (unit.equals("Gray Value")) unit = null;
+        if (Objects.requireNonNull(unit).equals("Gray Value")) unit = null;
         gd.addNumericField("Prominence >",tolerance, digits, 6, unit);
         gd.addCheckbox("Strict", strict);
         gd.addCheckbox("Exclude edge maxima", excludeOnEdges);
@@ -539,12 +539,10 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
             outIp = typeP;
         }
         byte[] outPixels = (byte[])outIp.getPixels();
-        if (roi!=null) {
-            for (int y=0, i=0; y<outIp.getHeight(); y++) { //delete everything outside roi
-                for (int x=0; x<outIp.getWidth(); x++, i++) {
-                    if (x<roi.x || x>=roi.x+roi.width || y<roi.y || y>=roi.y+roi.height) outPixels[i] = (byte)0;
-                    else if (mask !=null && (mask[x-roi.x + roi.width*(y-roi.y)]==0)) outPixels[i] = (byte)0;
-                }
+        for (int y=0, i=0; y<outIp.getHeight(); y++) { //delete everything outside roi
+            for (int x=0; x<outIp.getWidth(); x++, i++) {
+                if (x<roi.x || x>=roi.x+roi.width || y<roi.y || y>=roi.y+roi.height) outPixels[i] = (byte)0;
+                else if (mask !=null && (mask[x-roi.x + roi.width*(y-roi.y)]==0)) outPixels[i] = (byte)0;
             }
         }
 
@@ -739,7 +737,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 						if (maxPossible) {
 							types[offset] |= MAX_AREA;
 							if ((types[offset]&EQUAL)!=0) {
-								double dist2 = (xEqual-x)*(double)(xEqual-x) + (yEqual-y)*(double)(yEqual-y);
+								double dist2 = (xEqual-x)* (xEqual-x) + (yEqual-y)* (yEqual-y);
 								if (dist2 < minDist2) {
 									minDist2 = dist2;	//this could be the best "single maximum" point
 									nearestI = listI;
@@ -750,7 +748,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
 					if (maxPossible) {
 						int offset = pList[nearestI];
 						types[offset] |= MAX_POINT;
-						if (displayOrCount && !(this.excludeOnEdges && isEdgeMaximum)) {
+						if (displayOrCount && !(excludeOnEdges && isEdgeMaximum)) {
 							int x = offset % width;
 							int y = offset / width;
 							if (roi==null || roi.contains(x, y))
@@ -1071,7 +1069,7 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
         Wand wand = new Wand(ip);
         for (int x=0; x<width; x++) {
             int y = 0;
-            if ((types[x+y*width]&MAX_AREA) != 0 && pixels[x+y*width] != 0)
+            if ((types[x+ 0]&MAX_AREA) != 0 && pixels[x+ 0] != 0)
                 deleteParticle(x,y,ip,wand);
             y = height - 1;
             if ((types[x+y*width]&MAX_AREA) != 0 && pixels[x+y*width] != 0)
@@ -1188,29 +1186,27 @@ public class MaximumFinder implements ExtendedPlugInFilter, DialogListener {
                 // however. Thus we only add the pixels if they are at the border (of the
                 // image or a thresholded area) and correct unprocessed pixels at the very
                 // end by CleanupExtraLines
-                if (nextLevel > 0) {
-                    int newNextLevelEnd = levelStart[nextLevel] + histogram[nextLevel];
-                    for (int i=0, p=levelStart[level]; i<remaining; i++, p++) {
-                        int xy = coordinates[p];
-                        int x = xy&intEncodeXMask;
-                        int y = (xy&intEncodeYMask)>>intEncodeShift;
-                        int pOffset = x + y*width;
-                        if ((pixels[pOffset]&255)==255) IJ.log("ERROR");
-                        boolean addToNext = false;
-                        if (x==0 || y==0 || x==width-1 || y==height-1)
-                            addToNext = true;           //image border
-                        else for (int d=0; d<8; d++)
-                            if (isWithin(x, y, d) && pixels[pOffset+dirOffset[d]]==0) {
-                                addToNext = true;       //border of area below threshold
-                                break;
-                            }
-                        if (addToNext)
-                            coordinates[newNextLevelEnd++] = xy;
-                    }
-                    //IJ.log("level="+level+": add "+(newNextLevelEnd-levelStart[nextLevel+1])+" points to "+nextLevel);
-                    //tasklist for the next level to process becomes longer by this:
-                    histogram[nextLevel] = newNextLevelEnd - levelStart[nextLevel];
+                int newNextLevelEnd = levelStart[nextLevel] + histogram[nextLevel];
+                for (int i=0, p=levelStart[level]; i<remaining; i++, p++) {
+                    int xy = coordinates[p];
+                    int x = xy&intEncodeXMask;
+                    int y = (xy&intEncodeYMask)>>intEncodeShift;
+                    int pOffset = x + y*width;
+                    if ((pixels[pOffset]&255)==255) IJ.log("ERROR");
+                    boolean addToNext = false;
+                    if (x==0 || y==0 || x==width-1 || y==height-1)
+                        addToNext = true;           //image border
+                    else for (int d=0; d<8; d++)
+                        if (isWithin(x, y, d) && pixels[pOffset+dirOffset[d]]==0) {
+                            addToNext = true;       //border of area below threshold
+                            break;
+                        }
+                    if (addToNext)
+                        coordinates[newNextLevelEnd++] = xy;
                 }
+                //IJ.log("level="+level+": add "+(newNextLevelEnd-levelStart[nextLevel+1])+" points to "+nextLevel);
+                //tasklist for the next level to process becomes longer by this:
+                histogram[nextLevel] = newNextLevelEnd - levelStart[nextLevel];
             }
             if (debug && (level>170 || level>100 && level<110 || level<10))
                 movie.addSlice("level "+level, ip.duplicate());
